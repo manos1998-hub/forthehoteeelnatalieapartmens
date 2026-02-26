@@ -37,6 +37,7 @@
       --accent-glow: rgba(59,130,246,0.3);
       --glass-border: rgba(255,255,255,0.2);
       --shadow-xl: 0 25px 50px -12px rgba(0,0,0,0.25);
+      --hero-overlay: rgba(0,0,0,0.3);
     }
     /* ---------- ANIMATIONS ---------- */
     @keyframes float {
@@ -124,17 +125,21 @@
       padding: 2rem;
       position: relative;
       overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
     .hero::before {
       content: '';
       position: absolute;
-      top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-      animation: float 10s infinite;
-      z-index: -1;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--hero-overlay);
+      backdrop-filter: blur(3px);
+      z-index: 1;
     }
-    .hero-content {
+    .hero .hero-content {
+      position: relative;
+      z-index: 2;
       max-width: 1000px;
       padding: 4rem 3rem;
     }
@@ -143,11 +148,13 @@
       font-weight: 800;
       margin-bottom: 1rem;
       line-height: 1.2;
-      text-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      text-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      color: white;
     }
     .hero-location {
       font-size: 1.5rem;
-      background: rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.3);
+      color: white;
       display: inline-block;
       padding: 0.7rem 2.5rem;
       border-radius: 60px;
@@ -193,6 +200,7 @@
       margin-bottom: 3rem;
       position: relative;
       display: inline-block;
+      color: #1e1e2f;
     }
     .section-title:after {
       content: '';
@@ -376,7 +384,7 @@
   </header>
 
   <main>
-    <!-- HERO -->
+    <!-- HERO (background image will be set via JS) -->
     <section id="home" class="hero">
       <div class="hero-content glass-card reveal">
         <h2 id="hero-title">Welcom To<br>Natalie Aparments</h2>
@@ -403,13 +411,13 @@
       <div class="services-grid" id="services-container"></div>
     </section>
 
-    <!-- SPECIAL OFFERS (dynamic) -->
+    <!-- SPECIAL OFFERS -->
     <section id="offers" class="container">
       <h2 class="section-title reveal">Special offers</h2>
       <div class="offers-grid" id="offers-container"></div>
     </section>
 
-    <!-- TESTIMONIALS (dynamic) -->
+    <!-- TESTIMONIALS -->
     <section id="testimonials" class="container">
       <h2 class="section-title reveal">What our guests say</h2>
       <div class="testimonials-grid" id="testimonials-container"></div>
@@ -477,7 +485,7 @@
     const storage = firebase.storage();
     const settingsDocRef = db.collection('settings').doc('general');
 
-    // Default settings (including new sections)
+    // Default settings (including heroBackground)
     const defaultSettings = {
       siteName: 'Natalie Apartments',
       headerColor: 'rgba(255,255,255,0.85)',
@@ -489,6 +497,7 @@
       heroSubtitle: 'Your serene escape in Artemida',
       locationLong: 'Artemida, Attica — 10min from airport, 15min from Rafina port, 500m from beach',
       footerCopyright: '© 2025 Natalie Apartments · Artemida',
+      heroBackground: '', // URL for hero background image
       rooms: [
         { name: 'Deluxe Sea View', description: 'Spa bathroom, private balcony', price: '€190/night', image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500' },
         { name: 'Executive Suite', description: 'Separate living area, smart home', price: '€250/night', image: 'https://images.unsplash.com/photo-1590490360182-c33d577334cc?w=500' },
@@ -530,6 +539,16 @@
       document.getElementById('hero-subtitle').innerText = data.heroSubtitle || 'Your serene escape';
       document.getElementById('location-text').innerText = data.locationLong || 'Artemida, Attica';
       document.getElementById('footer-text').innerText = data.footerCopyright || '© 2025 Natalie Apartments';
+
+      // Hero background
+      const heroSection = document.querySelector('.hero');
+      if (data.heroBackground) {
+        heroSection.style.backgroundImage = `url('${data.heroBackground}')`;
+        heroSection.style.backgroundSize = 'cover';
+        heroSection.style.backgroundPosition = 'center';
+      } else {
+        heroSection.style.backgroundImage = 'none';
+      }
 
       // Rooms
       const roomsContainer = document.getElementById('rooms-container');
@@ -627,7 +646,7 @@
       else btt.classList.remove('visible');
     });
 
-    // ---------- ADMIN PANEL (NEW WINDOW) with full control over new sections ----------
+    // ---------- ADMIN PANEL with hero background upload ----------
     function openAdminPanel() {
       const adminWin = window.open('', 'adminPanel', 'width=1100,height=800,scrollbars=yes,resizable=yes');
       adminWin.document.write(`
@@ -657,6 +676,7 @@
           .gallery-thumb { display:inline-block; margin:0.5rem; position:relative; }
           .gallery-thumb button { position:absolute; top:0; right:0; background:#ef4444; color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; }
           .item-row { border:1px solid #ddd; border-radius:1rem; padding:1rem; margin-bottom:1rem; }
+          .bg-preview { max-width:200px; max-height:100px; margin-top:0.5rem; border-radius:1rem; }
         </style>
         </head>
         <body>
@@ -671,7 +691,7 @@
             <button class="tab-btn" data-tab="gallery">Gallery</button>
           </div>
           
-          <!-- GENERAL -->
+          <!-- GENERAL (with hero background upload) -->
           <div id="general-tab" class="tab-pane active">
             <h3>Style & text</h3>
             <div class="form-group"><label>Site name</label><input id="siteName"></div>
@@ -687,6 +707,18 @@
             <div><label>Hero subtitle</label><input id="heroSubtitle"></div>
             <div><label>Location text</label><input id="locationLong"></div>
             <div><label>Footer copyright</label><input id="footerCopyright"></div>
+            
+            <!-- Hero Background Upload -->
+            <div class="form-group">
+              <label>Hero Background Image (optional)</label>
+              <div class="image-upload" id="hero-upload-area">
+                <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                <p>Click to upload background image (max 2MB)</p>
+                <input type="file" id="heroUpload" accept="image/*" style="display:none;">
+              </div>
+              <div id="hero-preview"></div>
+              <input type="hidden" id="heroBackground">
+            </div>
             <button class="btn" onclick="saveGeneral()">Save general</button>
           </div>
           
@@ -761,6 +793,10 @@
                 document.getElementById('heroSubtitle').value = s.heroSubtitle || '';
                 document.getElementById('locationLong').value = s.locationLong || '';
                 document.getElementById('footerCopyright').value = s.footerCopyright || '';
+                document.getElementById('heroBackground').value = s.heroBackground || '';
+                if (s.heroBackground) {
+                  document.getElementById('hero-preview').innerHTML = \`<img src="\${s.heroBackground}" class="bg-preview">\`;
+                }
                 roomsData = s.rooms ? JSON.parse(JSON.stringify(s.rooms)) : [];
                 servicesData = s.services ? JSON.parse(JSON.stringify(s.services)) : [];
                 offersData = s.offers ? JSON.parse(JSON.stringify(s.offers)) : [];
@@ -781,8 +817,25 @@
                   heroSubtitle: document.getElementById('heroSubtitle').value,
                   locationLong: document.getElementById('locationLong').value,
                   footerCopyright: document.getElementById('footerCopyright').value,
+                  heroBackground: document.getElementById('heroBackground').value
                 }).then(() => alert('General saved'));
               };
+
+              // Hero background upload
+              document.addEventListener('DOMContentLoaded', () => {
+                const heroArea = document.getElementById('hero-upload-area');
+                const heroInput = document.getElementById('heroUpload');
+                heroArea.addEventListener('click', () => heroInput.click());
+                heroInput.addEventListener('change', function(e) {
+                  const f = e.target.files[0];
+                  if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
+                  const ref = storage.ref('hero/'+Date.now()+'_'+f.name);
+                  ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
+                    document.getElementById('heroBackground').value = url;
+                    document.getElementById('hero-preview').innerHTML = \`<img src="\${url}" class="bg-preview">\`;
+                  }).catch(alert);
+                });
+              });
 
               // Rooms
               function renderRooms() {
@@ -840,7 +893,7 @@
               window.removeTestimonial = function(idx) { testimonialsData.splice(idx,1); renderTestimonials(); };
               window.saveTestimonials = function() { settingsRef.update({testimonials: testimonialsData}).then(()=>alert('Testimonials saved')); };
 
-              // Gallery (same as before)
+              // Gallery
               function renderGallery() {
                 document.getElementById('gallery-list').innerHTML = galleryData.map((url, idx) => \`
                   <div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="removeGalleryItem(\${idx})">✕</button></div>\`).join('');
@@ -848,12 +901,12 @@
               window.removeGalleryItem = function(idx) { galleryData.splice(idx,1); renderGallery(); };
               window.saveGallery = function() { settingsRef.update({gallery: galleryData}).then(()=>alert('Gallery saved')); };
 
-              // Upload
+              // Gallery upload
               document.addEventListener('DOMContentLoaded', () => {
-                const up = document.getElementById('gallery-upload-area');
-                const inp = document.getElementById('galleryUpload');
-                up.addEventListener('click', () => inp.click());
-                inp.addEventListener('change', function(e) {
+                const galArea = document.getElementById('gallery-upload-area');
+                const galInput = document.getElementById('galleryUpload');
+                galArea.addEventListener('click', () => galInput.click());
+                galInput.addEventListener('change', function(e) {
                   const f = e.target.files[0];
                   if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
                   const ref = storage.ref('gallery/'+Date.now()+'_'+f.name);
