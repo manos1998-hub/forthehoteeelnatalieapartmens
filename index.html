@@ -12,7 +12,7 @@
   <!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
   <style>
-    /* ----- CSS RESET & VARIABLES (will be dynamically updated) ----- */
+    /* ----- CSS RESET & VARIABLES ----- */
     * {
       margin: 0;
       padding: 0;
@@ -33,185 +33,84 @@
       --footer-bg: #0f172a;
       --footer-text: #f1f5f9;
       --card-bg: rgba(255,255,255,0.7);
-      --text-dark: #0b1e33;
       --accent: #3b82f6;
       --glass-border: rgba(255,255,255,0.2);
     }
     .glass-card {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--glass-border);
       border-radius: 2rem;
       box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25);
     }
-    .container {
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 2rem 2rem;
-    }
+    .container { max-width: 1300px; margin: 0 auto; padding: 2rem; }
     header {
       background: var(--header-bg);
       backdrop-filter: blur(16px);
-      position: sticky;
-      top:0; z-index:50;
+      position: sticky; top:0; z-index:50;
       border-bottom: 1px solid rgba(255,255,255,0.3);
       padding: 0.8rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap;
     }
     .logo h1 {
-      font-weight: 700;
-      font-size: 1.9rem;
+      font-weight: 700; font-size: 1.9rem;
       background: linear-gradient(145deg, #1e3c72, #2a5298);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
     .nav-links a {
-      margin: 0 1.2rem;
-      text-decoration: none;
-      font-weight: 600;
-      color: #1e293b;
-      transition: 0.2s;
+      margin: 0 1.2rem; text-decoration: none; font-weight: 600; color: #1e293b; transition: 0.2s;
     }
     .nav-links a:hover { color: var(--accent); }
     .hero {
-      min-height: 85vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
+      min-height: 85vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem;
     }
-    .hero-content {
-      max-width: 900px;
-      padding: 3.5rem 2.5rem;
-    }
-    .hero-content h2 {
-      font-size: 4rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      line-height: 1.2;
-    }
+    .hero-content { max-width: 900px; padding: 3.5rem 2.5rem; }
+    .hero-content h2 { font-size: 4rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2; }
     .hero-location {
-      font-size: 1.5rem;
-      font-weight: 300;
-      background: rgba(255,255,255,0.2);
-      display: inline-block;
-      padding: 0.5rem 2rem;
-      border-radius: 60px;
-      backdrop-filter: blur(4px);
-      margin: 1.5rem 0;
+      font-size: 1.5rem; font-weight: 300; background: rgba(255,255,255,0.2); display: inline-block;
+      padding: 0.5rem 2rem; border-radius: 60px; backdrop-filter: blur(4px); margin: 1.5rem 0;
     }
-    .distance-badge {
-      display: flex;
-      gap: 2rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 2rem 0;
-    }
-    .distance-item {
-      background: white;
-      padding: 0.7rem 1.8rem;
-      border-radius: 40px;
-      font-weight: 600;
-      box-shadow: 0 10px 20px -10px rgba(0,0,0,0.2);
-    }
+    .distance-badge { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin: 2rem 0; }
+    .distance-item { background: white; padding: 0.7rem 1.8rem; border-radius: 40px; font-weight: 600; box-shadow: 0 10px 20px -10px rgba(0,0,0,0.2); }
     .btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.9rem 2.4rem;
-      border-radius: 50px;
-      font-weight: 600;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: 0.2s;
+      background: var(--accent); color: white; border: none; padding: 0.9rem 2.4rem; border-radius: 50px;
+      font-weight: 600; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
     }
-    section {
-      margin: 4rem 0;
-    }
+    section { margin: 4rem 0; }
     .section-title {
-      font-size: 2.8rem;
-      font-weight: 700;
-      margin-bottom: 2.5rem;
-      position: relative;
-      display: inline-block;
+      font-size: 2.8rem; font-weight: 700; margin-bottom: 2.5rem; position: relative; display: inline-block;
     }
     .section-title:after {
-      content: '';
-      position: absolute;
-      bottom: -10px; left: 0;
-      width: 70%; height: 4px;
-      background: var(--accent);
-      border-radius: 4px;
+      content: ''; position: absolute; bottom: -10px; left: 0; width: 70%; height: 4px; background: var(--accent); border-radius: 4px;
     }
     .rooms-grid, .services-grid, .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;
     }
     .room-card, .service-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(8px);
-      border-radius: 2rem;
-      padding: 1.8rem;
-      transition: all 0.3s;
-      border: 1px solid var(--glass-border);
+      background: var(--card-bg); backdrop-filter: blur(8px); border-radius: 2rem; padding: 1.8rem;
+      transition: all 0.3s; border: 1px solid var(--glass-border);
     }
     .room-card:hover { transform: translateY(-10px); }
-    .room-card img {
-      width: 100%; height: 220px;
-      object-fit: cover;
-      border-radius: 1.4rem;
-      margin-bottom: 1.2rem;
-    }
-    .service-card i {
-      font-size: 3rem;
-      color: var(--accent);
-      margin-bottom: 1rem;
-    }
-    .gallery-item {
-      border-radius: 2rem;
-      overflow: hidden;
-      aspect-ratio: 1/1;
-    }
-    .gallery-item img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: 0.4s;
-    }
+    .room-card img { width: 100%; height: 220px; object-fit: cover; border-radius: 1.4rem; margin-bottom: 1.2rem; }
+    .service-card i { font-size: 3rem; color: var(--accent); margin-bottom: 1rem; }
+    .gallery-item { border-radius: 2rem; overflow: hidden; aspect-ratio: 1/1; }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
     .gallery-item:hover img { transform: scale(1.05); }
     footer {
-      background: var(--footer-bg);
-      color: var(--footer-text);
-      padding: 2.5rem 2rem;
-      border-radius: 3rem 3rem 0 0;
-      margin-top: 5rem;
+      background: var(--footer-bg); color: var(--footer-text); padding: 2.5rem 2rem;
+      border-radius: 3rem 3rem 0 0; margin-top: 5rem;
     }
     .admin-trigger {
-      position: fixed;
-      bottom: 30px; right: 30px;
-      background: #0f172a;
-      color: white;
-      width: 60px; height: 60px;
-      border-radius: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      cursor: pointer;
-      border: 2px solid rgba(255,255,255,0.2);
-      z-index: 100;
-      transition: 0.2s;
+      position: fixed; bottom: 30px; right: 30px; background: #0f172a; color: white; width: 60px; height: 60px;
+      border-radius: 60px; display: flex; align-items: center; justify-content: center; font-size: 2rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; border: 2px solid rgba(255,255,255,0.2);
+      z-index: 100; transition: 0.2s;
     }
     .admin-trigger:hover { transform: scale(1.1); background: #1e293b; }
     #loader {
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background: white; display: flex; align-items: center; justify-content: center; z-index: 999;
+      position: fixed; top:0; left:0; width:100%; height:100%; background: white;
+      display: flex; align-items: center; justify-content: center; z-index: 999;
     }
   </style>
 </head>
@@ -220,7 +119,7 @@
 
   <header id="main-header">
     <div class="logo"><h1 id="site-title">Natalie Apartments</h1></div>
-    <div class="nav-links" id="nav-links">
+    <div class="nav-links">
       <a href="#home">Home</a>
       <a href="#rooms">Rooms</a>
       <a href="#services">Services</a>
@@ -231,11 +130,11 @@
 
   <main>
     <section id="home" class="hero">
-      <div class="hero-content glass-card" id="hero-section">
+      <div class="hero-content glass-card">
         <h2 id="hero-title">Welcom To<br>Natalie Aparments</h2>
         <p id="hero-subtitle" style="font-size:1.4rem;">Your serene escape in Artemida</p>
         <div class="hero-location" id="location-text">Artemida, Attica</div>
-        <div class="distance-badge" id="distances">
+        <div class="distance-badge">
           <span class="distance-item"><i class="fas fa-plane"></i> 10min airport</span>
           <span class="distance-item"><i class="fas fa-ship"></i> 15min Rafina</span>
           <span class="distance-item"><i class="fas fa-umbrella-beach"></i> 500m beach</span>
@@ -265,7 +164,7 @@
         <p><i class="fas fa-map-pin"></i> Artemida, Attiki 19016, Greece</p>
         <p><i class="fas fa-phone-alt"></i> +30 123 456 7890</p>
         <p><i class="fas fa-envelope"></i> stay@natalieapts.gr</p>
-        <div style="margin-top:1.5rem; border-radius:2rem; overflow:hidden; height:300px; background:#ddd;" id="map-placeholder">
+        <div style="margin-top:1.5rem; border-radius:2rem; overflow:hidden; height:300px;">
           <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d50330.51562113916!2d23.981355!3d37.967811!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14a1a4b5b5b5b5b5%3A0x0!2zMzcuOTY3OCwgMjMuOTgxNA!5e0!3m2!1sen!2sgr!4v1710000000000!5m2!1sen!2sgr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
         </div>
       </div>
@@ -284,7 +183,7 @@
   </div>
 
   <script>
-    // ---------- FIREBASE ----------
+    // ---------- FIREBASE INIT ----------
     const firebaseConfig = {
       apiKey: "AIzaSyBjtwQeSKpK4Ppiv9y1-MdYFe0MDoFcI0k",
       authDomain: "myhoteeel.firebaseapp.com",
@@ -386,7 +285,7 @@
 
     settingsDocRef.onSnapshot(doc => { if (doc.exists) applySettings(doc.data()); });
 
-    // ---------- ADMIN PANEL (NEW WINDOW) - FULLY FIXED ----------
+    // ---------- ADMIN PANEL (NEW WINDOW) - FULLY FIXED with Firebase ready check ----------
     function openAdminPanel() {
       const adminWin = window.open('', 'adminPanel', 'width=1000,height=750,scrollbars=yes,resizable=yes');
       adminWin.document.write(`
@@ -475,147 +374,159 @@
           </div>
         </div>
 
+        <!-- Firebase script -->
+        <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"><\/script>
         <script>
-          // Firebase init (same config)
-          const fbConfig = ${JSON.stringify(firebaseConfig)};
-          firebase.initializeApp(fbConfig);
-          const db = firebase.firestore();
-          const storage = firebase.storage();
-          const settingsRef = db.collection('settings').doc('general');
-
-          // Use var for global accessibility in inline handlers
-          var roomsData = [];
-          var servicesData = [];
-          var galleryData = [];
-
-          // Load settings and populate forms
-          settingsRef.get().then((doc) => {
-            const s = doc.exists ? doc.data() : {};
-            document.getElementById('siteName').value = s.siteName || '';
-            document.getElementById('gradStart').value = s.gradStart || '#f8fafc';
-            document.getElementById('gradEnd').value = s.gradEnd || '#e2e8f0';
-            document.getElementById('headerColor').value = s.headerColor || 'rgba(255,255,255,0.85)';
-            document.getElementById('footerBg').value = s.footerBg || '#0f172a';
-            document.getElementById('heroTitle').value = s.heroTitle || '';
-            document.getElementById('heroSubtitle').value = s.heroSubtitle || '';
-            document.getElementById('locationLong').value = s.locationLong || '';
-            document.getElementById('footerCopyright').value = s.footerCopyright || '';
-            roomsData = s.rooms ? JSON.parse(JSON.stringify(s.rooms)) : [];
-            servicesData = s.services ? JSON.parse(JSON.stringify(s.services)) : [];
-            galleryData = s.gallery ? JSON.parse(JSON.stringify(s.gallery)) : [];
-            renderRooms();
-            renderServices();
-            renderGallery();
-          });
-
-          // ---------- GENERAL ----------
-          window.saveGeneral = function() {
-            const updated = {
-              siteName: document.getElementById('siteName').value,
-              gradStart: document.getElementById('gradStart').value,
-              gradEnd: document.getElementById('gradEnd').value,
-              headerColor: document.getElementById('headerColor').value,
-              footerBg: document.getElementById('footerBg').value,
-              heroTitle: document.getElementById('heroTitle').value,
-              heroSubtitle: document.getElementById('heroSubtitle').value,
-              locationLong: document.getElementById('locationLong').value,
-              footerCopyright: document.getElementById('footerCopyright').value,
-            };
-            settingsRef.update(updated).then(() => alert('General saved'));
-          };
-
-          // ---------- ROOMS ----------
-          function renderRooms() {
-            const container = document.getElementById('rooms-list');
-            container.innerHTML = roomsData.map((r, idx) => \`
-              <div style="border:1px solid #ddd; border-radius:1rem; padding:1rem; margin-bottom:1rem;">
-                <input placeholder="Name" value="\${r.name || ''}" onchange="roomsData[\${idx}].name = this.value">
-                <input placeholder="Description" value="\${r.description || ''}" onchange="roomsData[\${idx}].description = this.value">
-                <input placeholder="Price" value="\${r.price || ''}" onchange="roomsData[\${idx}].price = this.value">
-                <input placeholder="Image URL" value="\${r.image || ''}" onchange="roomsData[\${idx}].image = this.value">
-                <button class="btn-danger" onclick="removeRoom(\${idx})">Remove</button>
-              </div>\`).join('');
-          }
-          window.addRoom = function() {
-            roomsData.push({ name: '', description: '', price: '', image: '' });
-            renderRooms();
-          };
-          window.removeRoom = function(idx) {
-            roomsData.splice(idx, 1);
-            renderRooms();
-          };
-          window.saveRooms = function() {
-            settingsRef.update({ rooms: roomsData }).then(() => alert('Rooms saved'));
-          };
-
-          // ---------- SERVICES ----------
-          function renderServices() {
-            const container = document.getElementById('services-list');
-            container.innerHTML = servicesData.map((s, idx) => \`
-              <div style="border:1px solid #ddd; padding:1rem; margin:0.5rem 0;">
-                <input value="\${s.name || ''}" placeholder="Service name" onchange="servicesData[\${idx}].name = this.value">
-                <input value="\${s.icon || ''}" placeholder="icon name (e.g. wifi)" onchange="servicesData[\${idx}].icon = this.value">
-                <button class="btn-danger" onclick="removeService(\${idx})">remove</button>
-              </div>\`).join('');
-          }
-          window.addService = function() {
-            servicesData.push({ name: '', icon: 'star' });
-            renderServices();
-          };
-          window.removeService = function(idx) {
-            servicesData.splice(idx, 1);
-            renderServices();
-          };
-          window.saveServices = function() {
-            settingsRef.update({ services: servicesData }).then(() => alert('Services saved'));
-          };
-
-          // ---------- GALLERY ----------
-          function renderGallery() {
-            const container = document.getElementById('gallery-list');
-            container.innerHTML = galleryData.map((url, idx) => \`
-              <div class="gallery-thumb">
-                <img src="\${url}" class="preview-img">
-                <button onclick="removeGalleryItem(\${idx})">✕</button>
-              </div>\`).join('');
-          }
-          window.removeGalleryItem = function(idx) {
-            galleryData.splice(idx, 1);
-            renderGallery();
-          };
-          window.saveGallery = function() {
-            settingsRef.update({ gallery: galleryData }).then(() => alert('Gallery saved'));
-          };
-
-          // Upload handler
-          document.addEventListener('DOMContentLoaded', function() {
-            const uploadArea = document.getElementById('gallery-upload-area');
-            const fileInput = document.getElementById('galleryUpload');
-            uploadArea.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', function(e) {
-              const file = e.target.files[0];
-              if (!file) return;
-              if (file.size > 2 * 1024 * 1024) {
-                alert('Max 2MB');
+          // Wait for Firebase to be ready (fixes "firebase is not defined")
+          (function() {
+            var initWhenReady = function() {
+              if (typeof firebase === 'undefined') {
+                setTimeout(initWhenReady, 50);
                 return;
               }
-              const ref = storage.ref('gallery/' + Date.now() + '_' + file.name);
-              ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
-                galleryData.push(url);
-                renderGallery();
-              }).catch(alert);
-            });
-          });
+              // Firebase is now available
+              const fbConfig = ${JSON.stringify(firebaseConfig)};
+              firebase.initializeApp(fbConfig);
+              const db = firebase.firestore();
+              const storage = firebase.storage();
+              const settingsRef = db.collection('settings').doc('general');
 
-          // Tab switching
-          document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-              e.target.classList.add('active');
-              document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-              document.getElementById(e.target.dataset.tab + '-tab').classList.add('active');
-            });
-          });
+              // Global data arrays (var for global access)
+              var roomsData = [];
+              var servicesData = [];
+              var galleryData = [];
+
+              // Load settings and populate forms
+              settingsRef.get().then((doc) => {
+                const s = doc.exists ? doc.data() : {};
+                document.getElementById('siteName').value = s.siteName || '';
+                document.getElementById('gradStart').value = s.gradStart || '#f8fafc';
+                document.getElementById('gradEnd').value = s.gradEnd || '#e2e8f0';
+                document.getElementById('headerColor').value = s.headerColor || 'rgba(255,255,255,0.85)';
+                document.getElementById('footerBg').value = s.footerBg || '#0f172a';
+                document.getElementById('heroTitle').value = s.heroTitle || '';
+                document.getElementById('heroSubtitle').value = s.heroSubtitle || '';
+                document.getElementById('locationLong').value = s.locationLong || '';
+                document.getElementById('footerCopyright').value = s.footerCopyright || '';
+                roomsData = s.rooms ? JSON.parse(JSON.stringify(s.rooms)) : [];
+                servicesData = s.services ? JSON.parse(JSON.stringify(s.services)) : [];
+                galleryData = s.gallery ? JSON.parse(JSON.stringify(s.gallery)) : [];
+                renderRooms();
+                renderServices();
+                renderGallery();
+              });
+
+              // ---------- GENERAL ----------
+              window.saveGeneral = function() {
+                const updated = {
+                  siteName: document.getElementById('siteName').value,
+                  gradStart: document.getElementById('gradStart').value,
+                  gradEnd: document.getElementById('gradEnd').value,
+                  headerColor: document.getElementById('headerColor').value,
+                  footerBg: document.getElementById('footerBg').value,
+                  heroTitle: document.getElementById('heroTitle').value,
+                  heroSubtitle: document.getElementById('heroSubtitle').value,
+                  locationLong: document.getElementById('locationLong').value,
+                  footerCopyright: document.getElementById('footerCopyright').value,
+                };
+                settingsRef.update(updated).then(() => alert('General saved'));
+              };
+
+              // ---------- ROOMS ----------
+              function renderRooms() {
+                const container = document.getElementById('rooms-list');
+                container.innerHTML = roomsData.map((r, idx) => \`
+                  <div style="border:1px solid #ddd; border-radius:1rem; padding:1rem; margin-bottom:1rem;">
+                    <input placeholder="Name" value="\${r.name || ''}" onchange="roomsData[\${idx}].name = this.value">
+                    <input placeholder="Description" value="\${r.description || ''}" onchange="roomsData[\${idx}].description = this.value">
+                    <input placeholder="Price" value="\${r.price || ''}" onchange="roomsData[\${idx}].price = this.value">
+                    <input placeholder="Image URL" value="\${r.image || ''}" onchange="roomsData[\${idx}].image = this.value">
+                    <button class="btn-danger" onclick="removeRoom(\${idx})">Remove</button>
+                  </div>\`).join('');
+              }
+              window.addRoom = function() {
+                roomsData.push({ name: '', description: '', price: '', image: '' });
+                renderRooms();
+              };
+              window.removeRoom = function(idx) {
+                roomsData.splice(idx, 1);
+                renderRooms();
+              };
+              window.saveRooms = function() {
+                settingsRef.update({ rooms: roomsData }).then(() => alert('Rooms saved'));
+              };
+
+              // ---------- SERVICES ----------
+              function renderServices() {
+                const container = document.getElementById('services-list');
+                container.innerHTML = servicesData.map((s, idx) => \`
+                  <div style="border:1px solid #ddd; padding:1rem; margin:0.5rem 0;">
+                    <input value="\${s.name || ''}" placeholder="Service name" onchange="servicesData[\${idx}].name = this.value">
+                    <input value="\${s.icon || ''}" placeholder="icon name (e.g. wifi)" onchange="servicesData[\${idx}].icon = this.value">
+                    <button class="btn-danger" onclick="removeService(\${idx})">remove</button>
+                  </div>\`).join('');
+              }
+              window.addService = function() {
+                servicesData.push({ name: '', icon: 'star' });
+                renderServices();
+              };
+              window.removeService = function(idx) {
+                servicesData.splice(idx, 1);
+                renderServices();
+              };
+              window.saveServices = function() {
+                settingsRef.update({ services: servicesData }).then(() => alert('Services saved'));
+              };
+
+              // ---------- GALLERY ----------
+              function renderGallery() {
+                const container = document.getElementById('gallery-list');
+                container.innerHTML = galleryData.map((url, idx) => \`
+                  <div class="gallery-thumb">
+                    <img src="\${url}" class="preview-img">
+                    <button onclick="removeGalleryItem(\${idx})">✕</button>
+                  </div>\`).join('');
+              }
+              window.removeGalleryItem = function(idx) {
+                galleryData.splice(idx, 1);
+                renderGallery();
+              };
+              window.saveGallery = function() {
+                settingsRef.update({ gallery: galleryData }).then(() => alert('Gallery saved'));
+              };
+
+              // Upload handler
+              document.addEventListener('DOMContentLoaded', function() {
+                const uploadArea = document.getElementById('gallery-upload-area');
+                const fileInput = document.getElementById('galleryUpload');
+                uploadArea.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', function(e) {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  if (file.size > 2 * 1024 * 1024) {
+                    alert('Max 2MB');
+                    return;
+                  }
+                  const ref = storage.ref('gallery/' + Date.now() + '_' + file.name);
+                  ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
+                    galleryData.push(url);
+                    renderGallery();
+                  }).catch(alert);
+                });
+              });
+
+              // Tab switching
+              document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                  e.target.classList.add('active');
+                  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                  document.getElementById(e.target.dataset.tab + '-tab').classList.add('active');
+                });
+              });
+            };
+            initWhenReady();
+          })();
         <\/script>
         </body>
         </html>
