@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Natalie Apartments · Artemida</title>
-  <!-- Fonts & Icons -->
+  <!-- Fonts, Icons & Animations -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
   <!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
   <style>
-    /* ----- CSS RESET & VARIABLES ----- */
+    /* ---------- RESET & VARIABLES ---------- */
     * {
       margin: 0;
       padding: 0;
@@ -21,10 +21,10 @@
     }
     body {
       line-height: 1.6;
-      transition: background 0.3s, color 0.3s;
-      min-height: 100vh;
+      overflow-x: hidden;
       background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
       color: #1e1e2f;
+      transition: background 0.5s ease;
     }
     :root {
       --grad-start: #f8fafc;
@@ -34,105 +34,353 @@
       --footer-text: #f1f5f9;
       --card-bg: rgba(255,255,255,0.7);
       --accent: #3b82f6;
+      --accent-glow: rgba(59,130,246,0.3);
       --glass-border: rgba(255,255,255,0.2);
+      --shadow-xl: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+    /* ---------- ANIMATIONS ---------- */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up {
+      animation: fadeInUp 0.8s ease forwards;
     }
     .glass-card {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
       border: 1px solid var(--glass-border);
       border-radius: 2rem;
-      box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25);
+      box-shadow: var(--shadow-xl);
+      transition: transform 0.3s, box-shadow 0.3s;
     }
-    .container { max-width: 1300px; margin: 0 auto; padding: 2rem; }
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 30px 60px -15px rgba(0,0,0,0.3);
+    }
+    /* ---------- LAYOUT ---------- */
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    /* header */
     header {
       background: var(--header-bg);
       backdrop-filter: blur(16px);
-      position: sticky; top:0; z-index:50;
+      position: sticky;
+      top: 0; z-index: 50;
       border-bottom: 1px solid rgba(255,255,255,0.3);
       padding: 0.8rem 2rem;
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       flex-wrap: wrap;
     }
     .logo h1 {
-      font-weight: 700; font-size: 1.9rem;
-      background: linear-gradient(145deg, #1e3c72, #2a5298);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      font-size: 2rem;
+      background: linear-gradient(145deg, #1e3c72, #2a5298, #3b82f6);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientShift 6s ease infinite;
     }
     .nav-links a {
-      margin: 0 1.2rem; text-decoration: none; font-weight: 600; color: #1e293b; transition: 0.2s;
+      margin: 0 1.2rem;
+      text-decoration: none;
+      font-weight: 600;
+      color: #1e293b;
+      transition: 0.2s;
+      position: relative;
     }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px; left: 0;
+      width: 0%; height: 2px;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+    .nav-links a:hover::after { width: 100%; }
     .nav-links a:hover { color: var(--accent); }
+    /* hero */
     .hero {
-      min-height: 85vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
     }
-    .hero-content { max-width: 900px; padding: 3.5rem 2.5rem; }
-    .hero-content h2 { font-size: 4rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2; }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      animation: float 10s infinite;
+      z-index: -1;
+    }
+    .hero-content {
+      max-width: 1000px;
+      padding: 4rem 3rem;
+    }
+    .hero-content h2 {
+      font-size: 4.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+      text-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
     .hero-location {
-      font-size: 1.5rem; font-weight: 300; background: rgba(255,255,255,0.2); display: inline-block;
-      padding: 0.5rem 2rem; border-radius: 60px; backdrop-filter: blur(4px); margin: 1.5rem 0;
+      font-size: 1.5rem;
+      background: rgba(255,255,255,0.2);
+      display: inline-block;
+      padding: 0.7rem 2.5rem;
+      border-radius: 60px;
+      backdrop-filter: blur(4px);
+      margin: 2rem 0;
     }
-    .distance-badge { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin: 2rem 0; }
-    .distance-item { background: white; padding: 0.7rem 1.8rem; border-radius: 40px; font-weight: 600; box-shadow: 0 10px 20px -10px rgba(0,0,0,0.2); }
+    .distance-badge {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 2rem 0;
+    }
+    .distance-item {
+      background: white;
+      padding: 0.7rem 1.8rem;
+      border-radius: 40px;
+      font-weight: 600;
+      box-shadow: 0 10px 20px -10px rgba(0,0,0,0.2);
+      transition: all 0.3s;
+    }
+    .distance-item:hover { transform: scale(1.05); background: var(--accent); color: white; }
     .btn {
-      background: var(--accent); color: white; border: none; padding: 0.9rem 2.4rem; border-radius: 50px;
-      font-weight: 600; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.9rem 2.8rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 10px 20px -5px var(--accent-glow);
     }
-    section { margin: 4rem 0; }
+    .btn:hover { transform: scale(1.05); box-shadow: 0 15px 30px -5px var(--accent); }
+    /* sections */
+    section {
+      margin: 5rem 0;
+    }
     .section-title {
-      font-size: 2.8rem; font-weight: 700; margin-bottom: 2.5rem; position: relative; display: inline-block;
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 3rem;
+      position: relative;
+      display: inline-block;
     }
     .section-title:after {
-      content: ''; position: absolute; bottom: -10px; left: 0; width: 70%; height: 4px; background: var(--accent); border-radius: 4px;
+      content: '';
+      position: absolute;
+      bottom: -10px; left: 0;
+      width: 80%; height: 5px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      border-radius: 4px;
     }
-    .rooms-grid, .services-grid, .gallery-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;
+    /* cards */
+    .rooms-grid, .services-grid, .gallery-grid, .offers-grid, .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
     }
-    .room-card, .service-card {
-      background: var(--card-bg); backdrop-filter: blur(8px); border-radius: 2rem; padding: 1.8rem;
-      transition: all 0.3s; border: 1px solid var(--glass-border);
+    .room-card, .service-card, .offer-card, .testimonial-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      border-radius: 2rem;
+      padding: 1.8rem;
+      transition: all 0.3s;
+      border: 1px solid var(--glass-border);
     }
-    .room-card:hover { transform: translateY(-10px); }
-    .room-card img { width: 100%; height: 220px; object-fit: cover; border-radius: 1.4rem; margin-bottom: 1.2rem; }
-    .service-card i { font-size: 3rem; color: var(--accent); margin-bottom: 1rem; }
-    .gallery-item { border-radius: 2rem; overflow: hidden; aspect-ratio: 1/1; }
-    .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
-    .gallery-item:hover img { transform: scale(1.05); }
+    .room-card:hover, .service-card:hover, .offer-card:hover, .testimonial-card:hover {
+      transform: translateY(-10px) scale(1.02);
+    }
+    .room-card img {
+      width: 100%; height: 220px;
+      object-fit: cover;
+      border-radius: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+    .service-card i {
+      font-size: 3rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 5px 10px var(--accent-glow));
+    }
+    .gallery-item {
+      border-radius: 2rem;
+      overflow: hidden;
+      aspect-ratio: 1/1;
+      box-shadow: var(--shadow-xl);
+    }
+    .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s;
+    }
+    .gallery-item:hover img { transform: scale(1.1); }
+    .testimonial-card {
+      text-align: center;
+    }
+    .testimonial-card i.fa-quote-left {
+      font-size: 2rem;
+      color: var(--accent);
+      opacity: 0.5;
+      margin-bottom: 0.5rem;
+    }
+    .testimonial-card h4 {
+      margin-top: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .offer-card .btn-small {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 30px;
+      margin-top: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    /* floating booking */
+    .booking-float {
+      position: fixed;
+      bottom: 100px; right: 30px;
+      background: white;
+      border-radius: 60px;
+      padding: 0.8rem 1.5rem;
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      z-index: 99;
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(8px);
+      transition: 0.3s;
+    }
+    .booking-float:hover { transform: scale(1.05); }
+    .booking-float input {
+      border: none;
+      background: transparent;
+      padding: 0.3rem;
+      font-weight: 500;
+      width: 110px;
+    }
+    .booking-float button {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    /* footer */
     footer {
-      background: var(--footer-bg); color: var(--footer-text); padding: 2.5rem 2rem;
-      border-radius: 3rem 3rem 0 0; margin-top: 5rem;
+      background: var(--footer-bg);
+      color: var(--footer-text);
+      padding: 3rem 2rem;
+      border-radius: 4rem 4rem 0 0;
+      margin-top: 5rem;
     }
     .admin-trigger {
-      position: fixed; bottom: 30px; right: 30px; background: #0f172a; color: white; width: 60px; height: 60px;
-      border-radius: 60px; display: flex; align-items: center; justify-content: center; font-size: 2rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; border: 2px solid rgba(255,255,255,0.2);
-      z-index: 100; transition: 0.2s;
+      position: fixed;
+      bottom: 30px; right: 30px;
+      background: #0f172a;
+      color: white;
+      width: 60px; height: 60px;
+      border-radius: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.2);
+      z-index: 100;
+      transition: 0.2s;
     }
-    .admin-trigger:hover { transform: scale(1.1); background: #1e293b; }
+    .admin-trigger:hover { transform: scale(1.1) rotate(15deg); background: #1e293b; }
     #loader {
-      position: fixed; top:0; left:0; width:100%; height:100%; background: white;
-      display: flex; align-items: center; justify-content: center; z-index: 999;
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: white; display: flex; align-items: center; justify-content: center; z-index: 999;
     }
+    /* scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease;
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 30px; left: 30px;
+      background: var(--accent);
+      color: white;
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0;
+      transition: 0.3s;
+      border: none;
+      z-index: 98;
+    }
+    .back-to-top.visible { opacity: 1; }
   </style>
 </head>
 <body>
   <div id="loader"><i class="fas fa-spinner fa-pulse fa-3x"></i></div>
-
   <header id="main-header">
     <div class="logo"><h1 id="site-title">Natalie Apartments</h1></div>
     <div class="nav-links">
       <a href="#home">Home</a>
       <a href="#rooms">Rooms</a>
       <a href="#services">Services</a>
+      <a href="#offers">Offers</a>
+      <a href="#testimonials">Testimonials</a>
       <a href="#gallery">Gallery</a>
       <a href="#contact">Contact</a>
     </div>
   </header>
 
   <main>
+    <!-- HERO -->
     <section id="home" class="hero">
-      <div class="hero-content glass-card">
+      <div class="hero-content glass-card reveal">
         <h2 id="hero-title">Welcom To<br>Natalie Aparments</h2>
-        <p id="hero-subtitle" style="font-size:1.4rem;">Your serene escape in Artemida</p>
+        <p id="hero-subtitle" style="font-size:1.6rem;">Your serene escape in Artemida</p>
         <div class="hero-location" id="location-text">Artemida, Attica</div>
         <div class="distance-badge">
           <span class="distance-item"><i class="fas fa-plane"></i> 10min airport</span>
@@ -143,23 +391,39 @@
       </div>
     </section>
 
+    <!-- ROOMS -->
     <section id="rooms" class="container">
-      <h2 class="section-title">Luxury rooms</h2>
+      <h2 class="section-title reveal">Luxury rooms</h2>
       <div class="rooms-grid" id="rooms-container"></div>
     </section>
 
+    <!-- SERVICES -->
     <section id="services" class="container">
-      <h2 class="section-title">Unforgettable services</h2>
+      <h2 class="section-title reveal">Unforgettable services</h2>
       <div class="services-grid" id="services-container"></div>
     </section>
 
+    <!-- SPECIAL OFFERS (dynamic) -->
+    <section id="offers" class="container">
+      <h2 class="section-title reveal">Special offers</h2>
+      <div class="offers-grid" id="offers-container"></div>
+    </section>
+
+    <!-- TESTIMONIALS (dynamic) -->
+    <section id="testimonials" class="container">
+      <h2 class="section-title reveal">What our guests say</h2>
+      <div class="testimonials-grid" id="testimonials-container"></div>
+    </section>
+
+    <!-- GALLERY -->
     <section id="gallery" class="container">
-      <h2 class="section-title">Moments</h2>
+      <h2 class="section-title reveal">Moments</h2>
       <div class="gallery-grid" id="gallery-container"></div>
     </section>
 
+    <!-- CONTACT -->
     <section id="contact" class="container">
-      <h2 class="section-title">Find us</h2>
+      <h2 class="section-title reveal">Find us</h2>
       <div class="glass-card" style="padding:2rem; text-align:center;">
         <p><i class="fas fa-map-pin"></i> Artemida, Attiki 19016, Greece</p>
         <p><i class="fas fa-phone-alt"></i> +30 123 456 7890</p>
@@ -174,10 +438,26 @@
   <footer id="main-footer">
     <div class="container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
       <span id="footer-text">© 2025 Natalie Apartments · Artemida</span>
-      <span><i class="fab fa-instagram"></i> <i class="fab fa-facebook"></i> <i class="fab fa-tripadvisor"></i></span>
+      <span style="font-size:1.8rem;">
+        <i class="fab fa-instagram" style="margin:0 0.5rem; cursor:pointer;"></i>
+        <i class="fab fa-facebook" style="margin:0 0.5rem; cursor:pointer;"></i>
+        <i class="fab fa-tripadvisor" style="margin:0 0.5rem; cursor:pointer;"></i>
+      </span>
     </div>
   </footer>
 
+  <!-- FLOATING BOOKING WIDGET -->
+  <div class="booking-float">
+    <i class="fas fa-calendar-alt" style="color:var(--accent);"></i>
+    <input type="text" placeholder="Check-in" onfocus="(this.type='date')">
+    <input type="text" placeholder="Check-out" onfocus="(this.type='date')">
+    <button>Book</button>
+  </div>
+
+  <!-- BACK TO TOP -->
+  <div class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-arrow-up"></i></div>
+
+  <!-- ADMIN TRIGGER -->
   <div class="admin-trigger" onclick="openAdminPanel()" title="admin panel">
     <i class="fas fa-crown"></i>
   </div>
@@ -197,6 +477,7 @@
     const storage = firebase.storage();
     const settingsDocRef = db.collection('settings').doc('general');
 
+    // Default settings (including new sections)
     const defaultSettings = {
       siteName: 'Natalie Apartments',
       headerColor: 'rgba(255,255,255,0.85)',
@@ -219,6 +500,14 @@
         { name: 'Spa & wellness', icon: 'spa' },
         { name: 'Breakfast included', icon: 'utensils' }
       ],
+      offers: [
+        { title: 'Early bird discount', description: 'Book 30 days ahead and get 20% off', btnText: 'Grab deal' },
+        { title: 'Romantic getaway', description: 'Champagne & spa treatment included', btnText: 'Explore' }
+      ],
+      testimonials: [
+        { name: 'Maria K.', text: 'Amazing location, spotless rooms. The host was incredibly helpful!', rating: 5 },
+        { name: 'John D.', text: 'Perfect for a relaxing vacation. Close to the beach and very quiet.', rating: 5 }
+      ],
       gallery: [
         'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=500',
         'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=500',
@@ -227,6 +516,7 @@
       ]
     };
 
+    // Apply settings to DOM
     function applySettings(data) {
       if (!data) return;
       document.documentElement.style.setProperty('--grad-start', data.gradStart || '#f8fafc');
@@ -241,10 +531,11 @@
       document.getElementById('location-text').innerText = data.locationLong || 'Artemida, Attica';
       document.getElementById('footer-text').innerText = data.footerCopyright || '© 2025 Natalie Apartments';
 
+      // Rooms
       const roomsContainer = document.getElementById('rooms-container');
       if (data.rooms && Array.isArray(data.rooms)) {
         roomsContainer.innerHTML = data.rooms.map(r => `
-          <div class="room-card">
+          <div class="room-card glass-card">
             <img src="${r.image || 'https://via.placeholder.com/400'}" loading="lazy">
             <h3>${r.name}</h3>
             <p>${r.description || ''}</p>
@@ -253,20 +544,47 @@
         `).join('');
       }
 
+      // Services
       const servicesContainer = document.getElementById('services-container');
       if (data.services && Array.isArray(data.services)) {
         servicesContainer.innerHTML = data.services.map(s => `
-          <div class="service-card">
+          <div class="service-card glass-card">
             <i class="fas fa-${s.icon || 'star'}"></i>
             <h3>${s.name}</h3>
           </div>
         `).join('');
       }
 
+      // Offers
+      const offersContainer = document.getElementById('offers-container');
+      if (data.offers && Array.isArray(data.offers)) {
+        offersContainer.innerHTML = data.offers.map(o => `
+          <div class="offer-card glass-card">
+            <h3>${o.title}</h3>
+            <p>${o.description}</p>
+            <button class="btn-small">${o.btnText || 'Learn more'}</button>
+          </div>
+        `).join('');
+      }
+
+      // Testimonials
+      const testimonialsContainer = document.getElementById('testimonials-container');
+      if (data.testimonials && Array.isArray(data.testimonials)) {
+        testimonialsContainer.innerHTML = data.testimonials.map(t => `
+          <div class="testimonial-card glass-card">
+            <i class="fas fa-quote-left"></i>
+            <p>${t.text}</p>
+            <h4>— ${t.name}</h4>
+            <div>${'⭐'.repeat(t.rating || 5)}</div>
+          </div>
+        `).join('');
+      }
+
+      // Gallery
       const galleryContainer = document.getElementById('gallery-container');
       if (data.gallery && Array.isArray(data.gallery)) {
         galleryContainer.innerHTML = data.gallery.map(url => `
-          <div class="gallery-item">
+          <div class="gallery-item glass-card">
             <img src="${url}" loading="lazy">
           </div>
         `).join('');
@@ -275,6 +593,7 @@
       document.getElementById('loader').style.display = 'none';
     }
 
+    // Load initial data
     settingsDocRef.get().then(doc => {
       if (!doc.exists) {
         return settingsDocRef.set(defaultSettings).then(() => defaultSettings);
@@ -283,11 +602,34 @@
       }
     }).then(applySettings).catch(() => applySettings(defaultSettings));
 
+    // Real-time updates
     settingsDocRef.onSnapshot(doc => { if (doc.exists) applySettings(doc.data()); });
 
-    // ---------- ADMIN PANEL (NEW WINDOW) - FULLY FIXED with Firebase ready check ----------
+    // ---------- SCROLL REVEAL ----------
+    function reveal() {
+      const reveals = document.querySelectorAll('.reveal');
+      for (let i = 0; i < reveals.length; i++) {
+        const windowHeight = window.innerHeight;
+        const revealTop = reveals[i].getBoundingClientRect().top;
+        const revealPoint = 150;
+        if (revealTop < windowHeight - revealPoint) {
+          reveals[i].classList.add('active');
+        }
+      }
+    }
+    window.addEventListener('scroll', reveal);
+    window.addEventListener('load', reveal);
+
+    // Back to top button visibility
+    window.addEventListener('scroll', () => {
+      const btt = document.querySelector('.back-to-top');
+      if (window.scrollY > 500) btt.classList.add('visible');
+      else btt.classList.remove('visible');
+    });
+
+    // ---------- ADMIN PANEL (NEW WINDOW) with full control over new sections ----------
     function openAdminPanel() {
-      const adminWin = window.open('', 'adminPanel', 'width=1000,height=750,scrollbars=yes,resizable=yes');
+      const adminWin = window.open('', 'adminPanel', 'width=1100,height=800,scrollbars=yes,resizable=yes');
       adminWin.document.write(`
         <!DOCTYPE html>
         <html>
@@ -297,7 +639,7 @@
         <style>
           * { box-sizing:border-box; margin:0; font-family:'Inter',sans-serif; }
           body { background:#f1f5f9; padding:2rem; }
-          .admin-container { max-width:1200px; margin:0 auto; background:white; border-radius:2rem; padding:2rem; box-shadow:0 25px 50px -12px #00000040; }
+          .admin-container { max-width:1300px; margin:0 auto; background:white; border-radius:2rem; padding:2rem; box-shadow:0 25px 50px -12px #00000040; }
           h1 { margin-bottom:2rem; font-weight:700; }
           .tabs { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:2rem; border-bottom:2px solid #e2e8f0; padding-bottom:0.5rem; }
           .tab-btn { background:none; border:none; padding:0.7rem 2rem; font-weight:600; border-radius:40px; cursor:pointer; }
@@ -314,6 +656,7 @@
           .preview-img { max-width:100px; max-height:80px; border-radius:1rem; margin:0.5rem; object-fit:cover; }
           .gallery-thumb { display:inline-block; margin:0.5rem; position:relative; }
           .gallery-thumb button { position:absolute; top:0; right:0; background:#ef4444; color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; }
+          .item-row { border:1px solid #ddd; border-radius:1rem; padding:1rem; margin-bottom:1rem; }
         </style>
         </head>
         <body>
@@ -323,10 +666,12 @@
             <button class="tab-btn active" data-tab="general">General</button>
             <button class="tab-btn" data-tab="rooms">Rooms</button>
             <button class="tab-btn" data-tab="services">Services</button>
+            <button class="tab-btn" data-tab="offers">Offers</button>
+            <button class="tab-btn" data-tab="testimonials">Testimonials</button>
             <button class="tab-btn" data-tab="gallery">Gallery</button>
           </div>
           
-          <!-- GENERAL TAB -->
+          <!-- GENERAL -->
           <div id="general-tab" class="tab-pane active">
             <h3>Style & text</h3>
             <div class="form-group"><label>Site name</label><input id="siteName"></div>
@@ -335,25 +680,25 @@
               <div><label>Gradient end</label><input type="color" id="gradEnd"></div>
             </div>
             <div class="row">
-              <div><label>Header BG (rgba/hex)</label><input id="headerColor" placeholder="rgba(255,255,255,0.85)"></div>
+              <div><label>Header BG</label><input id="headerColor" placeholder="rgba(255,255,255,0.85)"></div>
               <div><label>Footer BG</label><input type="color" id="footerBg"></div>
             </div>
-            <div><label>Hero title (HTML allowed)</label><input id="heroTitle"></div>
+            <div><label>Hero title (HTML)</label><input id="heroTitle"></div>
             <div><label>Hero subtitle</label><input id="heroSubtitle"></div>
             <div><label>Location text</label><input id="locationLong"></div>
             <div><label>Footer copyright</label><input id="footerCopyright"></div>
-            <button class="btn" onclick="saveGeneral()">Save general settings</button>
+            <button class="btn" onclick="saveGeneral()">Save general</button>
           </div>
           
-          <!-- ROOMS TAB -->
+          <!-- ROOMS -->
           <div id="rooms-tab" class="tab-pane">
             <h3>Manage rooms</h3>
             <div id="rooms-list"></div>
-            <button class="btn" onclick="addRoom()">+ Add new room</button>
-            <button class="btn" onclick="saveRooms()">Save all rooms</button>
+            <button class="btn" onclick="addRoom()">+ Add room</button>
+            <button class="btn" onclick="saveRooms()">Save rooms</button>
           </div>
           
-          <!-- SERVICES TAB -->
+          <!-- SERVICES -->
           <div id="services-tab" class="tab-pane">
             <h3>Services (Fontawesome icons)</h3>
             <div id="services-list"></div>
@@ -361,42 +706,50 @@
             <button class="btn" onclick="saveServices()">Save services</button>
           </div>
           
-          <!-- GALLERY TAB -->
+          <!-- OFFERS -->
+          <div id="offers-tab" class="tab-pane">
+            <h3>Special offers</h3>
+            <div id="offers-list"></div>
+            <button class="btn" onclick="addOffer()">+ Add offer</button>
+            <button class="btn" onclick="saveOffers()">Save offers</button>
+          </div>
+          
+          <!-- TESTIMONIALS -->
+          <div id="testimonials-tab" class="tab-pane">
+            <h3>Guest testimonials</h3>
+            <div id="testimonials-list"></div>
+            <button class="btn" onclick="addTestimonial()">+ Add testimonial</button>
+            <button class="btn" onclick="saveTestimonials()">Save testimonials</button>
+          </div>
+          
+          <!-- GALLERY -->
           <div id="gallery-tab" class="tab-pane">
-            <h3>Gallery images (max 2MB each)</h3>
+            <h3>Gallery images (max 2MB)</h3>
             <div id="gallery-list" style="display:flex; flex-wrap:wrap;"></div>
             <div class="image-upload" id="gallery-upload-area">
-              <i class="fas fa-cloud-upload-alt fa-3x"></i>
-              <p>Click to upload new image (max 2MB)</p>
+              <i class="fas fa-cloud-upload-alt fa-3x"></i><p>Click to upload (max 2MB)</p>
               <input type="file" id="galleryUpload" accept="image/*" style="display:none;">
             </div>
-            <button class="btn" onclick="saveGallery()">Save gallery order</button>
+            <button class="btn" onclick="saveGallery()">Save gallery</button>
           </div>
         </div>
 
         <!-- Firebase script -->
         <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"><\/script>
         <script>
-          // Wait for Firebase to be ready (fixes "firebase is not defined")
           (function() {
-            var initWhenReady = function() {
-              if (typeof firebase === 'undefined') {
-                setTimeout(initWhenReady, 50);
-                return;
-              }
-              // Firebase is now available
+            const init = function() {
+              if (typeof firebase === 'undefined') { setTimeout(init, 50); return; }
               const fbConfig = ${JSON.stringify(firebaseConfig)};
               firebase.initializeApp(fbConfig);
               const db = firebase.firestore();
               const storage = firebase.storage();
               const settingsRef = db.collection('settings').doc('general');
 
-              // Global data arrays (var for global access)
-              var roomsData = [];
-              var servicesData = [];
-              var galleryData = [];
+              // Global arrays
+              var roomsData = [], servicesData = [], offersData = [], testimonialsData = [], galleryData = [];
 
-              // Load settings and populate forms
+              // Load settings
               settingsRef.get().then((doc) => {
                 const s = doc.exists ? doc.data() : {};
                 document.getElementById('siteName').value = s.siteName || '';
@@ -410,15 +763,15 @@
                 document.getElementById('footerCopyright').value = s.footerCopyright || '';
                 roomsData = s.rooms ? JSON.parse(JSON.stringify(s.rooms)) : [];
                 servicesData = s.services ? JSON.parse(JSON.stringify(s.services)) : [];
+                offersData = s.offers ? JSON.parse(JSON.stringify(s.offers)) : [];
+                testimonialsData = s.testimonials ? JSON.parse(JSON.stringify(s.testimonials)) : [];
                 galleryData = s.gallery ? JSON.parse(JSON.stringify(s.gallery)) : [];
-                renderRooms();
-                renderServices();
-                renderGallery();
+                renderRooms(); renderServices(); renderOffers(); renderTestimonials(); renderGallery();
               });
 
-              // ---------- GENERAL ----------
+              // General save
               window.saveGeneral = function() {
-                const updated = {
+                settingsRef.update({
                   siteName: document.getElementById('siteName').value,
                   gradStart: document.getElementById('gradStart').value,
                   gradEnd: document.getElementById('gradEnd').value,
@@ -428,104 +781,97 @@
                   heroSubtitle: document.getElementById('heroSubtitle').value,
                   locationLong: document.getElementById('locationLong').value,
                   footerCopyright: document.getElementById('footerCopyright').value,
-                };
-                settingsRef.update(updated).then(() => alert('General saved'));
+                }).then(() => alert('General saved'));
               };
 
-              // ---------- ROOMS ----------
+              // Rooms
               function renderRooms() {
-                const container = document.getElementById('rooms-list');
-                container.innerHTML = roomsData.map((r, idx) => \`
-                  <div style="border:1px solid #ddd; border-radius:1rem; padding:1rem; margin-bottom:1rem;">
-                    <input placeholder="Name" value="\${r.name || ''}" onchange="roomsData[\${idx}].name = this.value">
-                    <input placeholder="Description" value="\${r.description || ''}" onchange="roomsData[\${idx}].description = this.value">
-                    <input placeholder="Price" value="\${r.price || ''}" onchange="roomsData[\${idx}].price = this.value">
-                    <input placeholder="Image URL" value="\${r.image || ''}" onchange="roomsData[\${idx}].image = this.value">
+                document.getElementById('rooms-list').innerHTML = roomsData.map((r, idx) => \`
+                  <div class="item-row">
+                    <input placeholder="Name" value="\${r.name || ''}" onchange="roomsData[\${idx}].name=this.value">
+                    <input placeholder="Description" value="\${r.description || ''}" onchange="roomsData[\${idx}].description=this.value">
+                    <input placeholder="Price" value="\${r.price || ''}" onchange="roomsData[\${idx}].price=this.value">
+                    <input placeholder="Image URL" value="\${r.image || ''}" onchange="roomsData[\${idx}].image=this.value">
                     <button class="btn-danger" onclick="removeRoom(\${idx})">Remove</button>
                   </div>\`).join('');
               }
-              window.addRoom = function() {
-                roomsData.push({ name: '', description: '', price: '', image: '' });
-                renderRooms();
-              };
-              window.removeRoom = function(idx) {
-                roomsData.splice(idx, 1);
-                renderRooms();
-              };
-              window.saveRooms = function() {
-                settingsRef.update({ rooms: roomsData }).then(() => alert('Rooms saved'));
-              };
+              window.addRoom = function() { roomsData.push({}); renderRooms(); };
+              window.removeRoom = function(idx) { roomsData.splice(idx,1); renderRooms(); };
+              window.saveRooms = function() { settingsRef.update({rooms: roomsData}).then(()=>alert('Rooms saved')); };
 
-              // ---------- SERVICES ----------
+              // Services
               function renderServices() {
-                const container = document.getElementById('services-list');
-                container.innerHTML = servicesData.map((s, idx) => \`
-                  <div style="border:1px solid #ddd; padding:1rem; margin:0.5rem 0;">
-                    <input value="\${s.name || ''}" placeholder="Service name" onchange="servicesData[\${idx}].name = this.value">
-                    <input value="\${s.icon || ''}" placeholder="icon name (e.g. wifi)" onchange="servicesData[\${idx}].icon = this.value">
-                    <button class="btn-danger" onclick="removeService(\${idx})">remove</button>
+                document.getElementById('services-list').innerHTML = servicesData.map((s, idx) => \`
+                  <div class="item-row">
+                    <input value="\${s.name || ''}" placeholder="Service name" onchange="servicesData[\${idx}].name=this.value">
+                    <input value="\${s.icon || ''}" placeholder="icon (e.g. wifi)" onchange="servicesData[\${idx}].icon=this.value">
+                    <button class="btn-danger" onclick="removeService(\${idx})">Remove</button>
                   </div>\`).join('');
               }
-              window.addService = function() {
-                servicesData.push({ name: '', icon: 'star' });
-                renderServices();
-              };
-              window.removeService = function(idx) {
-                servicesData.splice(idx, 1);
-                renderServices();
-              };
-              window.saveServices = function() {
-                settingsRef.update({ services: servicesData }).then(() => alert('Services saved'));
-              };
+              window.addService = function() { servicesData.push({}); renderServices(); };
+              window.removeService = function(idx) { servicesData.splice(idx,1); renderServices(); };
+              window.saveServices = function() { settingsRef.update({services: servicesData}).then(()=>alert('Services saved')); };
 
-              // ---------- GALLERY ----------
+              // Offers
+              function renderOffers() {
+                document.getElementById('offers-list').innerHTML = offersData.map((o, idx) => \`
+                  <div class="item-row">
+                    <input placeholder="Title" value="\${o.title || ''}" onchange="offersData[\${idx}].title=this.value">
+                    <input placeholder="Description" value="\${o.description || ''}" onchange="offersData[\${idx}].description=this.value">
+                    <input placeholder="Button text" value="\${o.btnText || 'Learn more'}" onchange="offersData[\${idx}].btnText=this.value">
+                    <button class="btn-danger" onclick="removeOffer(\${idx})">Remove</button>
+                  </div>\`).join('');
+              }
+              window.addOffer = function() { offersData.push({}); renderOffers(); };
+              window.removeOffer = function(idx) { offersData.splice(idx,1); renderOffers(); };
+              window.saveOffers = function() { settingsRef.update({offers: offersData}).then(()=>alert('Offers saved')); };
+
+              // Testimonials
+              function renderTestimonials() {
+                document.getElementById('testimonials-list').innerHTML = testimonialsData.map((t, idx) => \`
+                  <div class="item-row">
+                    <input placeholder="Name" value="\${t.name || ''}" onchange="testimonialsData[\${idx}].name=this.value">
+                    <textarea placeholder="Text" onchange="testimonialsData[\${idx}].text=this.value">\${t.text || ''}</textarea>
+                    <input type="number" placeholder="Rating (1-5)" value="\${t.rating || 5}" onchange="testimonialsData[\${idx}].rating=parseInt(this.value)">
+                    <button class="btn-danger" onclick="removeTestimonial(\${idx})">Remove</button>
+                  </div>\`).join('');
+              }
+              window.addTestimonial = function() { testimonialsData.push({}); renderTestimonials(); };
+              window.removeTestimonial = function(idx) { testimonialsData.splice(idx,1); renderTestimonials(); };
+              window.saveTestimonials = function() { settingsRef.update({testimonials: testimonialsData}).then(()=>alert('Testimonials saved')); };
+
+              // Gallery (same as before)
               function renderGallery() {
-                const container = document.getElementById('gallery-list');
-                container.innerHTML = galleryData.map((url, idx) => \`
-                  <div class="gallery-thumb">
-                    <img src="\${url}" class="preview-img">
-                    <button onclick="removeGalleryItem(\${idx})">✕</button>
-                  </div>\`).join('');
+                document.getElementById('gallery-list').innerHTML = galleryData.map((url, idx) => \`
+                  <div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="removeGalleryItem(\${idx})">✕</button></div>\`).join('');
               }
-              window.removeGalleryItem = function(idx) {
-                galleryData.splice(idx, 1);
-                renderGallery();
-              };
-              window.saveGallery = function() {
-                settingsRef.update({ gallery: galleryData }).then(() => alert('Gallery saved'));
-              };
+              window.removeGalleryItem = function(idx) { galleryData.splice(idx,1); renderGallery(); };
+              window.saveGallery = function() { settingsRef.update({gallery: galleryData}).then(()=>alert('Gallery saved')); };
 
-              // Upload handler
-              document.addEventListener('DOMContentLoaded', function() {
-                const uploadArea = document.getElementById('gallery-upload-area');
-                const fileInput = document.getElementById('galleryUpload');
-                uploadArea.addEventListener('click', () => fileInput.click());
-                fileInput.addEventListener('change', function(e) {
-                  const file = e.target.files[0];
-                  if (!file) return;
-                  if (file.size > 2 * 1024 * 1024) {
-                    alert('Max 2MB');
-                    return;
-                  }
-                  const ref = storage.ref('gallery/' + Date.now() + '_' + file.name);
-                  ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
-                    galleryData.push(url);
-                    renderGallery();
-                  }).catch(alert);
+              // Upload
+              document.addEventListener('DOMContentLoaded', () => {
+                const up = document.getElementById('gallery-upload-area');
+                const inp = document.getElementById('galleryUpload');
+                up.addEventListener('click', () => inp.click());
+                inp.addEventListener('change', function(e) {
+                  const f = e.target.files[0];
+                  if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
+                  const ref = storage.ref('gallery/'+Date.now()+'_'+f.name);
+                  ref.put(f).then(s => s.ref.getDownloadURL()).then(url => { galleryData.push(url); renderGallery(); });
                 });
               });
 
-              // Tab switching
+              // Tabs
               document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                   e.target.classList.add('active');
                   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                  document.getElementById(e.target.dataset.tab + '-tab').classList.add('active');
+                  document.getElementById(e.target.dataset.tab+'-tab').classList.add('active');
                 });
               });
             };
-            initWhenReady();
+            init();
           })();
         <\/script>
         </body>
