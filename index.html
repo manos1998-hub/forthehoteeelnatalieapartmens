@@ -678,14 +678,18 @@
       // Rooms
       const roomsContainer = document.getElementById('rooms-container');
       if (data.rooms && Array.isArray(data.rooms)) {
-        roomsContainer.innerHTML = data.rooms.map((r, index) => `
-          <div class="room-card glass-card" onclick='openModal(${JSON.stringify(r).replace(/'/g, "\\'")})'>
-            <img src="${r.image || 'https://via.placeholder.com/400'}" loading="lazy">
-            <h3>${r.name}</h3>
-            <p>${r.description || ''}</p>
-            <p style="font-weight:800; margin-top:0.5rem;">${r.price || ''}</p>
-          </div>
-        `).join('');
+        roomsContainer.innerHTML = data.rooms.map((r, index) => {
+          // Escape the room object for onclick
+          const roomStr = JSON.stringify(r).replace(/'/g, "\\'");
+          return `
+            <div class="room-card glass-card" onclick='openModal(${roomStr})'>
+              <img src="${r.image || 'https://via.placeholder.com/400'}" loading="lazy">
+              <h3>${r.name}</h3>
+              <p>${r.description || ''}</p>
+              <p style="font-weight:800; margin-top:0.5rem;">${r.price || ''}</p>
+            </div>
+          `;
+        }).join('');
       }
 
       // Services
@@ -768,7 +772,7 @@
       else btt.classList.remove('visible');
     });
 
-    // ---------- ADMIN PANEL (with room images upload) ----------
+    // ---------- ADMIN PANEL (FULLY FIXED) ----------
     function openAdminPanel() {
       const adminWin = window.open('', 'adminPanel', 'width=1100,height=800,scrollbars=yes,resizable=yes');
       adminWin.document.write(`
@@ -842,39 +846,39 @@
               <div id="hero-preview"></div>
               <input type="hidden" id="heroBackground">
             </div>
-            <button class="btn" onclick="saveGeneral()">Save general</button>
+            <button class="btn" onclick="window.saveGeneral()">Save general</button>
           </div>
           
           <!-- ROOMS with multiple images -->
           <div id="rooms-tab" class="tab-pane">
             <h3>Manage rooms (click on room to add multiple images)</h3>
             <div id="rooms-list"></div>
-            <button class="btn" onclick="addRoom()">+ Add room</button>
-            <button class="btn" onclick="saveRooms()">Save rooms</button>
+            <button class="btn" onclick="window.addRoom()">+ Add room</button>
+            <button class="btn" onclick="window.saveRooms()">Save rooms</button>
           </div>
           
           <!-- SERVICES -->
           <div id="services-tab" class="tab-pane">
             <h3>Services (Fontawesome icons)</h3>
             <div id="services-list"></div>
-            <button class="btn" onclick="addService()">+ Add service</button>
-            <button class="btn" onclick="saveServices()">Save services</button>
+            <button class="btn" onclick="window.addService()">+ Add service</button>
+            <button class="btn" onclick="window.saveServices()">Save services</button>
           </div>
           
           <!-- OFFERS -->
           <div id="offers-tab" class="tab-pane">
             <h3>Special offers</h3>
             <div id="offers-list"></div>
-            <button class="btn" onclick="addOffer()">+ Add offer</button>
-            <button class="btn" onclick="saveOffers()">Save offers</button>
+            <button class="btn" onclick="window.addOffer()">+ Add offer</button>
+            <button class="btn" onclick="window.saveOffers()">Save offers</button>
           </div>
           
           <!-- TESTIMONIALS -->
           <div id="testimonials-tab" class="tab-pane">
             <h3>Guest testimonials</h3>
             <div id="testimonials-list"></div>
-            <button class="btn" onclick="addTestimonial()">+ Add testimonial</button>
-            <button class="btn" onclick="saveTestimonials()">Save testimonials</button>
+            <button class="btn" onclick="window.addTestimonial()">+ Add testimonial</button>
+            <button class="btn" onclick="window.saveTestimonials()">Save testimonials</button>
           </div>
           
           <!-- GALLERY -->
@@ -885,26 +889,34 @@
               <i class="fas fa-cloud-upload-alt fa-3x"></i><p>Click to upload (max 2MB)</p>
               <input type="file" id="galleryUpload" accept="image/*" style="display:none;">
             </div>
-            <button class="btn" onclick="saveGallery()">Save gallery</button>
+            <button class="btn" onclick="window.saveGallery()">Save gallery</button>
           </div>
         </div>
 
-        <!-- Firebase script -->
+        <!-- Firebase script (loaded first) -->
         <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"><\/script>
         <script>
+          // Wait for firebase
           (function() {
-            const init = function() {
-              if (typeof firebase === 'undefined') { setTimeout(init, 50); return; }
-              const fbConfig = ${JSON.stringify(firebaseConfig)};
+            const fbConfig = ${JSON.stringify(firebaseConfig)};
+            // Define all global variables
+            window.roomsData = [];
+            window.servicesData = [];
+            window.offersData = [];
+            window.testimonialsData = [];
+            window.galleryData = [];
+
+            function initFirebase() {
+              if (typeof firebase === 'undefined') {
+                setTimeout(initFirebase, 50);
+                return;
+              }
               firebase.initializeApp(fbConfig);
-              const db = firebase.firestore();
-              const storage = firebase.storage();
-              const settingsRef = db.collection('settings').doc('general');
+              window.db = firebase.firestore();
+              window.storage = firebase.storage();
+              window.settingsRef = db.collection('settings').doc('general');
 
-              // Global arrays
-              var roomsData = [], servicesData = [], offersData = [], testimonialsData = [], galleryData = [];
-
-              // Load settings
+              // Load initial data
               settingsRef.get().then((doc) => {
                 const s = doc.exists ? doc.data() : {};
                 document.getElementById('siteName').value = s.siteName || '';
@@ -918,56 +930,69 @@
                 document.getElementById('footerCopyright').value = s.footerCopyright || '';
                 document.getElementById('heroBackground').value = s.heroBackground || '';
                 if (s.heroBackground) {
-                  document.getElementById('hero-preview').innerHTML = \`<img src="\${s.heroBackground}" class="bg-preview">\`;
+                  document.getElementById('hero-preview').innerHTML = '<img src="'+s.heroBackground+'" class="bg-preview">';
                 }
-                roomsData = s.rooms ? JSON.parse(JSON.stringify(s.rooms)) : [];
-                servicesData = s.services ? JSON.parse(JSON.stringify(s.services)) : [];
-                offersData = s.offers ? JSON.parse(JSON.stringify(s.offers)) : [];
-                testimonialsData = s.testimonials ? JSON.parse(JSON.stringify(s.testimonials)) : [];
-                galleryData = s.gallery ? JSON.parse(JSON.stringify(s.gallery)) : [];
-                renderRooms(); renderServices(); renderOffers(); renderTestimonials(); renderGallery();
+                window.roomsData = s.rooms ? JSON.parse(JSON.stringify(s.rooms)) : [];
+                window.servicesData = s.services ? JSON.parse(JSON.stringify(s.services)) : [];
+                window.offersData = s.offers ? JSON.parse(JSON.stringify(s.offers)) : [];
+                window.testimonialsData = s.testimonials ? JSON.parse(JSON.stringify(s.testimonials)) : [];
+                window.galleryData = s.gallery ? JSON.parse(JSON.stringify(s.gallery)) : [];
+                
+                renderRooms();
+                renderServices();
+                renderOffers();
+                renderTestimonials();
+                renderGallery();
               });
 
-              // General save
-              window.saveGeneral = function() {
-                settingsRef.update({
-                  siteName: document.getElementById('siteName').value,
-                  gradStart: document.getElementById('gradStart').value,
-                  gradEnd: document.getElementById('gradEnd').value,
-                  headerColor: document.getElementById('headerColor').value,
-                  footerBg: document.getElementById('footerBg').value,
-                  heroTitle: document.getElementById('heroTitle').value,
-                  heroSubtitle: document.getElementById('heroSubtitle').value,
-                  locationLong: document.getElementById('locationLong').value,
-                  footerCopyright: document.getElementById('footerCopyright').value,
-                  heroBackground: document.getElementById('heroBackground').value
-                }).then(() => alert('General saved'));
-              };
-
-              // Hero background upload
-              document.addEventListener('DOMContentLoaded', () => {
+              // Set up upload handlers after DOM ready
+              document.addEventListener('DOMContentLoaded', function() {
+                // Hero upload
                 const heroArea = document.getElementById('hero-upload-area');
                 const heroInput = document.getElementById('heroUpload');
-                heroArea.addEventListener('click', () => heroInput.click());
-                heroInput.addEventListener('change', function(e) {
-                  const f = e.target.files[0];
-                  if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
-                  const ref = storage.ref('hero/'+Date.now()+'_'+f.name);
-                  ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
-                    document.getElementById('heroBackground').value = url;
-                    document.getElementById('hero-preview').innerHTML = \`<img src="\${url}" class="bg-preview">\`;
-                  }).catch(alert);
-                });
-              });
+                if (heroArea) {
+                  heroArea.addEventListener('click', () => heroInput.click());
+                  heroInput.addEventListener('change', function(e) {
+                    const f = e.target.files[0];
+                    if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
+                    const ref = storage.ref('hero/'+Date.now()+'_'+f.name);
+                    ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
+                      document.getElementById('heroBackground').value = url;
+                      document.getElementById('hero-preview').innerHTML = '<img src="'+url+'" class="bg-preview">';
+                    }).catch(alert);
+                  });
+                }
 
-              // Rooms with image upload
-              function renderRooms() {
-                document.getElementById('rooms-list').innerHTML = roomsData.map((r, idx) => \`
+                // Gallery upload
+                const galArea = document.getElementById('gallery-upload-area');
+                const galInput = document.getElementById('galleryUpload');
+                if (galArea) {
+                  galArea.addEventListener('click', () => galInput.click());
+                  galInput.addEventListener('change', function(e) {
+                    const f = e.target.files[0];
+                    if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
+                    const ref = storage.ref('gallery/'+Date.now()+'_'+f.name);
+                    ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
+                      window.galleryData.push(url);
+                      renderGallery();
+                    }).catch(alert);
+                  });
+                }
+              });
+            }
+            initFirebase();
+
+            // ---------- RENDER FUNCTIONS (attached to window for onclick) ----------
+            window.renderRooms = function() {
+              const container = document.getElementById('rooms-list');
+              if (!container) return;
+              container.innerHTML = window.roomsData.map((r, idx) => {
+                return \`
                   <div class="item-row">
-                    <input placeholder="Room name" value="\${r.name || ''}" onchange="roomsData[\${idx}].name=this.value">
-                    <textarea placeholder="Description" onchange="roomsData[\${idx}].description=this.value">\${r.description || ''}</textarea>
-                    <input placeholder="Price (e.g. €190/night)" value="\${r.price || ''}" onchange="roomsData[\${idx}].price=this.value">
-                    <input placeholder="Thumbnail image URL" value="\${r.image || ''}" onchange="roomsData[\${idx}].image=this.value">
+                    <input placeholder="Room name" value="\${r.name || ''}" onchange="window.roomsData[\${idx}].name=this.value">
+                    <textarea placeholder="Description" onchange="window.roomsData[\${idx}].description=this.value">\${r.description || ''}</textarea>
+                    <input placeholder="Price (e.g. €190/night)" value="\${r.price || ''}" onchange="window.roomsData[\${idx}].price=this.value">
+                    <input placeholder="Thumbnail image URL" value="\${r.image || ''}" onchange="window.roomsData[\${idx}].image=this.value">
                     
                     <div style="margin:1rem 0;">
                       <label>Room gallery images (click to add):</label>
@@ -976,119 +1001,143 @@
                         <input type="file" id="roomFile-\${idx}" accept="image/*" multiple style="display:none;">
                       </div>
                       <div id="room-preview-\${idx}" class="room-images-preview">
-                        \${(r.images || []).map(url => \`<div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="removeRoomImage(\${idx}, '\${url}')">✕</button></div>\`).join('')}
+                        \${(r.images || []).map(url => \`<div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="window.removeRoomImage(\${idx}, '\${url}')">✕</button></div>\`).join('')}
                       </div>
                     </div>
                     
-                    <button class="btn-danger" onclick="removeRoom(\${idx})">Remove room</button>
+                    <button class="btn-danger" onclick="window.removeRoom(\${idx})">Remove room</button>
                   </div>
-                \`).join(''));
+                \`;
+              }).join('');
 
-                // Attach upload handlers for each room
-                roomsData.forEach((_, idx) => {
-                  const area = document.getElementById('room-upload-' + idx);
-                  const input = document.getElementById('roomFile-' + idx);
-                  if (area && input) {
-                    area.addEventListener('click', () => input.click());
-                    input.addEventListener('change', function(e) {
-                      const files = Array.from(e.target.files);
-                      Promise.all(files.map(file => {
-                        if (file.size > 2*1024*1024) { alert(file.name + ' exceeds 2MB'); return null; }
-                        const ref = storage.ref('rooms/'+Date.now()+'_'+file.name);
-                        return ref.put(file).then(s => s.ref.getDownloadURL());
-                      })).then(urls => {
-                        const validUrls = urls.filter(u => u);
-                        roomsData[idx].images = roomsData[idx].images || [];
-                        roomsData[idx].images.push(...validUrls);
-                        renderRooms(); // re-render to show new images
-                      });
+              // Attach upload handlers for each room after render
+              window.roomsData.forEach((_, idx) => {
+                const area = document.getElementById('room-upload-' + idx);
+                const input = document.getElementById('roomFile-' + idx);
+                if (area && input) {
+                  // Remove old listeners by cloning
+                  const newArea = area.cloneNode(true);
+                  area.parentNode.replaceChild(newArea, area);
+                  const newInput = document.getElementById('roomFile-' + idx);
+                  newArea.addEventListener('click', () => newInput.click());
+                  newInput.addEventListener('change', function(e) {
+                    const files = Array.from(e.target.files);
+                    Promise.all(files.map(file => {
+                      if (file.size > 2*1024*1024) { alert(file.name + ' exceeds 2MB'); return null; }
+                      const ref = storage.ref('rooms/'+Date.now()+'_'+file.name);
+                      return ref.put(file).then(s => s.ref.getDownloadURL());
+                    })).then(urls => {
+                      const validUrls = urls.filter(u => u);
+                      window.roomsData[idx].images = window.roomsData[idx].images || [];
+                      window.roomsData[idx].images.push(...validUrls);
+                      window.renderRooms(); // re-render to show new images
                     });
-                  }
-                });
-              }
-
-              window.removeRoomImage = function(roomIdx, url) {
-                roomsData[roomIdx].images = (roomsData[roomIdx].images || []).filter(u => u !== url);
-                renderRooms();
-              };
-
-              window.addRoom = function() { 
-                roomsData.push({ name: '', description: '', price: '', image: '', images: [] }); 
-                renderRooms(); 
-              };
-              window.removeRoom = function(idx) { roomsData.splice(idx,1); renderRooms(); };
-              window.saveRooms = function() { settingsRef.update({rooms: roomsData}).then(()=>alert('Rooms saved')); };
-
-              // Services, Offers, Testimonials, Gallery (same as before)
-              function renderServices() {
-                document.getElementById('services-list').innerHTML = servicesData.map((s, idx) => \`
-                  <div class="item-row">
-                    <input value="\${s.name || ''}" placeholder="Service name" onchange="servicesData[\${idx}].name=this.value">
-                    <input value="\${s.icon || ''}" placeholder="icon (e.g. wifi)" onchange="servicesData[\${idx}].icon=this.value">
-                    <button class="btn-danger" onclick="removeService(\${idx})">Remove</button>
-                  </div>\`).join('');
-              }
-              window.addService = function() { servicesData.push({}); renderServices(); };
-              window.removeService = function(idx) { servicesData.splice(idx,1); renderServices(); };
-              window.saveServices = function() { settingsRef.update({services: servicesData}).then(()=>alert('Services saved')); };
-
-              function renderOffers() {
-                document.getElementById('offers-list').innerHTML = offersData.map((o, idx) => \`
-                  <div class="item-row">
-                    <input placeholder="Title" value="\${o.title || ''}" onchange="offersData[\${idx}].title=this.value">
-                    <input placeholder="Description" value="\${o.description || ''}" onchange="offersData[\${idx}].description=this.value">
-                    <input placeholder="Button text" value="\${o.btnText || 'Learn more'}" onchange="offersData[\${idx}].btnText=this.value">
-                    <button class="btn-danger" onclick="removeOffer(\${idx})">Remove</button>
-                  </div>\`).join('');
-              }
-              window.addOffer = function() { offersData.push({}); renderOffers(); };
-              window.removeOffer = function(idx) { offersData.splice(idx,1); renderOffers(); };
-              window.saveOffers = function() { settingsRef.update({offers: offersData}).then(()=>alert('Offers saved')); };
-
-              function renderTestimonials() {
-                document.getElementById('testimonials-list').innerHTML = testimonialsData.map((t, idx) => \`
-                  <div class="item-row">
-                    <input placeholder="Name" value="\${t.name || ''}" onchange="testimonialsData[\${idx}].name=this.value">
-                    <textarea placeholder="Text" onchange="testimonialsData[\${idx}].text=this.value">\${t.text || ''}</textarea>
-                    <input type="number" placeholder="Rating (1-5)" value="\${t.rating || 5}" onchange="testimonialsData[\${idx}].rating=parseInt(this.value)">
-                    <button class="btn-danger" onclick="removeTestimonial(\${idx})">Remove</button>
-                  </div>\`).join('');
-              }
-              window.addTestimonial = function() { testimonialsData.push({}); renderTestimonials(); };
-              window.removeTestimonial = function(idx) { testimonialsData.splice(idx,1); renderTestimonials(); };
-              window.saveTestimonials = function() { settingsRef.update({testimonials: testimonialsData}).then(()=>alert('Testimonials saved')); };
-
-              function renderGallery() {
-                document.getElementById('gallery-list').innerHTML = galleryData.map((url, idx) => \`
-                  <div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="removeGalleryItem(\${idx})">✕</button></div>\`).join('');
-              }
-              window.removeGalleryItem = function(idx) { galleryData.splice(idx,1); renderGallery(); };
-              window.saveGallery = function() { settingsRef.update({gallery: galleryData}).then(()=>alert('Gallery saved')); };
-
-              // Gallery upload
-              document.addEventListener('DOMContentLoaded', () => {
-                const galArea = document.getElementById('gallery-upload-area');
-                const galInput = document.getElementById('galleryUpload');
-                galArea.addEventListener('click', () => galInput.click());
-                galInput.addEventListener('change', function(e) {
-                  const f = e.target.files[0];
-                  if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
-                  const ref = storage.ref('gallery/'+Date.now()+'_'+f.name);
-                  ref.put(f).then(s => s.ref.getDownloadURL()).then(url => { galleryData.push(url); renderGallery(); });
-                });
-              });
-
-              // Tabs
-              document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                  e.target.classList.add('active');
-                  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                  document.getElementById(e.target.dataset.tab+'-tab').classList.add('active');
-                });
+                  });
+                }
               });
             };
-            init();
+
+            window.removeRoomImage = function(roomIdx, url) {
+              window.roomsData[roomIdx].images = (window.roomsData[roomIdx].images || []).filter(u => u !== url);
+              window.renderRooms();
+            };
+
+            window.addRoom = function() { 
+              window.roomsData.push({ name: '', description: '', price: '', image: '', images: [] }); 
+              window.renderRooms(); 
+            };
+            window.removeRoom = function(idx) { window.roomsData.splice(idx,1); window.renderRooms(); };
+            window.saveRooms = function() { 
+              window.settingsRef.update({rooms: window.roomsData}).then(()=>alert('Rooms saved')); 
+            };
+
+            // Services
+            window.renderServices = function() {
+              const container = document.getElementById('services-list');
+              if (!container) return;
+              container.innerHTML = window.servicesData.map((s, idx) => \`
+                <div class="item-row">
+                  <input value="\${s.name || ''}" placeholder="Service name" onchange="window.servicesData[\${idx}].name=this.value">
+                  <input value="\${s.icon || ''}" placeholder="icon (e.g. wifi)" onchange="window.servicesData[\${idx}].icon=this.value">
+                  <button class="btn-danger" onclick="window.removeService(\${idx})">Remove</button>
+                </div>
+              \`).join('');
+            };
+            window.addService = function() { window.servicesData.push({}); window.renderServices(); };
+            window.removeService = function(idx) { window.servicesData.splice(idx,1); window.renderServices(); };
+            window.saveServices = function() { window.settingsRef.update({services: window.servicesData}).then(()=>alert('Services saved')); };
+
+            // Offers
+            window.renderOffers = function() {
+              const container = document.getElementById('offers-list');
+              if (!container) return;
+              container.innerHTML = window.offersData.map((o, idx) => \`
+                <div class="item-row">
+                  <input placeholder="Title" value="\${o.title || ''}" onchange="window.offersData[\${idx}].title=this.value">
+                  <input placeholder="Description" value="\${o.description || ''}" onchange="window.offersData[\${idx}].description=this.value">
+                  <input placeholder="Button text" value="\${o.btnText || 'Learn more'}" onchange="window.offersData[\${idx}].btnText=this.value">
+                  <button class="btn-danger" onclick="window.removeOffer(\${idx})">Remove</button>
+                </div>
+              \`).join('');
+            };
+            window.addOffer = function() { window.offersData.push({}); window.renderOffers(); };
+            window.removeOffer = function(idx) { window.offersData.splice(idx,1); window.renderOffers(); };
+            window.saveOffers = function() { window.settingsRef.update({offers: window.offersData}).then(()=>alert('Offers saved')); };
+
+            // Testimonials
+            window.renderTestimonials = function() {
+              const container = document.getElementById('testimonials-list');
+              if (!container) return;
+              container.innerHTML = window.testimonialsData.map((t, idx) => \`
+                <div class="item-row">
+                  <input placeholder="Name" value="\${t.name || ''}" onchange="window.testimonialsData[\${idx}].name=this.value">
+                  <textarea placeholder="Text" onchange="window.testimonialsData[\${idx}].text=this.value">\${t.text || ''}</textarea>
+                  <input type="number" placeholder="Rating (1-5)" value="\${t.rating || 5}" onchange="window.testimonialsData[\${idx}].rating=parseInt(this.value)">
+                  <button class="btn-danger" onclick="window.removeTestimonial(\${idx})">Remove</button>
+                </div>
+              \`).join('');
+            };
+            window.addTestimonial = function() { window.testimonialsData.push({}); window.renderTestimonials(); };
+            window.removeTestimonial = function(idx) { window.testimonialsData.splice(idx,1); window.renderTestimonials(); };
+            window.saveTestimonials = function() { window.settingsRef.update({testimonials: window.testimonialsData}).then(()=>alert('Testimonials saved')); };
+
+            // Gallery
+            window.renderGallery = function() {
+              const container = document.getElementById('gallery-list');
+              if (!container) return;
+              container.innerHTML = window.galleryData.map((url, idx) => \`
+                <div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="window.removeGalleryItem(\${idx})">✕</button></div>
+              \`).join('');
+            };
+            window.removeGalleryItem = function(idx) { window.galleryData.splice(idx,1); window.renderGallery(); };
+            window.saveGallery = function() { window.settingsRef.update({gallery: window.galleryData}).then(()=>alert('Gallery saved')); };
+
+            // General save
+            window.saveGeneral = function() {
+              const updated = {
+                siteName: document.getElementById('siteName').value,
+                gradStart: document.getElementById('gradStart').value,
+                gradEnd: document.getElementById('gradEnd').value,
+                headerColor: document.getElementById('headerColor').value,
+                footerBg: document.getElementById('footerBg').value,
+                heroTitle: document.getElementById('heroTitle').value,
+                heroSubtitle: document.getElementById('heroSubtitle').value,
+                locationLong: document.getElementById('locationLong').value,
+                footerCopyright: document.getElementById('footerCopyright').value,
+                heroBackground: document.getElementById('heroBackground').value
+              };
+              window.settingsRef.update(updated).then(() => alert('General saved'));
+            };
+
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                document.getElementById(e.target.dataset.tab+'-tab').classList.add('active');
+              });
+            });
           })();
         <\/script>
         </body>
