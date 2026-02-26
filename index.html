@@ -26,7 +26,6 @@
       background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
       color: #1e1e2f;
     }
-    /* CSS variables – default light & gradient */
     :root {
       --grad-start: #f8fafc;
       --grad-end: #e2e8f0;
@@ -38,7 +37,6 @@
       --accent: #3b82f6;
       --glass-border: rgba(255,255,255,0.2);
     }
-    /* Glassmorphic common style */
     .glass-card {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
@@ -52,7 +50,6 @@
       margin: 0 auto;
       padding: 2rem 2rem;
     }
-    /* header */
     header {
       background: var(--header-bg);
       backdrop-filter: blur(16px);
@@ -80,7 +77,6 @@
       transition: 0.2s;
     }
     .nav-links a:hover { color: var(--accent); }
-    /* hero */
     .hero {
       min-height: 85vh;
       display: flex;
@@ -134,11 +130,6 @@
       cursor: pointer;
       transition: 0.2s;
     }
-    .btn-outline {
-      background: transparent;
-      border: 2px solid white;
-    }
-    /* sections */
     section {
       margin: 4rem 0;
     }
@@ -200,7 +191,6 @@
       border-radius: 3rem 3rem 0 0;
       margin-top: 5rem;
     }
-    /* admin floating button */
     .admin-trigger {
       position: fixed;
       bottom: 30px; right: 30px;
@@ -219,7 +209,6 @@
       transition: 0.2s;
     }
     .admin-trigger:hover { transform: scale(1.1); background: #1e293b; }
-    /* loader */
     #loader {
       position: fixed; top:0; left:0; width:100%; height:100%;
       background: white; display: flex; align-items: center; justify-content: center; z-index: 999;
@@ -241,10 +230,9 @@
   </header>
 
   <main>
-    <!-- hero -->
     <section id="home" class="hero">
       <div class="hero-content glass-card" id="hero-section">
-        <h2 id="hero-title">Welcome to Natalie</h2>
+        <h2 id="hero-title">Welcom To<br>Natalie Aparments</h2>
         <p id="hero-subtitle" style="font-size:1.4rem;">Your serene escape in Artemida</p>
         <div class="hero-location" id="location-text">Artemida, Attica</div>
         <div class="distance-badge" id="distances">
@@ -256,25 +244,21 @@
       </div>
     </section>
 
-    <!-- rooms -->
     <section id="rooms" class="container">
       <h2 class="section-title">Luxury rooms</h2>
       <div class="rooms-grid" id="rooms-container"></div>
     </section>
 
-    <!-- services -->
     <section id="services" class="container">
       <h2 class="section-title">Unforgettable services</h2>
       <div class="services-grid" id="services-container"></div>
     </section>
 
-    <!-- gallery -->
     <section id="gallery" class="container">
       <h2 class="section-title">Moments</h2>
       <div class="gallery-grid" id="gallery-container"></div>
     </section>
 
-    <!-- contact / location -->
     <section id="contact" class="container">
       <h2 class="section-title">Find us</h2>
       <div class="glass-card" style="padding:2rem; text-align:center;">
@@ -300,7 +284,7 @@
   </div>
 
   <script>
-    // ---------- FIREBASE INIT (compat) ----------
+    // ---------- FIREBASE ----------
     const firebaseConfig = {
       apiKey: "AIzaSyBjtwQeSKpK4Ppiv9y1-MdYFe0MDoFcI0k",
       authDomain: "myhoteeel.firebaseapp.com",
@@ -312,11 +296,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const storage = firebase.storage();
-
-    // ---------- GLOBAL SETTINGS REFERENCE ----------
     const settingsDocRef = db.collection('settings').doc('general');
 
-    // Default data structure
     const defaultSettings = {
       siteName: 'Natalie Apartments',
       headerColor: 'rgba(255,255,255,0.85)',
@@ -324,10 +305,9 @@
       footerTextColor: '#f1f5f9',
       gradStart: '#f8fafc',
       gradEnd: '#e2e8f0',
-      heroTitle: 'Welcome to Natalie',
+      heroTitle: 'Welcom To<br>Natalie Aparments',
       heroSubtitle: 'Your serene escape in Artemida',
       locationLong: 'Artemida, Attica — 10min from airport, 15min from Rafina port, 500m from beach',
-      aboutText: '',
       footerCopyright: '© 2025 Natalie Apartments · Artemida',
       rooms: [
         { name: 'Deluxe Sea View', description: 'Spa bathroom, private balcony', price: '€190/night', image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500' },
@@ -348,25 +328,8 @@
       ]
     };
 
-    // Load settings and apply to DOM, and keep listening
-    function loadAndApplySettings() {
-      settingsDocRef.get().then((doc) => {
-        if (!doc.exists) {
-          // create default doc
-          return settingsDocRef.set(defaultSettings).then(() => defaultSettings);
-        } else {
-          return doc.data();
-        }
-      }).then(applySettings)
-        .catch((error) => {
-          console.error('Firestore error, using fallback', error);
-          applySettings(defaultSettings); // fallback so page doesn't get stuck
-        });
-    }
-
     function applySettings(data) {
       if (!data) return;
-      // Update CSS variables
       document.documentElement.style.setProperty('--grad-start', data.gradStart || '#f8fafc');
       document.documentElement.style.setProperty('--grad-end', data.gradEnd || '#e2e8f0');
       document.documentElement.style.setProperty('--header-bg', data.headerColor || 'rgba(255,255,255,0.85)');
@@ -374,12 +337,11 @@
       document.documentElement.style.setProperty('--footer-text', data.footerTextColor || '#f1f5f9');
       
       document.getElementById('site-title').innerText = data.siteName || 'Natalie Apartments';
-      document.getElementById('hero-title').innerText = data.heroTitle || 'Welcome to Natalie';
+      document.getElementById('hero-title').innerHTML = data.heroTitle || 'Welcom To<br>Natalie Aparments';
       document.getElementById('hero-subtitle').innerText = data.heroSubtitle || 'Your serene escape';
       document.getElementById('location-text').innerText = data.locationLong || 'Artemida, Attica';
       document.getElementById('footer-text').innerText = data.footerCopyright || '© 2025 Natalie Apartments';
 
-      // rooms
       const roomsContainer = document.getElementById('rooms-container');
       if (data.rooms && Array.isArray(data.rooms)) {
         roomsContainer.innerHTML = data.rooms.map(r => `
@@ -392,7 +354,6 @@
         `).join('');
       }
 
-      // services
       const servicesContainer = document.getElementById('services-container');
       if (data.services && Array.isArray(data.services)) {
         servicesContainer.innerHTML = data.services.map(s => `
@@ -403,7 +364,6 @@
         `).join('');
       }
 
-      // gallery
       const galleryContainer = document.getElementById('gallery-container');
       if (data.gallery && Array.isArray(data.gallery)) {
         galleryContainer.innerHTML = data.gallery.map(url => `
@@ -413,21 +373,20 @@
         `).join('');
       }
 
-      // hide loader
       document.getElementById('loader').style.display = 'none';
     }
 
-    // realtime listener (after initial load)
-    settingsDocRef.onSnapshot((doc) => {
-      if (doc.exists) applySettings(doc.data());
-    }, (error) => {
-      console.warn('Snapshot error, but page already loaded');
-    });
+    settingsDocRef.get().then(doc => {
+      if (!doc.exists) {
+        return settingsDocRef.set(defaultSettings).then(() => defaultSettings);
+      } else {
+        return doc.data();
+      }
+    }).then(applySettings).catch(() => applySettings(defaultSettings));
 
-    // start
-    loadAndApplySettings();
+    settingsDocRef.onSnapshot(doc => { if (doc.exists) applySettings(doc.data()); });
 
-    // ---------- ADMIN PANEL (NEW WINDOW) with global variables fix ----------
+    // ---------- ADMIN PANEL (NEW WINDOW) - FULLY FIXED ----------
     function openAdminPanel() {
       const adminWin = window.open('', 'adminPanel', 'width=1000,height=750,scrollbars=yes,resizable=yes');
       adminWin.document.write(`
@@ -448,7 +407,7 @@
           .tab-pane.active { display:block; }
           .form-group { margin-bottom:1.5rem; }
           label { font-weight:600; display:block; margin-bottom:0.5rem; }
-          input, textarea, select { width:100%; padding:0.8rem 1rem; border:1px solid #cbd5e1; border-radius:1rem; }
+          input, textarea { width:100%; padding:0.8rem 1rem; border:1px solid #cbd5e1; border-radius:1rem; }
           .image-upload { border:2px dashed #94a3b8; border-radius:1.5rem; padding:2rem; text-align:center; margin:1rem 0; cursor:pointer; }
           .btn { background:#3b82f6; color:white; padding:0.6rem 1.5rem; border-radius:2rem; border:none; font-weight:600; cursor:pointer; margin-right:0.5rem; }
           .btn-danger { background:#ef4444; }
@@ -471,16 +430,16 @@
           <!-- GENERAL TAB -->
           <div id="general-tab" class="tab-pane active">
             <h3>Style & text</h3>
-            <div class="form-group"><label>Site name</label><input id="siteName" class="form-input"></div>
+            <div class="form-group"><label>Site name</label><input id="siteName"></div>
             <div class="row">
               <div><label>Gradient start</label><input type="color" id="gradStart"></div>
               <div><label>Gradient end</label><input type="color" id="gradEnd"></div>
             </div>
             <div class="row">
-              <div><label>Header BG (rgba or hex)</label><input id="headerColor" placeholder="rgba(255,255,255,0.85)"></div>
+              <div><label>Header BG (rgba/hex)</label><input id="headerColor" placeholder="rgba(255,255,255,0.85)"></div>
               <div><label>Footer BG</label><input type="color" id="footerBg"></div>
             </div>
-            <div><label>Hero title</label><input id="heroTitle"></div>
+            <div><label>Hero title (HTML allowed)</label><input id="heroTitle"></div>
             <div><label>Hero subtitle</label><input id="heroSubtitle"></div>
             <div><label>Location text</label><input id="locationLong"></div>
             <div><label>Footer copyright</label><input id="footerCopyright"></div>
@@ -509,7 +468,7 @@
             <div id="gallery-list" style="display:flex; flex-wrap:wrap;"></div>
             <div class="image-upload" id="gallery-upload-area">
               <i class="fas fa-cloud-upload-alt fa-3x"></i>
-              <p>Drag or click to upload new image (max 2MB)</p>
+              <p>Click to upload new image (max 2MB)</p>
               <input type="file" id="galleryUpload" accept="image/*" style="display:none;">
             </div>
             <button class="btn" onclick="saveGallery()">Save gallery order</button>
@@ -524,25 +483,14 @@
           const storage = firebase.storage();
           const settingsRef = db.collection('settings').doc('general');
 
-          // Global variables for inline handlers (attached to window)
-          window.roomsArray = [];
-          window.servicesArray = [];
-          window.galleryArray = [];
+          // Use var for global accessibility in inline handlers
+          var roomsData = [];
+          var servicesData = [];
+          var galleryData = [];
 
-          // Load current settings into forms
-          settingsRef.get().then(doc => { 
-            if (doc.exists) { 
-              window.currentSettings = doc.data(); 
-              populateForms(); 
-            } else {
-              // fallback defaults (should not happen because main creates doc)
-              window.currentSettings = {};
-              populateForms();
-            }
-          });
-
-          function populateForms() {
-            const s = window.currentSettings;
+          // Load settings and populate forms
+          settingsRef.get().then((doc) => {
+            const s = doc.exists ? doc.data() : {};
             document.getElementById('siteName').value = s.siteName || '';
             document.getElementById('gradStart').value = s.gradStart || '#f8fafc';
             document.getElementById('gradEnd').value = s.gradEnd || '#e2e8f0';
@@ -552,13 +500,16 @@
             document.getElementById('heroSubtitle').value = s.heroSubtitle || '';
             document.getElementById('locationLong').value = s.locationLong || '';
             document.getElementById('footerCopyright').value = s.footerCopyright || '';
-            renderRooms(s.rooms || []);
-            renderServices(s.services || []);
-            renderGallery(s.gallery || []);
-          }
+            roomsData = s.rooms ? JSON.parse(JSON.stringify(s.rooms)) : [];
+            servicesData = s.services ? JSON.parse(JSON.stringify(s.services)) : [];
+            galleryData = s.gallery ? JSON.parse(JSON.stringify(s.gallery)) : [];
+            renderRooms();
+            renderServices();
+            renderGallery();
+          });
 
-          // GENERAL SAVE
-          window.saveGeneral = () => {
+          // ---------- GENERAL ----------
+          window.saveGeneral = function() {
             const updated = {
               siteName: document.getElementById('siteName').value,
               gradStart: document.getElementById('gradStart').value,
@@ -573,95 +524,96 @@
             settingsRef.update(updated).then(() => alert('General saved'));
           };
 
-          // Rooms
-          function renderRooms(rooms) {
-            window.roomsArray = rooms;
+          // ---------- ROOMS ----------
+          function renderRooms() {
             const container = document.getElementById('rooms-list');
-            container.innerHTML = rooms.map((r, idx) => \`
+            container.innerHTML = roomsData.map((r, idx) => \`
               <div style="border:1px solid #ddd; border-radius:1rem; padding:1rem; margin-bottom:1rem;">
-                <input placeholder="Name" value="\${r.name || ''}" onchange="window.roomsArray[\${idx}].name=this.value">
-                <input placeholder="Description" value="\${r.description || ''}" onchange="window.roomsArray[\${idx}].description=this.value">
-                <input placeholder="Price" value="\${r.price || ''}" onchange="window.roomsArray[\${idx}].price=this.value">
-                <input placeholder="Image URL" value="\${r.image || ''}" onchange="window.roomsArray[\${idx}].image=this.value">
-                <button class="btn-danger" onclick="window.removeRoom(\${idx})">Remove</button>
+                <input placeholder="Name" value="\${r.name || ''}" onchange="roomsData[\${idx}].name = this.value">
+                <input placeholder="Description" value="\${r.description || ''}" onchange="roomsData[\${idx}].description = this.value">
+                <input placeholder="Price" value="\${r.price || ''}" onchange="roomsData[\${idx}].price = this.value">
+                <input placeholder="Image URL" value="\${r.image || ''}" onchange="roomsData[\${idx}].image = this.value">
+                <button class="btn-danger" onclick="removeRoom(\${idx})">Remove</button>
               </div>\`).join('');
           }
-          window.addRoom = () => { 
-            window.roomsArray.push({name:'', description:'', price:'', image:''}); 
-            renderRooms(window.roomsArray); 
+          window.addRoom = function() {
+            roomsData.push({ name: '', description: '', price: '', image: '' });
+            renderRooms();
           };
-          window.removeRoom = (idx) => { 
-            window.roomsArray.splice(idx,1); 
-            renderRooms(window.roomsArray); 
+          window.removeRoom = function(idx) {
+            roomsData.splice(idx, 1);
+            renderRooms();
           };
-          window.saveRooms = () => { 
-            settingsRef.update({rooms: window.roomsArray}).then(()=>alert('Rooms saved')); 
+          window.saveRooms = function() {
+            settingsRef.update({ rooms: roomsData }).then(() => alert('Rooms saved'));
           };
 
-          // Services
-          function renderServices(services) {
-            window.servicesArray = services;
-            document.getElementById('services-list').innerHTML = services.map((s, idx) => \`
+          // ---------- SERVICES ----------
+          function renderServices() {
+            const container = document.getElementById('services-list');
+            container.innerHTML = servicesData.map((s, idx) => \`
               <div style="border:1px solid #ddd; padding:1rem; margin:0.5rem 0;">
-                <input value="\${s.name || ''}" placeholder="Service name" onchange="window.servicesArray[\${idx}].name=this.value">
-                <input value="\${s.icon || ''}" placeholder="icon name (e.g. wifi)" onchange="window.servicesArray[\${idx}].icon=this.value">
-                <button class="btn-danger" onclick="window.removeService(\${idx})">remove</button>
+                <input value="\${s.name || ''}" placeholder="Service name" onchange="servicesData[\${idx}].name = this.value">
+                <input value="\${s.icon || ''}" placeholder="icon name (e.g. wifi)" onchange="servicesData[\${idx}].icon = this.value">
+                <button class="btn-danger" onclick="removeService(\${idx})">remove</button>
               </div>\`).join('');
           }
-          window.addService = () => { 
-            window.servicesArray.push({name:'', icon:'star'}); 
-            renderServices(window.servicesArray); 
+          window.addService = function() {
+            servicesData.push({ name: '', icon: 'star' });
+            renderServices();
           };
-          window.removeService = (idx) => { 
-            window.servicesArray.splice(idx,1); 
-            renderServices(window.servicesArray); 
+          window.removeService = function(idx) {
+            servicesData.splice(idx, 1);
+            renderServices();
           };
-          window.saveServices = () => { 
-            settingsRef.update({services: window.servicesArray}).then(()=>alert('Services saved')); 
+          window.saveServices = function() {
+            settingsRef.update({ services: servicesData }).then(() => alert('Services saved'));
           };
 
-          // Gallery
-          function renderGallery(arr) {
-            window.galleryArray = arr;
-            document.getElementById('gallery-list').innerHTML = arr.map((url, idx) => \`
+          // ---------- GALLERY ----------
+          function renderGallery() {
+            const container = document.getElementById('gallery-list');
+            container.innerHTML = galleryData.map((url, idx) => \`
               <div class="gallery-thumb">
                 <img src="\${url}" class="preview-img">
-                <button onclick="window.removeGalleryItem(\${idx})">✕</button>
+                <button onclick="removeGalleryItem(\${idx})">✕</button>
               </div>\`).join('');
           }
-          window.removeGalleryItem = (idx) => { 
-            window.galleryArray.splice(idx,1); 
-            renderGallery(window.galleryArray); 
+          window.removeGalleryItem = function(idx) {
+            galleryData.splice(idx, 1);
+            renderGallery();
           };
-          
+          window.saveGallery = function() {
+            settingsRef.update({ gallery: galleryData }).then(() => alert('Gallery saved'));
+          };
+
           // Upload handler
-          document.addEventListener('DOMContentLoaded', () => {
+          document.addEventListener('DOMContentLoaded', function() {
             const uploadArea = document.getElementById('gallery-upload-area');
             const fileInput = document.getElementById('galleryUpload');
             uploadArea.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', function(e) {
               const file = e.target.files[0];
               if (!file) return;
-              if (file.size > 2*1024*1024) { alert('Max 2MB'); return; }
-              const ref = storage.ref('gallery/'+Date.now()+'_'+file.name);
+              if (file.size > 2 * 1024 * 1024) {
+                alert('Max 2MB');
+                return;
+              }
+              const ref = storage.ref('gallery/' + Date.now() + '_' + file.name);
               ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
-                window.galleryArray.push(url);
-                renderGallery(window.galleryArray);
-              }).catch(console.error);
+                galleryData.push(url);
+                renderGallery();
+              }).catch(alert);
             });
           });
-          
-          window.saveGallery = () => { 
-            settingsRef.update({gallery: window.galleryArray}).then(()=>alert('Gallery saved')); 
-          };
 
-          // tab switching
+          // Tab switching
           document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-              document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+              document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
               e.target.classList.add('active');
-              document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-              document.getElementById(e.target.dataset.tab+'-tab').classList.add('active');
+              document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+              document.getElementById(e.target.dataset.tab + '-tab').classList.add('active');
             });
           });
         <\/script>
