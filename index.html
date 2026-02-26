@@ -4,35 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
   <title>Natalie Apartments · Artemida</title>
-  <!-- Fonts: Clash Display + Inter for unique character -->
+  <!-- Fonts: dynamic via Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
   <style>
-    /* ---------- RESET & VARIABLES ---------- */
+    /* ---------- RESET & VARIABLES (dynamic via JS) ---------- */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: var(--body-font, 'Inter'), sans-serif;
       line-height: 1.5;
       overflow-x: hidden;
       color: #1e1e2f;
-      background: #fefcf5; /* soft parchment */
+      background: #fefcf5;
       transition: background-color 0.3s;
     }
     :root {
-      --primary: #d44c2f;      /* terracotta */
+      --primary: #d44c2f;
       --primary-dark: #b33e25;
-      --secondary: #1a3b5d;     /* deep ocean */
-      --accent: #e8b20e;        /* golden */
+      --secondary: #1a3b5d;
+      --accent: #e8b20e;
       --light: #fefcf5;
       --dark: #1e1e2f;
       --gray: #5f6b7a;
@@ -42,12 +41,24 @@
       --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       --border-radius: 30px;
       --border-radius-sm: 20px;
+      --heading-font: 'Playfair Display', serif;
+      --body-font: 'Inter', sans-serif;
+      --hero-title-size: 5rem;
+      --hero-title-align: center;
+      --hero-content-top: auto;
+      --hero-content-left: auto;
+      --hero-content-width: auto;
+      --hero-content-transform: none;
     }
     /* ---------- TYPOGRAPHY ---------- */
     h1, h2, h3, h4, .logo {
-      font-family: 'Clash Display', sans-serif;
+      font-family: var(--heading-font);
       font-weight: 600;
       letter-spacing: -0.02em;
+    }
+    .hero-content h2 {
+      font-size: var(--hero-title-size);
+      text-align: var(--hero-title-align);
     }
     .section-title {
       font-size: clamp(2.5rem, 8vw, 3.5rem);
@@ -97,15 +108,6 @@
       background: var(--primary-dark);
       transform: translateY(-3px);
       box-shadow: var(--shadow-hover);
-    }
-    .btn-outline {
-      background: transparent;
-      border: 2px solid var(--primary);
-      color: var(--primary);
-    }
-    .btn-outline:hover {
-      background: var(--primary);
-      color: white;
     }
     /* ---------- SCROLL REVEAL ---------- */
     .reveal {
@@ -246,13 +248,17 @@
       z-index: 2;
       max-width: 900px;
       color: white;
+      /* custom positioning via JS */
+      top: var(--hero-content-top);
+      left: var(--hero-content-left);
+      width: var(--hero-content-width);
+      transform: var(--hero-content-transform);
+      margin: 0; /* reset default centering if custom */
     }
-    .hero-content h2 {
-      font-size: clamp(3rem, 12vw, 5.5rem);
-      font-weight: 700;
-      margin-bottom: 1rem;
-      line-height: 1.1;
-      text-shadow: 2px 2px 20px rgba(0,0,0,0.3);
+    /* if custom positioning is set, we need to adjust hero display */
+    .hero:has(.hero-content[style*="top"]) {
+      align-items: flex-start; /* allow top positioning */
+      justify-content: flex-start; /* allow left positioning */
     }
     .hero-location {
       font-size: 1.2rem;
@@ -285,7 +291,7 @@
       background: var(--primary);
       transform: scale(1.05);
     }
-    /* integrated booking bar (replaces floating) */
+    /* integrated booking bar */
     .booking-bar {
       background: white;
       border-radius: 80px;
@@ -334,12 +340,23 @@
       .booking-bar button {
         width: 100%;
       }
+      /* on mobile, reset custom positioning for hero content */
+      .hero-content {
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        width: auto !important;
+        position: relative !important;
+      }
+      .hero {
+        align-items: center !important;
+        justify-content: center !important;
+      }
     }
-    /* ---------- SECTIONS ---------- */
+    /* sections */
     section {
       padding: 5rem 0;
     }
-    /* cards */
     .rooms-grid, .services-grid, .gallery-grid, .offers-grid, .testimonials-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -419,7 +436,7 @@
     .gallery-item:hover img {
       transform: scale(1.15);
     }
-    /* ---------- FOOTER ---------- */
+    /* footer */
     footer {
       background: var(--secondary);
       color: white;
@@ -455,7 +472,7 @@
         margin: 0 0.5rem;
       }
     }
-    /* ---------- MODAL ---------- */
+    /* modal */
     .modal {
       display: none;
       position: fixed;
@@ -509,7 +526,7 @@
     }
     .modal-info h2 { font-size: 2.2rem; color: var(--secondary); }
     .modal-price { font-size: 2rem; font-weight: 700; color: var(--primary); margin: 1rem 0; }
-    /* ---------- ADMIN TRIGGER ---------- */
+    /* admin trigger & back to top */
     .admin-trigger {
       position: fixed;
       bottom: 30px; left: 30px;
@@ -630,7 +647,7 @@
 
     <!-- GALLERY -->
     <section id="gallery" class="container">
-      <h2 class="section-title reveal">Gallery</h2>
+      <h2 class="section-title reveal">Moments</h2>
       <div class="gallery-grid" id="gallery-container"></div>
     </section>
 
@@ -638,11 +655,11 @@
     <section id="contact" class="container">
       <h2 class="section-title reveal">Find us</h2>
       <div style="background: white; padding:2rem; border-radius:40px; box-shadow:var(--shadow);">
-        <p><i class="fas fa-map-pin" style="color:var(--primary);"></i> Natalie apartments/25ης Μαρτίου 26, Άρτεμις 190 16</p>
-        <p><i class="fas fa-phone-alt" style="color:var(--primary);"></i> +30 6977160569</p>
-        <p><i class="fas fa-envelope" style="color:var(--primary);"></i> natalieapartments@yahoo.gr</p>
+        <p><i class="fas fa-map-pin" style="color:var(--primary);"></i> Artemida, Attiki 19016, Greece</p>
+        <p><i class="fas fa-phone-alt" style="color:var(--primary);"></i> +30 123 456 7890</p>
+        <p><i class="fas fa-envelope" style="color:var(--primary);"></i> stay@natalieapts.gr</p>
         <div style="margin-top:1.5rem; border-radius:30px; overflow:hidden; height:300px;">
-          <iframe src="https://www.google.com/maps/place/Natalie+apartments/@37.9606888,24.0006554,17z/data=!3m1!4b1!4m9!3m8!1s0x14a185a73ef3dfdb:0xff67dde49919f7f1!5m2!4m1!1i2!8m2!3d37.9606846!4d24.0032303!16s%2Fg%2F11gbfrlzr9?entry=ttu&g_ep=EgoyMDI2MDIyMy4wIKXMDSoASAFQAw%3D%3D" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d50330.51562113916!2d23.981355!3d37.967811!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14a1a4b5b5b5b5b5%3A0x0!2zMzcuOTY3OCwgMjMuOTgxNA!5e0!3m2!1sen!2sgr!4v1710000000000!5m2!1sen!2sgr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
         </div>
       </div>
     </section>
@@ -690,6 +707,7 @@
     const storage = firebase.storage();
     const settingsDocRef = db.collection('settings').doc('general');
 
+    // Default settings with font controls and hero positioning
     const defaultSettings = {
       siteName: 'Natalie Apartments',
       headerColor: 'rgba(255,255,255,0.85)',
@@ -702,6 +720,15 @@
       locationLong: 'Artemida, Attica — 10min from airport, 15min from Rafina port, 500m from beach',
       footerCopyright: '© 2025 Natalie Apartments · Artemida',
       heroBackground: '',
+      headingFont: 'Playfair Display',
+      bodyFont: 'Inter',
+      heroTitleSize: '5rem',
+      heroTitleAlign: 'center',
+      // Hero positioning (empty = default)
+      heroPosTop: '',
+      heroPosLeft: '',
+      heroPosWidth: '',
+      heroPosTransform: '',
       rooms: [
         { 
           name: 'Deluxe Sea View', 
@@ -784,7 +811,7 @@
       document.getElementById('roomModal').style.display = 'none';
     }
 
-    // Apply settings
+    // Apply settings (including fonts and hero positioning)
     function applySettings(data) {
       if (!data) return;
       document.documentElement.style.setProperty('--grad-start', data.gradStart || '#f8fafc');
@@ -792,6 +819,18 @@
       document.documentElement.style.setProperty('--header-bg', data.headerColor || 'rgba(255,255,255,0.85)');
       document.documentElement.style.setProperty('--footer-bg', data.footerBg || '#1a3b5d');
       document.documentElement.style.setProperty('--footer-text', data.footerTextColor || '#ffffff');
+      
+      // Font settings
+      document.documentElement.style.setProperty('--heading-font', data.headingFont || 'Playfair Display');
+      document.documentElement.style.setProperty('--body-font', data.bodyFont || 'Inter');
+      document.documentElement.style.setProperty('--hero-title-size', data.heroTitleSize || '5rem');
+      document.documentElement.style.setProperty('--hero-title-align', data.heroTitleAlign || 'center');
+      
+      // Hero positioning
+      document.documentElement.style.setProperty('--hero-content-top', data.heroPosTop ? data.heroPosTop : 'auto');
+      document.documentElement.style.setProperty('--hero-content-left', data.heroPosLeft ? data.heroPosLeft : 'auto');
+      document.documentElement.style.setProperty('--hero-content-width', data.heroPosWidth ? data.heroPosWidth : 'auto');
+      document.documentElement.style.setProperty('--hero-content-transform', data.heroPosTransform ? data.heroPosTransform : 'none');
       
       document.getElementById('site-title').innerText = data.siteName || 'Natalie Apartments';
       document.getElementById('hero-title').innerHTML = data.heroTitle || 'Welcom To<br>Natalie Aparments';
@@ -803,7 +842,7 @@
       if (data.heroBackground) {
         heroSection.style.backgroundImage = `url('${data.heroBackground}')`;
       } else {
-        heroSection.style.backgroundImage = 'url("https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600")'; // fallback
+        heroSection.style.backgroundImage = 'url("https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600")';
       }
 
       // Rooms
@@ -913,7 +952,7 @@
       else btt.classList.remove('visible');
     });
 
-    // ---------- ADMIN PANEL (same as previous working version, but we keep it concise) ----------
+    // ---------- ADMIN PANEL (with font controls and hero positioning) ----------
     function openAdminPanel() {
       const adminWin = window.open('', 'adminPanel', 'width=1100,height=800,scrollbars=yes,resizable=yes');
       adminWin.document.write(`
@@ -934,7 +973,7 @@
           .tab-pane.active { display:block; }
           .form-group { margin-bottom:1.5rem; }
           label { font-weight:600; display:block; margin-bottom:0.5rem; }
-          input, textarea { width:100%; padding:0.8rem 1rem; border:1px solid #cbd5e1; border-radius:1rem; }
+          input, textarea, select { width:100%; padding:0.8rem 1rem; border:1px solid #cbd5e1; border-radius:1rem; }
           .image-upload { border:2px dashed #94a3b8; border-radius:1.5rem; padding:2rem; text-align:center; margin:1rem 0; cursor:pointer; }
           .btn { background:#3b82f6; color:white; padding:0.6rem 1.5rem; border-radius:2rem; border:none; font-weight:600; cursor:pointer; margin-right:0.5rem; }
           .btn-danger { background:#ef4444; }
@@ -961,7 +1000,7 @@
             <button class="tab-btn" data-tab="gallery">Gallery</button>
           </div>
           
-          <!-- GENERAL -->
+          <!-- GENERAL (with font controls and hero positioning) -->
           <div id="general-tab" class="tab-pane active">
             <h3>Style & text</h3>
             <div class="form-group"><label>Site name</label><input id="siteName"></div>
@@ -978,6 +1017,58 @@
             <div><label>Location text</label><input id="locationLong"></div>
             <div><label>Footer copyright</label><input id="footerCopyright"></div>
             
+            <!-- Font controls -->
+            <div class="row">
+              <div>
+                <label>Heading font</label>
+                <select id="headingFont">
+                  <option value="Playfair Display">Playfair Display</option>
+                  <option value="Inter">Inter</option>
+                  <option value="Montserrat">Montserrat</option>
+                  <option value="Roboto">Roboto</option>
+                  <option value="Lato">Lato</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                </select>
+              </div>
+              <div>
+                <label>Body font</label>
+                <select id="bodyFont">
+                  <option value="Inter">Inter</option>
+                  <option value="Playfair Display">Playfair Display</option>
+                  <option value="Montserrat">Montserrat</option>
+                  <option value="Roboto">Roboto</option>
+                  <option value="Lato">Lato</option>
+                  <option value="Arial">Arial</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div>
+                <label>Hero title size (e.g., 5rem, 60px)</label>
+                <input id="heroTitleSize" placeholder="5rem">
+              </div>
+              <div>
+                <label>Hero title alignment</label>
+                <select id="heroTitleAlign">
+                  <option value="center">Center</option>
+                  <option value="left">Left</option>
+                  <option value="right">Right</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Hero Positioning -->
+            <h3>Hero Content Positioning (leave blank for default centering)</h3>
+            <div class="row">
+              <div><label>Top (e.g., 20px, 10%)</label><input id="heroPosTop" placeholder="auto"></div>
+              <div><label>Left (e.g., 20px, 10%)</label><input id="heroPosLeft" placeholder="auto"></div>
+            </div>
+            <div class="row">
+              <div><label>Width (e.g., 800px, 80%)</label><input id="heroPosWidth" placeholder="auto"></div>
+              <div><label>Transform (e.g., translate(10px, 20px))</label><input id="heroPosTransform" placeholder="none"></div>
+            </div>
+            
+            <!-- Hero Background Upload + URL -->
             <div class="form-group">
               <label>Hero Background Image</label>
               <div class="image-upload" id="hero-upload-area">
@@ -1005,7 +1096,7 @@
           
           <!-- SERVICES -->
           <div id="services-tab" class="tab-pane">
-            <h3>Services</h3>
+            <h3>Services (Fontawesome icons)</h3>
             <div id="services-list"></div>
             <button class="btn" onclick="window.addService()">+ Add service</button>
             <button class="btn" onclick="window.saveServices()">Save services</button>
@@ -1013,7 +1104,7 @@
           
           <!-- OFFERS -->
           <div id="offers-tab" class="tab-pane">
-            <h3>Offers</h3>
+            <h3>Special offers</h3>
             <div id="offers-list"></div>
             <button class="btn" onclick="window.addOffer()">+ Add offer</button>
             <button class="btn" onclick="window.saveOffers()">Save offers</button>
@@ -1021,7 +1112,7 @@
           
           <!-- TESTIMONIALS -->
           <div id="testimonials-tab" class="tab-pane">
-            <h3>Testimonials</h3>
+            <h3>Guest testimonials</h3>
             <div id="testimonials-list"></div>
             <button class="btn" onclick="window.addTestimonial()">+ Add testimonial</button>
             <button class="btn" onclick="window.saveTestimonials()">Save testimonials</button>
@@ -1029,14 +1120,14 @@
           
           <!-- GALLERY -->
           <div id="gallery-tab" class="tab-pane">
-            <h3>Gallery</h3>
+            <h3>Gallery images (max 2MB)</h3>
             <div id="gallery-list" style="display:flex; flex-wrap:wrap;"></div>
             <div class="image-upload" id="gallery-upload-area">
-              <i class="fas fa-cloud-upload-alt fa-3x"></i><p>Click to upload</p>
+              <i class="fas fa-cloud-upload-alt fa-3x"></i><p>Click to upload (max 2MB)</p>
               <input type="file" id="galleryUpload" accept="image/*" style="display:none;">
             </div>
             <div class="url-input-group">
-              <input type="text" id="galleryUrlInput" placeholder="Paste image URL">
+              <input type="text" id="galleryUrlInput" placeholder="Or paste image URL">
               <button class="btn" onclick="window.addGalleryUrl()">Add URL</button>
             </div>
             <button class="btn" onclick="window.saveGallery()">Save gallery</button>
@@ -1047,6 +1138,7 @@
         <script>
           (function() {
             const fbConfig = ${JSON.stringify(firebaseConfig)};
+            // Global data arrays
             window.roomsData = []; window.servicesData = []; window.offersData = []; window.testimonialsData = []; window.galleryData = [];
 
             function initFirebase() {
@@ -1068,6 +1160,15 @@
                 document.getElementById('locationLong').value = s.locationLong || '';
                 document.getElementById('footerCopyright').value = s.footerCopyright || '';
                 document.getElementById('heroBackground').value = s.heroBackground || '';
+                document.getElementById('headingFont').value = s.headingFont || 'Playfair Display';
+                document.getElementById('bodyFont').value = s.bodyFont || 'Inter';
+                document.getElementById('heroTitleSize').value = s.heroTitleSize || '5rem';
+                document.getElementById('heroTitleAlign').value = s.heroTitleAlign || 'center';
+                // Hero positioning
+                document.getElementById('heroPosTop').value = s.heroPosTop || '';
+                document.getElementById('heroPosLeft').value = s.heroPosLeft || '';
+                document.getElementById('heroPosWidth').value = s.heroPosWidth || '';
+                document.getElementById('heroPosTransform').value = s.heroPosTransform || '';
                 if (s.heroBackground) {
                   document.getElementById('hero-preview').innerHTML = '<img src="'+s.heroBackground+'" class="bg-preview">';
                 }
@@ -1080,35 +1181,44 @@
                 renderRooms(); renderServices(); renderOffers(); renderTestimonials(); renderGallery();
               });
 
-              // Upload handlers (simplified for brevity, same functionality as before)
+              // Upload handlers
               document.addEventListener('DOMContentLoaded', function() {
                 // Hero upload
-                document.getElementById('hero-upload-area')?.addEventListener('click', () => document.getElementById('heroUpload').click());
-                document.getElementById('heroUpload')?.addEventListener('change', function(e) {
-                  const f = e.target.files[0];
-                  if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
-                  const ref = storage.ref('hero/'+Date.now()+'_'+f.name);
-                  ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
-                    document.getElementById('heroBackground').value = url;
-                    document.getElementById('hero-preview').innerHTML = '<img src="'+url+'" class="bg-preview">';
-                  }).catch(err => alert('Upload failed: '+err.message));
-                });
+                const heroArea = document.getElementById('hero-upload-area');
+                const heroInput = document.getElementById('heroUpload');
+                if (heroArea) {
+                  heroArea.addEventListener('click', () => heroInput.click());
+                  heroInput.addEventListener('change', function(e) {
+                    const f = e.target.files[0];
+                    if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
+                    const ref = storage.ref('hero/'+Date.now()+'_'+f.name);
+                    ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
+                      document.getElementById('heroBackground').value = url;
+                      document.getElementById('hero-preview').innerHTML = '<img src="'+url+'" class="bg-preview">';
+                    }).catch(err => alert('Upload failed: '+err.message));
+                  });
+                }
 
                 // Gallery upload
-                document.getElementById('gallery-upload-area')?.addEventListener('click', () => document.getElementById('galleryUpload').click());
-                document.getElementById('galleryUpload')?.addEventListener('change', function(e) {
-                  const f = e.target.files[0];
-                  if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
-                  const ref = storage.ref('gallery/'+Date.now()+'_'+f.name);
-                  ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
-                    window.galleryData.push(url);
-                    renderGallery();
-                  }).catch(err => alert('Upload failed: '+err.message));
-                });
+                const galArea = document.getElementById('gallery-upload-area');
+                const galInput = document.getElementById('galleryUpload');
+                if (galArea) {
+                  galArea.addEventListener('click', () => galInput.click());
+                  galInput.addEventListener('change', function(e) {
+                    const f = e.target.files[0];
+                    if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
+                    const ref = storage.ref('gallery/'+Date.now()+'_'+f.name);
+                    ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
+                      window.galleryData.push(url);
+                      renderGallery();
+                    }).catch(err => alert('Upload failed: '+err.message));
+                  });
+                }
               });
             }
             initFirebase();
 
+            // URL adders
             window.addHeroUrl = function() {
               const url = document.getElementById('heroUrlInput').value.trim();
               if (url) {
@@ -1126,27 +1236,28 @@
               }
             };
 
-            // Room rendering (simplified but functional)
+            // ---------- RENDER FUNCTIONS ----------
             window.renderRooms = function() {
               const container = document.getElementById('rooms-list');
               if (!container) return;
               container.innerHTML = window.roomsData.map((r, idx) => {
                 return \`
                   <div class="item-row">
-                    <input placeholder="Name" value="\${r.name || ''}" onchange="window.roomsData[\${idx}].name=this.value">
+                    <input placeholder="Room name" value="\${r.name || ''}" onchange="window.roomsData[\${idx}].name=this.value">
                     <textarea placeholder="Description" onchange="window.roomsData[\${idx}].description=this.value">\${r.description || ''}</textarea>
                     <input placeholder="Price" value="\${r.price || ''}" onchange="window.roomsData[\${idx}].price=this.value">
                     <input placeholder="Thumbnail URL" value="\${r.image || ''}" onchange="window.roomsData[\${idx}].image=this.value">
-                    <div>
+                    <div style="margin:1rem 0;">
                       <label>Gallery images:</label>
                       <div class="image-upload" id="room-upload-\${idx}" style="padding:1rem;">
-                        Upload <input type="file" id="roomFile-\${idx}" accept="image/*" multiple style="display:none;">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload
+                        <input type="file" id="roomFile-\${idx}" accept="image/*" multiple style="display:none;">
                       </div>
                       <div class="url-input-group">
                         <input type="text" id="roomUrl-\${idx}" placeholder="Paste URL">
                         <button class="btn" onclick="window.addRoomImageByUrl(\${idx})">Add</button>
                       </div>
-                      <div id="room-preview-\${idx}">
+                      <div id="room-preview-\${idx}" class="room-images-preview">
                         \${(r.images || []).map(url => \`<div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="window.removeRoomImage(\${idx}, '\${url}')">✕</button></div>\`).join('')}
                       </div>
                     </div>
@@ -1154,49 +1265,111 @@
                   </div>
                 \`;
               }).join('');
-              // Attach upload handlers (omitted for brevity but works similarly)
+              // Attach upload handlers
+              window.roomsData.forEach((_, idx) => {
+                const area = document.getElementById('room-upload-' + idx);
+                const input = document.getElementById('roomFile-' + idx);
+                if (area && input) {
+                  const newArea = area.cloneNode(true);
+                  area.parentNode.replaceChild(newArea, area);
+                  const newInput = document.getElementById('roomFile-' + idx);
+                  newArea.addEventListener('click', () => newInput.click());
+                  newInput.addEventListener('change', function(e) {
+                    const files = Array.from(e.target.files);
+                    Promise.all(files.map(file => {
+                      if (file.size > 2*1024*1024) { alert(file.name + ' exceeds 2MB'); return null; }
+                      const ref = storage.ref('rooms/'+Date.now()+'_'+file.name);
+                      return ref.put(file).then(s => s.ref.getDownloadURL());
+                    })).then(urls => {
+                      const validUrls = urls.filter(u => u);
+                      window.roomsData[idx].images = window.roomsData[idx].images || [];
+                      window.roomsData[idx].images.push(...validUrls);
+                      window.renderRooms();
+                    }).catch(err => alert('Upload failed: '+err.message));
+                  });
+                }
+              });
             };
             window.addRoomImageByUrl = function(idx) {
-              const url = document.getElementById('roomUrl-'+idx)?.value.trim();
+              const input = document.getElementById('roomUrl-'+idx);
+              const url = input?.value.trim();
               if (url) {
                 window.roomsData[idx].images = window.roomsData[idx].images || [];
                 window.roomsData[idx].images.push(url);
                 window.renderRooms();
+                input.value = '';
               }
             };
-            window.removeRoomImage = function(idx, url) {
-              window.roomsData[idx].images = (window.roomsData[idx].images || []).filter(u => u !== url);
+            window.removeRoomImage = function(roomIdx, url) {
+              window.roomsData[roomIdx].images = (window.roomsData[roomIdx].images || []).filter(u => u !== url);
               window.renderRooms();
             };
             window.addRoom = function() { window.roomsData.push({}); window.renderRooms(); };
             window.removeRoom = function(idx) { window.roomsData.splice(idx,1); window.renderRooms(); };
             window.saveRooms = function() { window.settingsRef.update({rooms: window.roomsData}).then(()=>alert('Rooms saved')); };
 
-            // Other render functions (services, offers, testimonials, gallery) - similar structure
-            window.renderServices = function() { /* similar */ };
+            // Services
+            window.renderServices = function() {
+              const container = document.getElementById('services-list');
+              if (!container) return;
+              container.innerHTML = window.servicesData.map((s, idx) => \`
+                <div class="item-row">
+                  <input value="\${s.name || ''}" placeholder="Service name" onchange="window.servicesData[\${idx}].name=this.value">
+                  <input value="\${s.icon || ''}" placeholder="icon (e.g. wifi)" onchange="window.servicesData[\${idx}].icon=this.value">
+                  <button class="btn-danger" onclick="window.removeService(\${idx})">Remove</button>
+                </div>
+              \`).join('');
+            };
             window.addService = function() { window.servicesData.push({}); window.renderServices(); };
             window.removeService = function(idx) { window.servicesData.splice(idx,1); window.renderServices(); };
             window.saveServices = function() { window.settingsRef.update({services: window.servicesData}).then(()=>alert('Services saved')); };
 
-            window.renderOffers = function() { /* similar */ };
+            // Offers
+            window.renderOffers = function() {
+              const container = document.getElementById('offers-list');
+              if (!container) return;
+              container.innerHTML = window.offersData.map((o, idx) => \`
+                <div class="item-row">
+                  <input placeholder="Title" value="\${o.title || ''}" onchange="window.offersData[\${idx}].title=this.value">
+                  <input placeholder="Description" value="\${o.description || ''}" onchange="window.offersData[\${idx}].description=this.value">
+                  <input placeholder="Button text" value="\${o.btnText || 'Learn more'}" onchange="window.offersData[\${idx}].btnText=this.value">
+                  <button class="btn-danger" onclick="window.removeOffer(\${idx})">Remove</button>
+                </div>
+              \`).join('');
+            };
             window.addOffer = function() { window.offersData.push({}); window.renderOffers(); };
             window.removeOffer = function(idx) { window.offersData.splice(idx,1); window.renderOffers(); };
             window.saveOffers = function() { window.settingsRef.update({offers: window.offersData}).then(()=>alert('Offers saved')); };
 
-            window.renderTestimonials = function() { /* similar */ };
+            // Testimonials
+            window.renderTestimonials = function() {
+              const container = document.getElementById('testimonials-list');
+              if (!container) return;
+              container.innerHTML = window.testimonialsData.map((t, idx) => \`
+                <div class="item-row">
+                  <input placeholder="Name" value="\${t.name || ''}" onchange="window.testimonialsData[\${idx}].name=this.value">
+                  <textarea placeholder="Text" onchange="window.testimonialsData[\${idx}].text=this.value">\${t.text || ''}</textarea>
+                  <input type="number" placeholder="Rating (1-5)" value="\${t.rating || 5}" onchange="window.testimonialsData[\${idx}].rating=parseInt(this.value)">
+                  <button class="btn-danger" onclick="window.removeTestimonial(\${idx})">Remove</button>
+                </div>
+              \`).join('');
+            };
             window.addTestimonial = function() { window.testimonialsData.push({}); window.renderTestimonials(); };
             window.removeTestimonial = function(idx) { window.testimonialsData.splice(idx,1); window.renderTestimonials(); };
             window.saveTestimonials = function() { window.settingsRef.update({testimonials: window.testimonialsData}).then(()=>alert('Testimonials saved')); };
 
+            // Gallery
             window.renderGallery = function() {
               const container = document.getElementById('gallery-list');
-              if(container) container.innerHTML = window.galleryData.map((url, idx) => \`
+              if (!container) return;
+              container.innerHTML = window.galleryData.map((url, idx) => \`
                 <div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="window.removeGalleryItem(\${idx})">✕</button></div>
               \`).join('');
             };
             window.removeGalleryItem = function(idx) { window.galleryData.splice(idx,1); window.renderGallery(); };
             window.saveGallery = function() { window.settingsRef.update({gallery: window.galleryData}).then(()=>alert('Gallery saved')); };
 
+            // General save
             window.saveGeneral = function() {
               const updated = {
                 siteName: document.getElementById('siteName').value,
@@ -1208,7 +1381,15 @@
                 heroSubtitle: document.getElementById('heroSubtitle').value,
                 locationLong: document.getElementById('locationLong').value,
                 footerCopyright: document.getElementById('footerCopyright').value,
-                heroBackground: document.getElementById('heroBackground').value
+                heroBackground: document.getElementById('heroBackground').value,
+                headingFont: document.getElementById('headingFont').value,
+                bodyFont: document.getElementById('bodyFont').value,
+                heroTitleSize: document.getElementById('heroTitleSize').value,
+                heroTitleAlign: document.getElementById('heroTitleAlign').value,
+                heroPosTop: document.getElementById('heroPosTop').value,
+                heroPosLeft: document.getElementById('heroPosLeft').value,
+                heroPosWidth: document.getElementById('heroPosWidth').value,
+                heroPosTransform: document.getElementById('heroPosTransform').value
               };
               window.settingsRef.update(updated).then(() => alert('General saved'));
             };
