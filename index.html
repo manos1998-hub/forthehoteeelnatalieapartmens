@@ -772,7 +772,7 @@
       else btt.classList.remove('visible');
     });
 
-    // ---------- ADMIN PANEL (FULLY FIXED) ----------
+    // ---------- ADMIN PANEL (FULLY FIXED with URL fallback) ----------
     function openAdminPanel() {
       const adminWin = window.open('', 'adminPanel', 'width=1100,height=800,scrollbars=yes,resizable=yes');
       adminWin.document.write(`
@@ -804,6 +804,8 @@
           .item-row { border:1px solid #ddd; border-radius:1rem; padding:1rem; margin-bottom:1rem; }
           .bg-preview { max-width:200px; max-height:100px; margin-top:0.5rem; border-radius:1rem; }
           .room-images-preview { display:flex; flex-wrap:wrap; margin-top:1rem; }
+          .url-input-group { display:flex; gap:0.5rem; margin-top:0.5rem; }
+          .url-input-group input { flex:1; }
         </style>
         </head>
         <body>
@@ -835,13 +837,17 @@
             <div><label>Location text</label><input id="locationLong"></div>
             <div><label>Footer copyright</label><input id="footerCopyright"></div>
             
-            <!-- Hero Background Upload -->
+            <!-- Hero Background Upload + URL -->
             <div class="form-group">
               <label>Hero Background Image (optional)</label>
               <div class="image-upload" id="hero-upload-area">
                 <i class="fas fa-cloud-upload-alt fa-3x"></i>
-                <p>Click to upload background image (max 2MB)</p>
+                <p>Click to upload image (max 2MB) – if CORS error, use URL below</p>
                 <input type="file" id="heroUpload" accept="image/*" style="display:none;">
+              </div>
+              <div class="url-input-group">
+                <input type="text" id="heroUrlInput" placeholder="Or paste image URL here">
+                <button class="btn" onclick="window.addHeroUrl()">Add URL</button>
               </div>
               <div id="hero-preview"></div>
               <input type="hidden" id="heroBackground">
@@ -849,9 +855,9 @@
             <button class="btn" onclick="window.saveGeneral()">Save general</button>
           </div>
           
-          <!-- ROOMS with multiple images -->
+          <!-- ROOMS with multiple images + URL fallback -->
           <div id="rooms-tab" class="tab-pane">
-            <h3>Manage rooms (click on room to add multiple images)</h3>
+            <h3>Manage rooms</h3>
             <div id="rooms-list"></div>
             <button class="btn" onclick="window.addRoom()">+ Add room</button>
             <button class="btn" onclick="window.saveRooms()">Save rooms</button>
@@ -881,22 +887,25 @@
             <button class="btn" onclick="window.saveTestimonials()">Save testimonials</button>
           </div>
           
-          <!-- GALLERY -->
+          <!-- GALLERY with URL fallback -->
           <div id="gallery-tab" class="tab-pane">
             <h3>Gallery images (max 2MB)</h3>
             <div id="gallery-list" style="display:flex; flex-wrap:wrap;"></div>
             <div class="image-upload" id="gallery-upload-area">
-              <i class="fas fa-cloud-upload-alt fa-3x"></i><p>Click to upload (max 2MB)</p>
+              <i class="fas fa-cloud-upload-alt fa-3x"></i><p>Click to upload (max 2MB) – if CORS error, use URL below</p>
               <input type="file" id="galleryUpload" accept="image/*" style="display:none;">
+            </div>
+            <div class="url-input-group">
+              <input type="text" id="galleryUrlInput" placeholder="Or paste image URL here">
+              <button class="btn" onclick="window.addGalleryUrl()">Add URL</button>
             </div>
             <button class="btn" onclick="window.saveGallery()">Save gallery</button>
           </div>
         </div>
 
-        <!-- Firebase script (loaded first) -->
+        <!-- Firebase script -->
         <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"><\/script>
         <script>
-          // Wait for firebase
           (function() {
             const fbConfig = ${JSON.stringify(firebaseConfig)};
             // Define all global variables
@@ -959,7 +968,9 @@
                     ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
                       document.getElementById('heroBackground').value = url;
                       document.getElementById('hero-preview').innerHTML = '<img src="'+url+'" class="bg-preview">';
-                    }).catch(alert);
+                    }).catch(err => {
+                      alert('Upload failed: ' + err.message + '\\nPlease use the URL field instead.');
+                    });
                   });
                 }
 
@@ -975,12 +986,32 @@
                     ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
                       window.galleryData.push(url);
                       renderGallery();
-                    }).catch(alert);
+                    }).catch(err => {
+                      alert('Upload failed: ' + err.message + '\\nPlease use the URL field instead.');
+                    });
                   });
                 }
               });
             }
             initFirebase();
+
+            // URL adder functions
+            window.addHeroUrl = function() {
+              const url = document.getElementById('heroUrlInput').value.trim();
+              if (url) {
+                document.getElementById('heroBackground').value = url;
+                document.getElementById('hero-preview').innerHTML = '<img src="'+url+'" class="bg-preview">';
+                document.getElementById('heroUrlInput').value = '';
+              }
+            };
+            window.addGalleryUrl = function() {
+              const url = document.getElementById('galleryUrlInput').value.trim();
+              if (url) {
+                window.galleryData.push(url);
+                renderGallery();
+                document.getElementById('galleryUrlInput').value = '';
+              }
+            };
 
             // ---------- RENDER FUNCTIONS (attached to window for onclick) ----------
             window.renderRooms = function() {
@@ -995,10 +1026,14 @@
                     <input placeholder="Thumbnail image URL" value="\${r.image || ''}" onchange="window.roomsData[\${idx}].image=this.value">
                     
                     <div style="margin:1rem 0;">
-                      <label>Room gallery images (click to add):</label>
+                      <label>Room gallery images (upload or paste URL):</label>
                       <div class="image-upload" id="room-upload-\${idx}" style="padding:1rem;">
                         <i class="fas fa-cloud-upload-alt"></i> Upload images for this room
                         <input type="file" id="roomFile-\${idx}" accept="image/*" multiple style="display:none;">
+                      </div>
+                      <div class="url-input-group" style="margin-top:0.5rem;">
+                        <input type="text" id="roomUrl-\${idx}" placeholder="Paste image URL">
+                        <button class="btn" onclick="window.addRoomImageByUrl(\${idx})">Add URL</button>
                       </div>
                       <div id="room-preview-\${idx}" class="room-images-preview">
                         \${(r.images || []).map(url => \`<div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="window.removeRoomImage(\${idx}, '\${url}')">✕</button></div>\`).join('')}
@@ -1031,10 +1066,23 @@
                       window.roomsData[idx].images = window.roomsData[idx].images || [];
                       window.roomsData[idx].images.push(...validUrls);
                       window.renderRooms(); // re-render to show new images
+                    }).catch(err => {
+                      alert('Upload failed: ' + err.message + '\\nPlease use the URL field instead.');
                     });
                   });
                 }
               });
+            };
+
+            window.addRoomImageByUrl = function(idx) {
+              const input = document.getElementById('roomUrl-'+idx);
+              const url = input.value.trim();
+              if (url) {
+                window.roomsData[idx].images = window.roomsData[idx].images || [];
+                window.roomsData[idx].images.push(url);
+                window.renderRooms();
+                input.value = '';
+              }
             };
 
             window.removeRoomImage = function(roomIdx, url) {
