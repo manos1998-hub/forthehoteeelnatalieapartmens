@@ -1472,7 +1472,7 @@
         }
 
         // ================================================================
-        //  7. DATA PARSING (TSV / multi-line) – same as original
+        //  7. DATA PARSING (TSV / multi-line) – FIXED CONTACT PARSING
         // ================================================================
         function parseReservationData(text) {
             const lines = text.split(/\r?\n/);
@@ -1570,19 +1570,33 @@
         }
 
         function buildRecordFromMultiLine(property, sn, details, guestName, contactValues, status) {
-            const euroMatches = contactValues.match(/€\s*(\d+[\.,\d]+)/g);
             let totalWithVAT = 0,
                 climateTax = 0;
+            let guestContact = contactValues; // start with full contact string
+
+            // Try to extract totals from contactValues (with € sign)
+            const euroMatches = contactValues.match(/€\s*(\d+[\.,\d]+)/g);
             if (euroMatches && euroMatches.length >= 2) {
                 totalWithVAT = parseMoney(euroMatches[0]);
                 climateTax = parseMoney(euroMatches[1]);
+                // Remove the matched euro patterns from guestContact
+                guestContact = contactValues.replace(/€\s*\d+[\.,\d]+/g, '').trim();
             } else {
+                // Fallback: try to find two numbers without euro sign (e.g., "103.50 2.00")
                 const nums = contactValues.match(/\d+[\.,\d]+/g);
                 if (nums && nums.length >= 2) {
                     totalWithVAT = parseMoney(nums[0]);
                     climateTax = parseMoney(nums[1]);
+                    // Do NOT remove these numbers from guestContact because they might be part of phone number
+                    // We keep guestContact as is.
                 }
+                // No removal of any numbers if no euro sign found
             }
+
+            // If we removed euro patterns, we may have extra spaces, but we keep the rest.
+            // If no euro patterns, we keep full contactValues.
+
+            // Extract nights from details
             let nights = 1;
             const nightsMatch = details.match(/\s(\d+)\s*$/);
             if (nightsMatch) nights = parseInt(nightsMatch[1]);
@@ -1592,8 +1606,7 @@
                 const num = parseInt(last);
                 if (!isNaN(num)) nights = num;
             }
-            let guestContact = contactValues.replace(/\s*\d+[\.,\d]+\s*€/g, '').trim();
-            guestContact = guestContact.replace(/\s*\d+\s+\d+\s*$/, '').trim();
+
             return buildFinalRecord(property, sn, details, guestName, totalWithVAT, climateTax, nights, guestContact);
         }
 
@@ -1642,6 +1655,7 @@
             let guestName = guest;
             let guestContact = guestContactOverride;
             if (!guestContact) {
+                // If no override, try to split guest name and contact from guest string
                 const contactSplit = guest.split(/\s*\|\s*/);
                 if (contactSplit.length >= 2) {
                     guestName = contactSplit[0].trim();
@@ -1700,7 +1714,7 @@
         }
 
         // ================================================================
-        //  9. GRID RENDER
+        //  9. GRID RENDER (unchanged)
         // ================================================================
         function renderGrid() {
             const container = document.getElementById('gridContainer');
