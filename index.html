@@ -1,1415 +1,2762 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="el">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>Natalie Apartments · Artemida</title>
-  <!-- Fonts: dynamic via Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
-  <style>
-    /* ---------- RESET & VARIABLES (dynamic via JS) ---------- */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: var(--body-font, 'Inter'), sans-serif;
-      line-height: 1.5;
-      overflow-x: hidden;
-      color: #1e1e2f;
-      background: #fefcf5;
-      transition: background-color 0.3s;
-    }
-    :root {
-      --primary: #d44c2f;
-      --primary-dark: #b33e25;
-      --secondary: #1a3b5d;
-      --accent: #e8b20e;
-      --light: #fefcf5;
-      --dark: #1e1e2f;
-      --gray: #5f6b7a;
-      --light-gray: #e9e1d5;
-      --shadow: 0 15px 35px -10px rgba(0,0,0,0.15);
-      --shadow-hover: 0 25px 45px -10px rgba(0,0,0,0.25);
-      --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      --border-radius: 30px;
-      --border-radius-sm: 20px;
-      --heading-font: 'Playfair Display', serif;
-      --body-font: 'Inter', sans-serif;
-      --hero-title-size: 5rem;
-      --hero-title-align: center;
-      --hero-content-top: auto;
-      --hero-content-left: auto;
-      --hero-content-width: auto;
-      --hero-content-transform: none;
-    }
-    /* ---------- TYPOGRAPHY ---------- */
-    h1, h2, h3, h4, .logo {
-      font-family: var(--heading-font);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-    .hero-content h2 {
-      font-size: var(--hero-title-size);
-      text-align: var(--hero-title-align);
-    }
-    .section-title {
-      font-size: clamp(2.5rem, 8vw, 3.5rem);
-      margin-bottom: 2.5rem;
-      position: relative;
-      display: inline-block;
-      color: var(--secondary);
-    }
-    .section-title::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 0;
-      width: 100px;
-      height: 4px;
-      background: var(--primary);
-      border-radius: 4px;
-    }
-    /* ---------- UTILITIES ---------- */
-    .container {
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 0.9rem 2.2rem;
-      border-radius: 60px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: var(--transition);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: var(--shadow);
-      gap: 0.5rem;
-    }
-    .btn i {
-      font-size: 1.2rem;
-    }
-    .btn:hover {
-      background: var(--primary-dark);
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-hover);
-    }
-    /* ---------- SCROLL REVEAL ---------- */
-    .reveal {
-      opacity: 0;
-      transform: translateY(40px);
-      transition: all 0.9s ease;
-    }
-    .reveal.active {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    /* ---------- HEADER ---------- */
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      padding: 1.2rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 100;
-      transition: var(--transition);
-      background: transparent;
-    }
-    header.scrolled {
-      background: rgba(254, 252, 245, 0.95);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 5px 25px rgba(0,0,0,0.08);
-      padding: 0.8rem 1.5rem;
-    }
-    .logo h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: white;
-      text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-      line-height: 1;
-    }
-    header.scrolled .logo h1 {
-      color: var(--secondary);
-      text-shadow: none;
-    }
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-    }
-    .nav-links a {
-      text-decoration: none;
-      font-weight: 500;
-      color: white;
-      transition: var(--transition);
-      position: relative;
-      font-size: 1rem;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
-    }
-    header.scrolled .nav-links a {
-      color: var(--dark);
-      text-shadow: none;
-    }
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: var(--primary);
-      transition: width 0.3s;
-    }
-    .nav-links a:hover::after {
-      width: 100%;
-    }
-    /* Mobile menu */
-    .mobile-menu-btn {
-      display: none;
-      font-size: 2rem;
-      color: white;
-      cursor: pointer;
-    }
-    header.scrolled .mobile-menu-btn {
-      color: var(--dark);
-    }
-    @media (max-width: 900px) {
-      .nav-links {
-        position: fixed;
-        top: 0;
-        right: -100%;
-        width: 70%;
-        max-width: 350px;
-        height: 100vh;
-        background: rgba(255,255,255,0.98);
-        backdrop-filter: blur(10px);
-        flex-direction: column;
-        padding: 5rem 2rem;
-        gap: 1.5rem;
-        transition: 0.3s;
-        box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-        z-index: 99;
-      }
-      .nav-links.active {
-        right: 0;
-      }
-      .nav-links a {
-        color: var(--dark) !important;
-        font-size: 1.2rem;
-        text-shadow: none;
-      }
-      .mobile-menu-btn {
-        display: block;
-        z-index: 100;
-      }
-    }
-    /* ---------- HERO ---------- */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem 1.5rem;
-      position: relative;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%);
-      z-index: 1;
-    }
-    .hero-content {
-      position: relative;
-      z-index: 2;
-      max-width: 900px;
-      color: white;
-      /* custom positioning via JS */
-      top: var(--hero-content-top);
-      left: var(--hero-content-left);
-      width: var(--hero-content-width);
-      transform: var(--hero-content-transform);
-      margin: 0; /* reset default centering if custom */
-    }
-    /* if custom positioning is set, we need to adjust hero display */
-    .hero:has(.hero-content[style*="top"]) {
-      align-items: flex-start; /* allow top positioning */
-      justify-content: flex-start; /* allow left positioning */
-    }
-    .hero-location {
-      font-size: 1.2rem;
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      display: inline-block;
-      padding: 0.6rem 2rem;
-      border-radius: 60px;
-      margin: 1.5rem 0;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    .distance-badge {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 2rem 0;
-    }
-    .distance-item {
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(8px);
-      padding: 0.6rem 1.5rem;
-      border-radius: 60px;
-      font-weight: 500;
-      border: 1px solid rgba(255,255,255,0.15);
-      transition: var(--transition);
-      font-size: 0.95rem;
-    }
-    .distance-item:hover {
-      background: var(--primary);
-      transform: scale(1.05);
-    }
-    /* integrated booking bar */
-    .booking-bar {
-      background: white;
-      border-radius: 80px;
-      padding: 0.5rem;
-      display: inline-flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      box-shadow: var(--shadow-hover);
-      margin-top: 2rem;
-      max-width: 100%;
-    }
-    .booking-bar input {
-      border: none;
-      background: var(--light-gray);
-      padding: 0.8rem 1.2rem;
-      border-radius: 60px;
-      font-weight: 500;
-      width: 140px;
-      font-size: 0.9rem;
-    }
-    .booking-bar button {
-      background: var(--primary);
-      border: none;
-      color: white;
-      padding: 0.8rem 2rem;
-      border-radius: 60px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .booking-bar button:hover {
-      background: var(--primary-dark);
-    }
-    @media (max-width: 600px) {
-      .booking-bar {
-        border-radius: 40px;
-        padding: 1rem;
-        flex-direction: column;
-        width: 100%;
-      }
-      .booking-bar input {
-        width: 100%;
-      }
-      .booking-bar button {
-        width: 100%;
-      }
-      /* on mobile, reset custom positioning for hero content */
-      .hero-content {
-        top: auto !important;
-        left: auto !important;
-        transform: none !important;
-        width: auto !important;
-        position: relative !important;
-      }
-      .hero {
-        align-items: center !important;
-        justify-content: center !important;
-      }
-    }
-    /* sections */
-    section {
-      padding: 5rem 0;
-    }
-    .rooms-grid, .services-grid, .gallery-grid, .offers-grid, .testimonials-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
-    }
-    .room-card, .service-card, .offer-card, .testimonial-card {
-      background: white;
-      border-radius: var(--border-radius);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      transition: var(--transition);
-    }
-    .room-card:hover, .service-card:hover, .offer-card:hover, .testimonial-card:hover {
-      transform: translateY(-12px);
-      box-shadow: var(--shadow-hover);
-    }
-    .room-card {
-      cursor: pointer;
-    }
-    .room-card img {
-      width: 100%;
-      height: 240px;
-      object-fit: cover;
-      transition: transform 0.6s;
-    }
-    .room-card:hover img {
-      transform: scale(1.05);
-    }
-    .room-card .card-content, .service-card, .offer-card, .testimonial-card {
-      padding: 1.8rem;
-    }
-    .service-card {
-      text-align: center;
-      padding: 3rem 1.8rem;
-    }
-    .service-card i {
-      font-size: 3.5rem;
-      color: var(--primary);
-      margin-bottom: 1rem;
-    }
-    .testimonial-card {
-      text-align: center;
-      padding: 2rem;
-    }
-    .testimonial-card i.fa-quote-left {
-      font-size: 2rem;
-      color: var(--accent);
-      opacity: 0.6;
-      margin-bottom: 1rem;
-    }
-    .testimonial-card h4 {
-      margin-top: 1rem;
-      color: var(--secondary);
-    }
-    .offer-card .btn-small {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 0.5rem 1.5rem;
-      border-radius: 60px;
-      margin-top: 1rem;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .gallery-item {
-      border-radius: var(--border-radius-sm);
-      overflow: hidden;
-      aspect-ratio: 1/1;
-      box-shadow: var(--shadow);
-    }
-    .gallery-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.8s;
-    }
-    .gallery-item:hover img {
-      transform: scale(1.15);
-    }
-    /* footer */
-    footer {
-      background: var(--secondary);
-      color: white;
-      padding: 3rem 2rem;
-      border-radius: 5rem 5rem 0 0;
-    }
-    footer .container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 2rem;
-    }
-    .social-icons i {
-      font-size: 1.8rem;
-      margin-left: 1rem;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .social-icons i:hover {
-      color: var(--accent);
-      transform: translateY(-5px);
-    }
-    @media (max-width: 600px) {
-      footer .container {
-        flex-direction: column;
-        text-align: center;
-      }
-      .social-icons {
-        margin-top: 1rem;
-      }
-      .social-icons i {
-        margin: 0 0.5rem;
-      }
-    }
-    /* modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.9);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-    }
-    .modal-content {
-      background: white;
-      border-radius: 40px;
-      max-width: 1000px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 2rem;
-      position: relative;
-    }
-    .modal-close {
-      position: absolute;
-      top: 1.2rem; right: 1.2rem;
-      font-size: 1.8rem;
-      cursor: pointer;
-      color: white;
-      background: var(--primary);
-      width: 45px; height: 45px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-    }
-    .modal-close:hover { background: #ef4444; }
-    .modal-gallery {
-      display: flex;
-      gap: 1rem;
-      overflow-x: auto;
-      padding: 1rem 0;
-      margin: 1rem 0;
-      scroll-snap-type: x mandatory;
-    }
-    .modal-gallery img {
-      width: 250px;
-      height: 160px;
-      object-fit: cover;
-      border-radius: 20px;
-      scroll-snap-align: start;
-      box-shadow: var(--shadow);
-    }
-    .modal-info h2 { font-size: 2.2rem; color: var(--secondary); }
-    .modal-price { font-size: 2rem; font-weight: 700; color: var(--primary); margin: 1rem 0; }
-    /* admin trigger & back to top */
-    .admin-trigger {
-      position: fixed;
-      bottom: 30px; left: 30px;
-      background: var(--secondary);
-      color: white;
-      width: 60px; height: 60px;
-      border-radius: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      box-shadow: var(--shadow-hover);
-      cursor: pointer;
-      border: 2px solid var(--primary);
-      z-index: 100;
-      transition: var(--transition);
-    }
-    .admin-trigger:hover { transform: scale(1.1) rotate(15deg); background: var(--primary); }
-    #loader {
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background: white; display: flex; align-items: center; justify-content: center; z-index: 999;
-    }
-    .back-to-top {
-      position: fixed;
-      bottom: 30px; left: 120px;
-      background: var(--primary);
-      color: white;
-      width: 50px; height: 50px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      cursor: pointer;
-      opacity: 0;
-      transition: 0.3s;
-      border: none;
-      z-index: 98;
-    }
-    .back-to-top.visible { opacity: 1; }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hotel Manager – Firebase Edition</title>
+
+    <!-- Firebase SDKs (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
+    </script>
+
+    <style>
+        /* ----- ΒΑΣΙΚΑ ----- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #f0f4f9;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 16px;
+            color: #1e293b;
+        }
+        .app {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* ----- HEADER & TABS ----- */
+        .header {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 20px;
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f2b5b;
+            margin-right: 8px;
+        }
+        .header h1 span {
+            color: #3b82f6;
+        }
+        .header-tabs {
+            display: flex;
+            gap: 4px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            margin-left: auto;
+        }
+        .header-tabs .tab-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            background: transparent;
+            color: #64748b;
+        }
+        .header-tabs .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .header-tabs .tab-btn.active {
+            background: white;
+            color: #0f2b5b;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .header-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 12px;
+        }
+        .header-controls label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #475569;
+        }
+        .header-controls select,
+        .header-controls input {
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1.5px solid #e2e8f0;
+            font-size: 13px;
+            background: white;
+            outline: none;
+        }
+        .header-controls select:focus,
+        .header-controls input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .btn {
+            padding: 5px 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-primary {
+            background: #0f2b5b;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1a3f7a;
+        }
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #047857;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #e2e8f0;
+            color: #475569;
+        }
+        .btn-outline:hover {
+            background: #f1f5f9;
+        }
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        .btn-toggle {
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .btn-toggle.active {
+            background: #0f2b5b;
+            color: white;
+        }
+        .badge {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 20px;
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        /* ----- LOADING OVERLAY ----- */
+        #loadingOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        #loadingOverlay.open {
+            display: flex;
+        }
+        #loadingOverlay .spinner {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #e2e8f0;
+            border-top-color: #0f2b5b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        #loadingOverlay .msg {
+            font-size: 16px;
+            color: #0f2b5b;
+            font-weight: 600;
+        }
+
+        /* ----- IMPORT PANEL ----- */
+        .import-panel {
+            background: white;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+        .import-panel.open {
+            display: block;
+        }
+        .import-panel textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            outline: none;
+        }
+        .import-panel textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+        .import-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .import-actions .status {
+            font-size: 14px;
+            color: #64748b;
+        }
+        .import-actions .status.ok {
+            color: #059669;
+            font-weight: 600;
+        }
+        .import-actions .status.err {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        .helper {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        /* ----- STATS BAR ----- */
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 18px;
+            background: white;
+            padding: 10px 18px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            font-size: 14px;
+            align-items: center;
+        }
+        .stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .stats .stat-item .num {
+            font-weight: 700;
+            color: #0f2b5b;
+            font-size: 15px;
+        }
+        .stats .stat-item .label {
+            color: #64748b;
+        }
+        .stats .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+        .dot-studio {
+            background: #8b5cf6;
+        }
+        .dot-a1 {
+            background: #3b82f6;
+        }
+        .dot-a2 {
+            background: #06b6d4;
+        }
+        .dot-villa {
+            background: #f59e0b;
+        }
+
+        /* ----- GRID ----- */
+        .grid-container {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid #eef2f6;
+        }
+        .grid-scroll {
+            overflow-x: auto;
+            padding: 4px 0 8px 0;
+        }
+        .grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+            font-size: 13px;
+        }
+        .grid th,
+        .grid td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .grid th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #334155;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 8px 4px;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .grid .prop-header {
+            font-weight: 700;
+            font-size: 14px;
+            color: #0f2b5b;
+            white-space: nowrap;
+            padding-right: 12px;
+            min-width: 110px;
+            background: #fafcff;
+            position: sticky;
+            left: 0;
+            z-index: 4;
+            border-right: 2px solid #e2e8f0;
+            text-align: left;
+        }
+        .grid .prop-header .sub {
+            font-weight: 400;
+            font-size: 11px;
+            color: #64748b;
+            display: block;
+        }
+
+        .month-cell {
+            min-width: 120px;
+            padding: 6px 4px;
+            vertical-align: top;
+            background: white;
+            cursor: pointer;
+        }
+        .month-cell .cell-summary {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f2b5b;
+        }
+        .month-cell .cell-summary .nights {
+            font-weight: 400;
+            color: #475569;
+            font-size: 12px;
+        }
+        .month-cell .cell-summary .revenue {
+            color: #059669;
+        }
+        .month-cell .empty {
+            color: #cbd5e1;
+            font-size: 12px;
+            padding: 10px 0;
+            cursor: pointer;
+        }
+        .month-cell .empty:hover {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+
+        .day-cell {
+            min-width: 36px;
+            padding: 2px 1px !important;
+            font-size: 11px;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+        .day-cell .day-number {
+            font-weight: 600;
+            font-size: 10px;
+            color: #94a3b8;
+            display: block;
+        }
+        .day-cell .res-indicator {
+            border-radius: 4px;
+            padding: 1px 3px;
+            font-size: 9px;
+            color: #1e3a8a;
+            cursor: pointer;
+            border: 1px solid #bfdbfe;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 50px;
+            background: #dbeafe;
+        }
+        .day-cell .res-indicator:hover {
+            filter: brightness(0.9);
+        }
+        .day-cell .res-indicator.multiple {
+            background: #fef3c7;
+            border-color: #fcd34d;
+            color: #92400e;
+        }
+        .day-cell .empty-day {
+            color: #e2e8f0;
+            font-size: 9px;
+        }
+        .day-cell .empty-day:hover {
+            color: #3b82f6;
+        }
+        .day-cell.weekend .day-number {
+            color: #ef4444;
+        }
+        .month-header-cell {
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            color: #0f2b5b !important;
+            background: #eef2f6 !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+            padding: 6px 4px !important;
+            border-bottom: 2px solid #d1d9e6 !important;
+        }
+
+        /* ----- DETAIL PANEL ----- */
+        .detail-panel {
+            background: white;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+        .detail-panel.open {
+            display: block;
+        }
+        .detail-panel .close-btn {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #94a3b8;
+        }
+        .detail-panel .close-btn:hover {
+            color: #1e293b;
+        }
+        .detail-panel h3 {
+            margin-bottom: 8px;
+            color: #0f2b5b;
+        }
+        .detail-panel .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        .detail-card {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 12px 14px;
+            border-left: 4px solid #94a3b8;
+            position: relative;
+        }
+        .detail-card .guest {
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .detail-card .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            font-size: 13px;
+        }
+        .detail-card .row .lbl {
+            color: #475569;
+        }
+        .detail-card .row .val {
+            font-weight: 500;
+        }
+        .detail-card .total {
+            font-weight: 700;
+            color: #059669;
+            font-size: 16px;
+        }
+        .detail-card .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+            justify-content: flex-end;
+        }
+        .platform-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        /* ----- MODALS ----- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 35px;
+            max-width: 620px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            animation: modalFade 0.25s ease;
+        }
+        @keyframes modalFade {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .modal-box .modal-icon {
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .modal-box h2 {
+            font-size: 22px;
+            color: #0f2b5b;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .modal-box .sub {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        .modal-box .btn-close-modal {
+            display: block;
+            margin: 16px auto 0;
+            padding: 10px 30px;
+            background: #0f2b5b;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal-box .btn-close-modal:hover {
+            background: #1a3f7a;
+        }
+
+        /* ----- FORM ----- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 18px;
+        }
+        .form-grid .full {
+            grid-column: 1 / -1;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .form-group label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #475569;
+        }
+        .form-group input,
+        .form-group select {
+            padding: 8px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+            transition: 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+        .form-group input[readonly] {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 8px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* ----- STATS DASHBOARD ----- */
+        .stats-dashboard {
+            display: none;
+            gap: 16px;
+            grid-template-columns: 1fr;
+        }
+        .stats-dashboard.active {
+            display: grid;
+        }
+
+        .stats-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        .stats-kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            border-left: 4px solid #3b82f6;
+        }
+        .stats-kpi-card .kpi-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f2b5b;
+        }
+        .stats-kpi-card .kpi-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        .stats-kpi-card .kpi-sub {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .stats-chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 16px;
+        }
+        .stats-chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .stats-chart-card h4 {
+            font-size: 15px;
+            color: #0f2b5b;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eef2f6;
+            padding-bottom: 8px;
+        }
+        .chart-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .chart-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        .chart-bar-row .bar-label {
+            min-width: 80px;
+            text-align: right;
+            color: #475569;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .chart-bar-row .bar-track {
+            flex: 1;
+            height: 18px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .chart-bar-row .bar-track .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: #3b82f6;
+            transition: width 0.6s ease;
+        }
+        .chart-bar-row .bar-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+            color: #0f2b5b;
+            flex-shrink: 0;
+        }
+        .chart-bar-row .bar-value.small {
+            min-width: 45px;
+            font-size: 11px;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .stats-table th {
+            background: #f8fafc;
+            text-align: left;
+            padding: 6px 10px;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .stats-table td {
+            padding: 5px 10px;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .stats-table tr:hover td {
+            background: #fafcff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+        .empty-state .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .empty-state h3 {
+            font-size: 18px;
+            color: #475569;
+        }
+
+        /* ----- RESPONSIVE ----- */
+        @media (max-width: 700px) {
+            body {
+                padding: 10px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-tabs {
+                margin-left: 0;
+                justify-content: center;
+            }
+            .header-controls {
+                flex-wrap: wrap;
+            }
+            .grid th,
+            .grid td {
+                padding: 4px 2px;
+                font-size: 11px;
+            }
+            .grid .prop-header {
+                font-size: 12px;
+                min-width: 80px;
+            }
+            .day-cell {
+                min-width: 28px;
+            }
+            .detail-panel .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .modal-box {
+                padding: 20px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-chart-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-kpi-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .flex {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .text-sm {
+            font-size: 13px;
+        }
+        .text-muted {
+            color: #94a3b8;
+        }
+        .gap-4 {
+            gap: 4px;
+        }
+        .w-full {
+            width: 100%;
+        }
+
+        .color-settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .color-settings-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .color-settings-item label {
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 80px;
+        }
+        .color-settings-item input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            border-radius: 8px;
+            background: none;
+        }
+        .replaced-list {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 12px 16px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .replaced-list .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        .replaced-list .item:last-child {
+            border-bottom: none;
+        }
+        .replaced-list .item .sn {
+            font-weight: 600;
+            color: #0f2b5b;
+        }
+        .replaced-list .item .name {
+            color: #475569;
+        }
+
+        .firebase-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #64748b;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: #f1f5f9;
+        }
+        .firebase-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .firebase-status .dot.online {
+            background: #22c55e;
+        }
+        .firebase-status .dot.offline {
+            background: #ef4444;
+        }
+
+        @media (max-width: 700px) {
+            .color-settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="loader"><i class="fas fa-spinner fa-pulse fa-3x"></i></div>
-  
-  <!-- ROOM DETAIL MODAL -->
-  <div id="roomModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></div>
-      <div id="modal-gallery" class="modal-gallery"></div>
-      <div class="modal-info">
-        <h2 id="modal-title"></h2>
-        <p id="modal-description"></p>
-        <div class="modal-price" id="modal-price"></div>
-        <button class="btn" style="margin-top:2rem;" onclick="alert('Booking feature coming soon!')">Book this room</button>
-      </div>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="msg" id="loadingMsg">Φόρτωση δεδομένων…</div>
     </div>
-  </div>
 
-  <header id="main-header">
-    <div class="logo"><h1 id="site-title">Natalie Apartments</h1></div>
-    <div class="mobile-menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
-    <div class="nav-links" id="navLinks">
-      <a href="#home" onclick="closeMenu()">Home</a>
-      <a href="#rooms" onclick="closeMenu()">Rooms</a>
-      <a href="#services" onclick="closeMenu()">Services</a>
-      <a href="#offers" onclick="closeMenu()">Offers</a>
-      <a href="#testimonials" onclick="closeMenu()">Testimonials</a>
-      <a href="#gallery" onclick="closeMenu()">Gallery</a>
-      <a href="#contact" onclick="closeMenu()">Contact</a>
-    </div>
-  </header>
+    <div class="app">
 
-  <main>
-    <!-- HERO -->
-    <section id="home" class="hero">
-      <div class="hero-content reveal">
-        <h2 id="hero-title">Welcom To<br>Natalie Aparments</h2>
-        <p id="hero-subtitle" style="font-size:1.4rem; opacity:0.9;">Your serene escape in Artemida</p>
-        <div class="hero-location" id="location-text">Artemida, Attica</div>
-        <div class="distance-badge">
-          <span class="distance-item"><i class="fas fa-plane"></i> 10min airport</span>
-          <span class="distance-item"><i class="fas fa-ship"></i> 15min Rafina</span>
-          <span class="distance-item"><i class="fas fa-umbrella-beach"></i> 500m beach</span>
-        </div>
-        <!-- integrated booking bar -->
-        <div class="booking-bar">
-          <input type="text" placeholder="Check-in" onfocus="(this.type='date')">
-          <input type="text" placeholder="Check-out" onfocus="(this.type='date')">
-          <button><i class="fas fa-calendar-check"></i> Book</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ROOMS -->
-    <section id="rooms" class="container">
-      <h2 class="section-title reveal">Luxury rooms</h2>
-      <div class="rooms-grid" id="rooms-container"></div>
-    </section>
-
-    <!-- SERVICES -->
-    <section id="services" class="container">
-      <h2 class="section-title reveal">Unforgettable services</h2>
-      <div class="services-grid" id="services-container"></div>
-    </section>
-
-    <!-- OFFERS -->
-    <section id="offers" class="container">
-      <h2 class="section-title reveal">Special offers</h2>
-      <div class="offers-grid" id="offers-container"></div>
-    </section>
-
-    <!-- TESTIMONIALS -->
-    <section id="testimonials" class="container">
-      <h2 class="section-title reveal">What our guests say</h2>
-      <div class="testimonials-grid" id="testimonials-container"></div>
-    </section>
-
-    <!-- GALLERY -->
-    <section id="gallery" class="container">
-      <h2 class="section-title reveal">Moments</h2>
-      <div class="gallery-grid" id="gallery-container"></div>
-    </section>
-
-    <!-- CONTACT -->
-    <section id="contact" class="container">
-      <h2 class="section-title reveal">Find us</h2>
-      <div style="background: white; padding:2rem; border-radius:40px; box-shadow:var(--shadow);">
-        <p><i class="fas fa-map-pin" style="color:var(--primary);"></i> Artemida, Attiki 19016, Greece</p>
-        <p><i class="fas fa-phone-alt" style="color:var(--primary);"></i> +30 123 456 7890</p>
-        <p><i class="fas fa-envelope" style="color:var(--primary);"></i> stay@natalieapts.gr</p>
-        <div style="margin-top:1.5rem; border-radius:30px; overflow:hidden; height:300px;">
-          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d50330.51562113916!2d23.981355!3d37.967811!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14a1a4b5b5b5b5b5%3A0x0!2zMzcuOTY3OCwgMjMuOTgxNA!5e0!3m2!1sen!2sgr!4v1710000000000!5m2!1sen!2sgr" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer id="main-footer">
-    <div class="container">
-      <span id="footer-text">© 2025 Natalie Apartments · Artemida</span>
-      <div class="social-icons">
-        <i class="fab fa-instagram"></i>
-        <i class="fab fa-facebook"></i>
-        <i class="fab fa-tripadvisor"></i>
-      </div>
-    </div>
-  </footer>
-
-  <!-- BACK TO TOP -->
-  <div class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-arrow-up"></i></div>
-
-  <!-- ADMIN TRIGGER -->
-  <div class="admin-trigger" onclick="openAdminPanel()" title="admin panel">
-    <i class="fas fa-crown"></i>
-  </div>
-
-  <script>
-    // Mobile menu
-    function toggleMenu() {
-      document.getElementById('navLinks').classList.toggle('active');
-    }
-    function closeMenu() {
-      document.getElementById('navLinks').classList.remove('active');
-    }
-
-    // ---------- FIREBASE ----------
-    const firebaseConfig = {
-      apiKey: "AIzaSyBjtwQeSKpK4Ppiv9y1-MdYFe0MDoFcI0k",
-      authDomain: "myhoteeel.firebaseapp.com",
-      projectId: "myhoteeel",
-      storageBucket: "myhoteeel.firebasestorage.app",
-      messagingSenderId: "671937073084",
-      appId: "1:671937073084:web:e2ec0f427cdd323e5ea5b9"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
-    const settingsDocRef = db.collection('settings').doc('general');
-
-    // Default settings with font controls and hero positioning
-    const defaultSettings = {
-      siteName: 'Natalie Apartments',
-      headerColor: 'rgba(255,255,255,0.85)',
-      footerBg: '#1a3b5d',
-      footerTextColor: '#ffffff',
-      gradStart: '#f8fafc',
-      gradEnd: '#e2e8f0',
-      heroTitle: 'Welcom To<br>Natalie Aparments',
-      heroSubtitle: 'Your serene escape in Artemida',
-      locationLong: 'Artemida, Attica — 10min from airport, 15min from Rafina port, 500m from beach',
-      footerCopyright: '© 2025 Natalie Apartments · Artemida',
-      heroBackground: '',
-      headingFont: 'Playfair Display',
-      bodyFont: 'Inter',
-      heroTitleSize: '5rem',
-      heroTitleAlign: 'center',
-      // Hero positioning (empty = default)
-      heroPosTop: '',
-      heroPosLeft: '',
-      heroPosWidth: '',
-      heroPosTransform: '',
-      rooms: [
-        { 
-          name: 'Deluxe Sea View', 
-          description: 'Spa bathroom, private balcony with stunning sea views. Perfect for couples.', 
-          price: '€190/night', 
-          image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500',
-          images: [
-            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500',
-            'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=500',
-            'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500'
-          ]
-        },
-        { 
-          name: 'Executive Suite', 
-          description: 'Separate living area, smart home features, and luxury amenities.', 
-          price: '€250/night', 
-          image: 'https://images.unsplash.com/photo-1590490360182-c33d577334cc?w=500',
-          images: [
-            'https://images.unsplash.com/photo-1590490360182-c33d577334cc?w=500',
-            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500',
-            'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500'
-          ]
-        },
-        { 
-          name: 'Family apartment', 
-          description: '2 bedrooms, kitchenette, ideal for families or groups.', 
-          price: '€290/night', 
-          image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500',
-          images: [
-            'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500',
-            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500',
-            'https://images.unsplash.com/photo-1590490360182-c33d577334cc?w=500'
-          ]
-        }
-      ],
-      services: [
-        { name: 'Free WiFi', icon: 'wifi' },
-        { name: 'Airport shuttle', icon: 'shuttle-van' },
-        { name: 'Spa & wellness', icon: 'spa' },
-        { name: 'Breakfast included', icon: 'utensils' }
-      ],
-      offers: [
-        { title: 'Early bird discount', description: 'Book 30 days ahead and get 20% off', btnText: 'Grab deal' },
-        { title: 'Romantic getaway', description: 'Champagne & spa treatment included', btnText: 'Explore' }
-      ],
-      testimonials: [
-        { name: 'Maria K.', text: 'Amazing location, spotless rooms. The host was incredibly helpful!', rating: 5 },
-        { name: 'John D.', text: 'Perfect for a relaxing vacation. Close to the beach and very quiet.', rating: 5 }
-      ],
-      gallery: [
-        'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=500',
-        'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=500',
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500',
-        'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500'
-      ]
-    };
-
-    // Modal functions
-    function openModal(room) {
-      document.getElementById('modal-title').innerText = room.name;
-      document.getElementById('modal-description').innerText = room.description;
-      document.getElementById('modal-price').innerText = room.price;
-      const galleryDiv = document.getElementById('modal-gallery');
-      galleryDiv.innerHTML = '';
-      if (room.images && room.images.length) {
-        room.images.forEach(url => {
-          const img = document.createElement('img');
-          img.src = url;
-          galleryDiv.appendChild(img);
-        });
-      } else {
-        const img = document.createElement('img');
-        img.src = room.image;
-        galleryDiv.appendChild(img);
-      }
-      document.getElementById('roomModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-      document.getElementById('roomModal').style.display = 'none';
-    }
-
-    // Apply settings (including fonts and hero positioning)
-    function applySettings(data) {
-      if (!data) return;
-      document.documentElement.style.setProperty('--grad-start', data.gradStart || '#f8fafc');
-      document.documentElement.style.setProperty('--grad-end', data.gradEnd || '#e2e8f0');
-      document.documentElement.style.setProperty('--header-bg', data.headerColor || 'rgba(255,255,255,0.85)');
-      document.documentElement.style.setProperty('--footer-bg', data.footerBg || '#1a3b5d');
-      document.documentElement.style.setProperty('--footer-text', data.footerTextColor || '#ffffff');
-      
-      // Font settings
-      document.documentElement.style.setProperty('--heading-font', data.headingFont || 'Playfair Display');
-      document.documentElement.style.setProperty('--body-font', data.bodyFont || 'Inter');
-      document.documentElement.style.setProperty('--hero-title-size', data.heroTitleSize || '5rem');
-      document.documentElement.style.setProperty('--hero-title-align', data.heroTitleAlign || 'center');
-      
-      // Hero positioning
-      document.documentElement.style.setProperty('--hero-content-top', data.heroPosTop ? data.heroPosTop : 'auto');
-      document.documentElement.style.setProperty('--hero-content-left', data.heroPosLeft ? data.heroPosLeft : 'auto');
-      document.documentElement.style.setProperty('--hero-content-width', data.heroPosWidth ? data.heroPosWidth : 'auto');
-      document.documentElement.style.setProperty('--hero-content-transform', data.heroPosTransform ? data.heroPosTransform : 'none');
-      
-      document.getElementById('site-title').innerText = data.siteName || 'Natalie Apartments';
-      document.getElementById('hero-title').innerHTML = data.heroTitle || 'Welcom To<br>Natalie Aparments';
-      document.getElementById('hero-subtitle').innerText = data.heroSubtitle || 'Your serene escape';
-      document.getElementById('location-text').innerText = data.locationLong || 'Artemida, Attica';
-      document.getElementById('footer-text').innerText = data.footerCopyright || '© 2025 Natalie Apartments';
-
-      const heroSection = document.querySelector('.hero');
-      if (data.heroBackground) {
-        heroSection.style.backgroundImage = `url('${data.heroBackground}')`;
-      } else {
-        heroSection.style.backgroundImage = 'url("https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600")';
-      }
-
-      // Rooms
-      const roomsContainer = document.getElementById('rooms-container');
-      if (data.rooms && Array.isArray(data.rooms)) {
-        roomsContainer.innerHTML = data.rooms.map((r, index) => {
-          const roomStr = JSON.stringify(r).replace(/'/g, "\\'");
-          return `
-            <div class="room-card" onclick='openModal(${roomStr})'>
-              <img src="${r.image || 'https://via.placeholder.com/400'}" loading="lazy">
-              <div class="card-content">
-                <h3>${r.name}</h3>
-                <p>${r.description || ''}</p>
-                <p style="font-weight:700; color:var(--primary); margin-top:1rem;">${r.price || ''}</p>
-              </div>
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🏨 <span>Hotel</span> Manager <span style="font-size:12px;font-weight:400;color:#64748b;margin-left:6px;">Firebase</span></h1>
+            <div class="header-tabs">
+                <button class="tab-btn active" data-tab="reservations">📋 Κρατήσεις</button>
+                <button class="tab-btn" data-tab="stats">📊 Στατιστικά</button>
             </div>
-          `;
-        }).join('');
-      }
-
-      // Services
-      const servicesContainer = document.getElementById('services-container');
-      if (data.services && Array.isArray(data.services)) {
-        servicesContainer.innerHTML = data.services.map(s => `
-          <div class="service-card">
-            <i class="fas fa-${s.icon || 'star'}"></i>
-            <h3>${s.name}</h3>
-          </div>
-        `).join('');
-      }
-
-      // Offers
-      const offersContainer = document.getElementById('offers-container');
-      if (data.offers && Array.isArray(data.offers)) {
-        offersContainer.innerHTML = data.offers.map(o => `
-          <div class="offer-card">
-            <div class="card-content">
-              <h3>${o.title}</h3>
-              <p>${o.description}</p>
-              <button class="btn-small">${o.btnText || 'Learn more'}</button>
+            <div class="header-controls" id="reservationControls">
+                <label for="yearSelect">📅 Έτος</label>
+                <select id="yearSelect"></select>
+                <div class="flex" style="gap:4px;">
+                    <button class="btn btn-toggle active" id="viewMonthlyBtn">Μηνιαία</button>
+                    <button class="btn btn-toggle" id="viewDailyBtn">Ημερήσια</button>
+                </div>
+                <label for="monthFrom">Από</label>
+                <select id="monthFrom"></select>
+                <label for="monthTo">Έως</label>
+                <select id="monthTo"></select>
+                <button class="btn btn-outline" id="toggleImportBtn">📥 Εισαγωγή</button>
+                <button class="btn btn-outline" id="exportBtn">📤 Εξαγωγή</button>
+                <button class="btn btn-outline" id="colorSettingsBtn">🎨 Χρώματα</button>
+                <button class="btn btn-danger" id="clearAllBtn">🗑️</button>
+                <span class="badge" id="resCountBadge">0</span>
+                <span class="firebase-status" id="fbStatus">
+                    <span class="dot online" id="fbDot"></span>
+                    <span id="fbLabel">Συνδεδεμένο</span>
+                </span>
             </div>
-          </div>
-        `).join('');
-      }
-
-      // Testimonials
-      const testimonialsContainer = document.getElementById('testimonials-container');
-      if (data.testimonials && Array.isArray(data.testimonials)) {
-        testimonialsContainer.innerHTML = data.testimonials.map(t => `
-          <div class="testimonial-card">
-            <i class="fas fa-quote-left"></i>
-            <p>${t.text}</p>
-            <h4>— ${t.name}</h4>
-            <div style="color:var(--primary);">${'⭐'.repeat(t.rating || 5)}</div>
-          </div>
-        `).join('');
-      }
-
-      // Gallery
-      const galleryContainer = document.getElementById('gallery-container');
-      if (data.gallery && Array.isArray(data.gallery)) {
-        galleryContainer.innerHTML = data.gallery.map(url => `
-          <div class="gallery-item">
-            <img src="${url}" loading="lazy">
-          </div>
-        `).join('');
-      }
-
-      document.getElementById('loader').style.display = 'none';
-    }
-
-    settingsDocRef.get().then(doc => {
-      if (!doc.exists) {
-        return settingsDocRef.set(defaultSettings).then(() => defaultSettings);
-      } else {
-        return doc.data();
-      }
-    }).then(applySettings).catch(() => applySettings(defaultSettings));
-
-    settingsDocRef.onSnapshot(doc => { if (doc.exists) applySettings(doc.data()); });
-
-    // Scroll reveal
-    function reveal() {
-      const reveals = document.querySelectorAll('.reveal');
-      for (let i = 0; i < reveals.length; i++) {
-        const windowHeight = window.innerHeight;
-        const revealTop = reveals[i].getBoundingClientRect().top;
-        const revealPoint = 150;
-        if (revealTop < windowHeight - revealPoint) {
-          reveals[i].classList.add('active');
-        }
-      }
-    }
-    window.addEventListener('scroll', reveal);
-    window.addEventListener('load', reveal);
-
-    // Header scroll effect
-    window.addEventListener('scroll', () => {
-      const header = document.getElementById('main-header');
-      if (window.scrollY > 50) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-      const btt = document.querySelector('.back-to-top');
-      if (window.scrollY > 500) btt.classList.add('visible');
-      else btt.classList.remove('visible');
-    });
-
-    // ---------- ADMIN PANEL (with font controls and hero positioning) ----------
-    function openAdminPanel() {
-      const adminWin = window.open('', 'adminPanel', 'width=1100,height=800,scrollbars=yes,resizable=yes');
-      adminWin.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head><title>Natalie · Admin</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-        <style>
-          * { box-sizing:border-box; margin:0; font-family:'Inter',sans-serif; }
-          body { background:#f1f5f9; padding:2rem; }
-          .admin-container { max-width:1300px; margin:0 auto; background:white; border-radius:2rem; padding:2rem; box-shadow:0 25px 50px -12px #00000040; }
-          h1 { margin-bottom:2rem; font-weight:700; }
-          .tabs { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:2rem; border-bottom:2px solid #e2e8f0; padding-bottom:0.5rem; }
-          .tab-btn { background:none; border:none; padding:0.7rem 2rem; font-weight:600; border-radius:40px; cursor:pointer; }
-          .tab-btn.active { background:#3b82f6; color:white; }
-          .tab-pane { display:none; }
-          .tab-pane.active { display:block; }
-          .form-group { margin-bottom:1.5rem; }
-          label { font-weight:600; display:block; margin-bottom:0.5rem; }
-          input, textarea, select { width:100%; padding:0.8rem 1rem; border:1px solid #cbd5e1; border-radius:1rem; }
-          .image-upload { border:2px dashed #94a3b8; border-radius:1.5rem; padding:2rem; text-align:center; margin:1rem 0; cursor:pointer; }
-          .btn { background:#3b82f6; color:white; padding:0.6rem 1.5rem; border-radius:2rem; border:none; font-weight:600; cursor:pointer; margin-right:0.5rem; }
-          .btn-danger { background:#ef4444; }
-          .row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
-          .preview-img { max-width:100px; max-height:80px; border-radius:1rem; margin:0.5rem; object-fit:cover; }
-          .gallery-thumb { display:inline-block; margin:0.5rem; position:relative; }
-          .gallery-thumb button { position:absolute; top:0; right:0; background:#ef4444; color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; }
-          .item-row { border:1px solid #ddd; border-radius:1rem; padding:1rem; margin-bottom:1rem; }
-          .bg-preview { max-width:200px; max-height:100px; margin-top:0.5rem; border-radius:1rem; }
-          .room-images-preview { display:flex; flex-wrap:wrap; margin-top:1rem; }
-          .url-input-group { display:flex; gap:0.5rem; margin-top:0.5rem; }
-          .url-input-group input { flex:1; }
-        </style>
-        </head>
-        <body>
-        <div class="admin-container">
-          <h1><i class="fas fa-crown"></i> Admin · Natalie Apartments</h1>
-          <div class="tabs">
-            <button class="tab-btn active" data-tab="general">General</button>
-            <button class="tab-btn" data-tab="rooms">Rooms</button>
-            <button class="tab-btn" data-tab="services">Services</button>
-            <button class="tab-btn" data-tab="offers">Offers</button>
-            <button class="tab-btn" data-tab="testimonials">Testimonials</button>
-            <button class="tab-btn" data-tab="gallery">Gallery</button>
-          </div>
-          
-          <!-- GENERAL (with font controls and hero positioning) -->
-          <div id="general-tab" class="tab-pane active">
-            <h3>Style & text</h3>
-            <div class="form-group"><label>Site name</label><input id="siteName"></div>
-            <div class="row">
-              <div><label>Gradient start</label><input type="color" id="gradStart"></div>
-              <div><label>Gradient end</label><input type="color" id="gradEnd"></div>
-            </div>
-            <div class="row">
-              <div><label>Header BG</label><input id="headerColor" placeholder="rgba(255,255,255,0.85)"></div>
-              <div><label>Footer BG</label><input type="color" id="footerBg"></div>
-            </div>
-            <div><label>Hero title (HTML)</label><input id="heroTitle"></div>
-            <div><label>Hero subtitle</label><input id="heroSubtitle"></div>
-            <div><label>Location text</label><input id="locationLong"></div>
-            <div><label>Footer copyright</label><input id="footerCopyright"></div>
-            
-            <!-- Font controls -->
-            <div class="row">
-              <div>
-                <label>Heading font</label>
-                <select id="headingFont">
-                  <option value="Playfair Display">Playfair Display</option>
-                  <option value="Inter">Inter</option>
-                  <option value="Montserrat">Montserrat</option>
-                  <option value="Roboto">Roboto</option>
-                  <option value="Lato">Lato</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                </select>
-              </div>
-              <div>
-                <label>Body font</label>
-                <select id="bodyFont">
-                  <option value="Inter">Inter</option>
-                  <option value="Playfair Display">Playfair Display</option>
-                  <option value="Montserrat">Montserrat</option>
-                  <option value="Roboto">Roboto</option>
-                  <option value="Lato">Lato</option>
-                  <option value="Arial">Arial</option>
-                </select>
-              </div>
-            </div>
-            <div class="row">
-              <div>
-                <label>Hero title size (e.g., 5rem, 60px)</label>
-                <input id="heroTitleSize" placeholder="5rem">
-              </div>
-              <div>
-                <label>Hero title alignment</label>
-                <select id="heroTitleAlign">
-                  <option value="center">Center</option>
-                  <option value="left">Left</option>
-                  <option value="right">Right</option>
-                </select>
-              </div>
-            </div>
-            
-            <!-- Hero Positioning -->
-            <h3>Hero Content Positioning (leave blank for default centering)</h3>
-            <div class="row">
-              <div><label>Top (e.g., 20px, 10%)</label><input id="heroPosTop" placeholder="auto"></div>
-              <div><label>Left (e.g., 20px, 10%)</label><input id="heroPosLeft" placeholder="auto"></div>
-            </div>
-            <div class="row">
-              <div><label>Width (e.g., 800px, 80%)</label><input id="heroPosWidth" placeholder="auto"></div>
-              <div><label>Transform (e.g., translate(10px, 20px))</label><input id="heroPosTransform" placeholder="none"></div>
-            </div>
-            
-            <!-- Hero Background Upload + URL -->
-            <div class="form-group">
-              <label>Hero Background Image</label>
-              <div class="image-upload" id="hero-upload-area">
-                <i class="fas fa-cloud-upload-alt fa-3x"></i>
-                <p>Click to upload (max 2MB) or use URL</p>
-                <input type="file" id="heroUpload" accept="image/*" style="display:none;">
-              </div>
-              <div class="url-input-group">
-                <input type="text" id="heroUrlInput" placeholder="Paste image URL">
-                <button class="btn" onclick="window.addHeroUrl()">Add URL</button>
-              </div>
-              <div id="hero-preview"></div>
-              <input type="hidden" id="heroBackground">
-            </div>
-            <button class="btn" onclick="window.saveGeneral()">Save general</button>
-          </div>
-          
-          <!-- ROOMS -->
-          <div id="rooms-tab" class="tab-pane">
-            <h3>Manage rooms</h3>
-            <div id="rooms-list"></div>
-            <button class="btn" onclick="window.addRoom()">+ Add room</button>
-            <button class="btn" onclick="window.saveRooms()">Save rooms</button>
-          </div>
-          
-          <!-- SERVICES -->
-          <div id="services-tab" class="tab-pane">
-            <h3>Services (Fontawesome icons)</h3>
-            <div id="services-list"></div>
-            <button class="btn" onclick="window.addService()">+ Add service</button>
-            <button class="btn" onclick="window.saveServices()">Save services</button>
-          </div>
-          
-          <!-- OFFERS -->
-          <div id="offers-tab" class="tab-pane">
-            <h3>Special offers</h3>
-            <div id="offers-list"></div>
-            <button class="btn" onclick="window.addOffer()">+ Add offer</button>
-            <button class="btn" onclick="window.saveOffers()">Save offers</button>
-          </div>
-          
-          <!-- TESTIMONIALS -->
-          <div id="testimonials-tab" class="tab-pane">
-            <h3>Guest testimonials</h3>
-            <div id="testimonials-list"></div>
-            <button class="btn" onclick="window.addTestimonial()">+ Add testimonial</button>
-            <button class="btn" onclick="window.saveTestimonials()">Save testimonials</button>
-          </div>
-          
-          <!-- GALLERY -->
-          <div id="gallery-tab" class="tab-pane">
-            <h3>Gallery images (max 2MB)</h3>
-            <div id="gallery-list" style="display:flex; flex-wrap:wrap;"></div>
-            <div class="image-upload" id="gallery-upload-area">
-              <i class="fas fa-cloud-upload-alt fa-3x"></i><p>Click to upload (max 2MB)</p>
-              <input type="file" id="galleryUpload" accept="image/*" style="display:none;">
-            </div>
-            <div class="url-input-group">
-              <input type="text" id="galleryUrlInput" placeholder="Or paste image URL">
-              <button class="btn" onclick="window.addGalleryUrl()">Add URL</button>
-            </div>
-            <button class="btn" onclick="window.saveGallery()">Save gallery</button>
-          </div>
         </div>
 
-        <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"><\/script>
-        <script>
-          (function() {
-            const fbConfig = ${JSON.stringify(firebaseConfig)};
-            // Global data arrays
-            window.roomsData = []; window.servicesData = []; window.offersData = []; window.testimonialsData = []; window.galleryData = [];
+        <!-- IMPORT PANEL -->
+        <div class="import-panel" id="importPanel">
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div>
+                    <strong style="font-size:15px;">📋 Επικόλληση δεδομένων</strong>
+                    <div class="helper">Το πεδίο "Stay value" είναι η τελική τιμή με ΦΠΑ (13%). Ο ΦΠΑ υπολογίζεται αυτόματα.</div>
+                </div>
+                <button class="btn btn-outline" id="closeImportBtn" style="font-size:12px;">✕</button>
+            </div>
+            <textarea id="dataInput" placeholder="Επικόλλησε εδώ τα δεδομένα σου…"></textarea>
+            <div class="import-actions">
+                <button class="btn btn-success" id="importBtn">📥 Εισαγωγή</button>
+                <div class="file-input-wrapper">
+                    <button class="btn btn-outline">📂 Από αρχείο</button>
+                    <input type="file" id="fileInput" accept=".tsv,.txt" />
+                </div>
+                <span class="status" id="importStatus">Έτοιμο</span>
+            </div>
+        </div>
 
-            function initFirebase() {
-              if (typeof firebase === 'undefined') { setTimeout(initFirebase, 50); return; }
-              firebase.initializeApp(fbConfig);
-              window.db = firebase.firestore();
-              window.storage = firebase.storage();
-              window.settingsRef = db.collection('settings').doc('general');
+        <!-- COLOR SETTINGS MODAL -->
+        <div class="modal-overlay" id="colorModal">
+            <div class="modal-box">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <h2 style="margin:0;">🎨 Ρυθμίσεις χρωμάτων</h2>
+                    <button class="btn btn-outline" id="closeColorModalBtn" style="font-size:20px;padding:0 10px;">✕</button>
+                </div>
+                <div class="sub">Επιλέξτε χρώμα για κάθε πλατφόρμα. Αποθηκεύονται αυτόματα.</div>
+                <div class="color-settings-grid" id="colorSettingsGrid"></div>
+            </div>
+        </div>
 
-              settingsRef.get().then((doc) => {
-                const s = doc.exists ? doc.data() : {};
-                document.getElementById('siteName').value = s.siteName || '';
-                document.getElementById('gradStart').value = s.gradStart || '#f8fafc';
-                document.getElementById('gradEnd').value = s.gradEnd || '#e2e8f0';
-                document.getElementById('headerColor').value = s.headerColor || 'rgba(255,255,255,0.85)';
-                document.getElementById('footerBg').value = s.footerBg || '#0f172a';
-                document.getElementById('heroTitle').value = s.heroTitle || '';
-                document.getElementById('heroSubtitle').value = s.heroSubtitle || '';
-                document.getElementById('locationLong').value = s.locationLong || '';
-                document.getElementById('footerCopyright').value = s.footerCopyright || '';
-                document.getElementById('heroBackground').value = s.heroBackground || '';
-                document.getElementById('headingFont').value = s.headingFont || 'Playfair Display';
-                document.getElementById('bodyFont').value = s.bodyFont || 'Inter';
-                document.getElementById('heroTitleSize').value = s.heroTitleSize || '5rem';
-                document.getElementById('heroTitleAlign').value = s.heroTitleAlign || 'center';
-                // Hero positioning
-                document.getElementById('heroPosTop').value = s.heroPosTop || '';
-                document.getElementById('heroPosLeft').value = s.heroPosLeft || '';
-                document.getElementById('heroPosWidth').value = s.heroPosWidth || '';
-                document.getElementById('heroPosTransform').value = s.heroPosTransform || '';
-                if (s.heroBackground) {
-                  document.getElementById('hero-preview').innerHTML = '<img src="'+s.heroBackground+'" class="bg-preview">';
-                }
-                window.roomsData = s.rooms ? JSON.parse(JSON.stringify(s.rooms)) : [];
-                window.servicesData = s.services ? JSON.parse(JSON.stringify(s.services)) : [];
-                window.offersData = s.offers ? JSON.parse(JSON.stringify(s.offers)) : [];
-                window.testimonialsData = s.testimonials ? JSON.parse(JSON.stringify(s.testimonials)) : [];
-                window.galleryData = s.gallery ? JSON.parse(JSON.stringify(s.gallery)) : [];
-                
-                renderRooms(); renderServices(); renderOffers(); renderTestimonials(); renderGallery();
-              });
+        <!-- STATS BAR -->
+        <div class="stats" id="statsBar">
+            <span class="stat-item"><span class="dot dot-studio"></span><span class="label">Studio</span> <span class="num" id="cntStudio">0</span></span>
+            <span class="stat-item"><span class="dot dot-a1"></span><span class="label">Apartment 1</span> <span class="num" id="cntA1">0</span></span>
+            <span class="stat-item"><span class="dot dot-a2"></span><span class="label">Apartment 2</span> <span class="num" id="cntA2">0</span></span>
+            <span class="stat-item"><span class="dot dot-villa"></span><span class="label">Villa</span> <span class="num" id="cntVilla">0</span></span>
+            <span class="stat-item" style="margin-left:auto;"><span class="label">Σύνολο</span> <span class="num" id="cntTotal">0</span></span>
+        </div>
 
-              // Upload handlers
-              document.addEventListener('DOMContentLoaded', function() {
-                // Hero upload
-                const heroArea = document.getElementById('hero-upload-area');
-                const heroInput = document.getElementById('heroUpload');
-                if (heroArea) {
-                  heroArea.addEventListener('click', () => heroInput.click());
-                  heroInput.addEventListener('change', function(e) {
-                    const f = e.target.files[0];
-                    if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
-                    const ref = storage.ref('hero/'+Date.now()+'_'+f.name);
-                    ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
-                      document.getElementById('heroBackground').value = url;
-                      document.getElementById('hero-preview').innerHTML = '<img src="'+url+'" class="bg-preview">';
-                    }).catch(err => alert('Upload failed: '+err.message));
-                  });
-                }
-
-                // Gallery upload
-                const galArea = document.getElementById('gallery-upload-area');
-                const galInput = document.getElementById('galleryUpload');
-                if (galArea) {
-                  galArea.addEventListener('click', () => galInput.click());
-                  galInput.addEventListener('change', function(e) {
-                    const f = e.target.files[0];
-                    if (!f || f.size > 2*1024*1024) { alert('Max 2MB'); return; }
-                    const ref = storage.ref('gallery/'+Date.now()+'_'+f.name);
-                    ref.put(f).then(s => s.ref.getDownloadURL()).then(url => {
-                      window.galleryData.push(url);
-                      renderGallery();
-                    }).catch(err => alert('Upload failed: '+err.message));
-                  });
-                }
-              });
-            }
-            initFirebase();
-
-            // URL adders
-            window.addHeroUrl = function() {
-              const url = document.getElementById('heroUrlInput').value.trim();
-              if (url) {
-                document.getElementById('heroBackground').value = url;
-                document.getElementById('hero-preview').innerHTML = '<img src="'+url+'" class="bg-preview">';
-                document.getElementById('heroUrlInput').value = '';
-              }
-            };
-            window.addGalleryUrl = function() {
-              const url = document.getElementById('galleryUrlInput').value.trim();
-              if (url) {
-                window.galleryData.push(url);
-                renderGallery();
-                document.getElementById('galleryUrlInput').value = '';
-              }
-            };
-
-            // ---------- RENDER FUNCTIONS ----------
-            window.renderRooms = function() {
-              const container = document.getElementById('rooms-list');
-              if (!container) return;
-              container.innerHTML = window.roomsData.map((r, idx) => {
-                return \`
-                  <div class="item-row">
-                    <input placeholder="Room name" value="\${r.name || ''}" onchange="window.roomsData[\${idx}].name=this.value">
-                    <textarea placeholder="Description" onchange="window.roomsData[\${idx}].description=this.value">\${r.description || ''}</textarea>
-                    <input placeholder="Price" value="\${r.price || ''}" onchange="window.roomsData[\${idx}].price=this.value">
-                    <input placeholder="Thumbnail URL" value="\${r.image || ''}" onchange="window.roomsData[\${idx}].image=this.value">
-                    <div style="margin:1rem 0;">
-                      <label>Gallery images:</label>
-                      <div class="image-upload" id="room-upload-\${idx}" style="padding:1rem;">
-                        <i class="fas fa-cloud-upload-alt"></i> Upload
-                        <input type="file" id="roomFile-\${idx}" accept="image/*" multiple style="display:none;">
-                      </div>
-                      <div class="url-input-group">
-                        <input type="text" id="roomUrl-\${idx}" placeholder="Paste URL">
-                        <button class="btn" onclick="window.addRoomImageByUrl(\${idx})">Add</button>
-                      </div>
-                      <div id="room-preview-\${idx}" class="room-images-preview">
-                        \${(r.images || []).map(url => \`<div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="window.removeRoomImage(\${idx}, '\${url}')">✕</button></div>\`).join('')}
-                      </div>
+        <!-- RESERVATIONS TAB -->
+        <div id="reservationsTab">
+            <div class="grid-container">
+                <div class="grid-scroll">
+                    <div id="gridContainer">
+                        <div class="empty-state">
+                            <div class="icon">📅</div>
+                            <h3>Φόρτωση δεδομένων…</h3>
+                            <p>Παρακαλώ περιμένετε.</p>
+                        </div>
                     </div>
-                    <button class="btn-danger" onclick="window.removeRoom(\${idx})">Remove</button>
-                  </div>
-                \`;
-              }).join('');
-              // Attach upload handlers
-              window.roomsData.forEach((_, idx) => {
-                const area = document.getElementById('room-upload-' + idx);
-                const input = document.getElementById('roomFile-' + idx);
-                if (area && input) {
-                  const newArea = area.cloneNode(true);
-                  area.parentNode.replaceChild(newArea, area);
-                  const newInput = document.getElementById('roomFile-' + idx);
-                  newArea.addEventListener('click', () => newInput.click());
-                  newInput.addEventListener('change', function(e) {
-                    const files = Array.from(e.target.files);
-                    Promise.all(files.map(file => {
-                      if (file.size > 2*1024*1024) { alert(file.name + ' exceeds 2MB'); return null; }
-                      const ref = storage.ref('rooms/'+Date.now()+'_'+file.name);
-                      return ref.put(file).then(s => s.ref.getDownloadURL());
-                    })).then(urls => {
-                      const validUrls = urls.filter(u => u);
-                      window.roomsData[idx].images = window.roomsData[idx].images || [];
-                      window.roomsData[idx].images.push(...validUrls);
-                      window.renderRooms();
-                    }).catch(err => alert('Upload failed: '+err.message));
-                  });
-                }
-              });
-            };
-            window.addRoomImageByUrl = function(idx) {
-              const input = document.getElementById('roomUrl-'+idx);
-              const url = input?.value.trim();
-              if (url) {
-                window.roomsData[idx].images = window.roomsData[idx].images || [];
-                window.roomsData[idx].images.push(url);
-                window.renderRooms();
-                input.value = '';
-              }
-            };
-            window.removeRoomImage = function(roomIdx, url) {
-              window.roomsData[roomIdx].images = (window.roomsData[roomIdx].images || []).filter(u => u !== url);
-              window.renderRooms();
-            };
-            window.addRoom = function() { window.roomsData.push({}); window.renderRooms(); };
-            window.removeRoom = function(idx) { window.roomsData.splice(idx,1); window.renderRooms(); };
-            window.saveRooms = function() { window.settingsRef.update({rooms: window.roomsData}).then(()=>alert('Rooms saved')); };
-
-            // Services
-            window.renderServices = function() {
-              const container = document.getElementById('services-list');
-              if (!container) return;
-              container.innerHTML = window.servicesData.map((s, idx) => \`
-                <div class="item-row">
-                  <input value="\${s.name || ''}" placeholder="Service name" onchange="window.servicesData[\${idx}].name=this.value">
-                  <input value="\${s.icon || ''}" placeholder="icon (e.g. wifi)" onchange="window.servicesData[\${idx}].icon=this.value">
-                  <button class="btn-danger" onclick="window.removeService(\${idx})">Remove</button>
                 </div>
-              \`).join('');
-            };
-            window.addService = function() { window.servicesData.push({}); window.renderServices(); };
-            window.removeService = function(idx) { window.servicesData.splice(idx,1); window.renderServices(); };
-            window.saveServices = function() { window.settingsRef.update({services: window.servicesData}).then(()=>alert('Services saved')); };
+            </div>
+            <div class="detail-panel" id="detailPanel">
+                <button class="close-btn" id="closeDetailBtn">&times;</button>
+                <h3 id="detailTitle">Λεπτομέρειες</h3>
+                <div id="detailContent"></div>
+            </div>
+        </div>
 
-            // Offers
-            window.renderOffers = function() {
-              const container = document.getElementById('offers-list');
-              if (!container) return;
-              container.innerHTML = window.offersData.map((o, idx) => \`
-                <div class="item-row">
-                  <input placeholder="Title" value="\${o.title || ''}" onchange="window.offersData[\${idx}].title=this.value">
-                  <input placeholder="Description" value="\${o.description || ''}" onchange="window.offersData[\${idx}].description=this.value">
-                  <input placeholder="Button text" value="\${o.btnText || 'Learn more'}" onchange="window.offersData[\${idx}].btnText=this.value">
-                  <button class="btn-danger" onclick="window.removeOffer(\${idx})">Remove</button>
+        <!-- STATS TAB -->
+        <div id="statsTab" style="display:none;">
+            <div class="stats-dashboard active" id="statsDashboard">
+                <div class="stats-kpi-grid" id="kpiGrid"></div>
+                <div class="stats-chart-grid" id="chartGrid"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL: ΑΝΤΙΚΑΤΑΣΤΑΣΗ -->
+    <div class="modal-overlay" id="replacementModal">
+        <div class="modal-box">
+            <div class="modal-icon">🔄</div>
+            <h2>Αντικατάσταση Κρατήσεων</h2>
+            <div class="sub">Οι παρακάτω κρατήσεις αντικαταστάθηκαν με νέα δεδομένα</div>
+            <div class="replaced-list" id="replacedList"></div>
+            <button class="btn-close-modal" id="closeModalBtn">Εντάξει</button>
+        </div>
+    </div>
+
+    <!-- MODAL: ΠΡΟΣΘΗΚΗ / ΕΠΕΞΕΡΓΑΣΙΑ -->
+    <div class="modal-overlay" id="addReservationModal">
+        <div class="modal-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <h2 style="margin:0;" id="formModalTitle">✏️ Νέα Κράτηση</h2>
+                <button class="btn btn-outline" id="closeAddModalBtn" style="font-size:20px;padding:0 10px;">✕</button>
+            </div>
+            <div class="sub" id="formModalSub">Συμπληρώστε τα στοιχεία της νέας κράτησης. Τα πεδία με * είναι υποχρεωτικά.</div>
+            <form id="addReservationForm">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Όνομα *</label>
+                        <input type="text" id="fGuestName" placeholder="π.χ. Rebecca Montes" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Ακίνητο *</label>
+                        <select id="fProperty">
+                            <option value="Studio">Studio</option>
+                            <option value="Apartment 1">Apartment 1</option>
+                            <option value="Apartment 2" selected>Apartment 2</option>
+                            <option value="Villa">Villa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>S/N *</label>
+                        <input type="text" id="fSN" placeholder="π.χ. 1114205" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Πλατφόρμα *</label>
+                        <select id="fPlatform">
+                            <option value="Booking">Booking</option>
+                            <option value="Airbnb">Airbnb</option>
+                            <option value="WebHotelier">WebHotelier</option>
+                            <option value="Direct">Direct</option>
+                            <option value="Google Hotel Ads">Google Hotel Ads</option>
+                            <option value="Travel Agencies">Travel Agencies</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Άφιξη *</label>
+                        <input type="date" id="fCheckIn" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Αναχώρηση *</label>
+                        <input type="date" id="fCheckOut" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Διανυκτερεύσεις</label>
+                        <input type="number" id="fNights" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>Επικοινωνία</label>
+                        <input type="text" id="fContact" placeholder="email | τηλέφωνο" />
+                    </div>
+                    <div class="form-group">
+                        <label>Σύνολο με ΦΠΑ (€) *</label>
+                        <input type="number" id="fTotalWithVAT" step="0.01" placeholder="π.χ. 103.50" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Φόρος ανθεκτικότητας</label>
+                        <input type="number" id="fClimateTax" step="0.01" readonly />
+                        <span style="font-size:11px;color:#94a3b8;" id="fTaxInfo">υπολογίζεται αυτόματα</span>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" id="cancelAddBtn">Ακύρωση</button>
+                        <button type="submit" class="btn btn-success" id="formSubmitBtn">💾 Αποθήκευση</button>
+                    </div>
                 </div>
-              \`).join('');
-            };
-            window.addOffer = function() { window.offersData.push({}); window.renderOffers(); };
-            window.removeOffer = function(idx) { window.offersData.splice(idx,1); window.renderOffers(); };
-            window.saveOffers = function() { window.settingsRef.update({offers: window.offersData}).then(()=>alert('Offers saved')); };
+            </form>
+        </div>
+    </div>
 
-            // Testimonials
-            window.renderTestimonials = function() {
-              const container = document.getElementById('testimonials-list');
-              if (!container) return;
-              container.innerHTML = window.testimonialsData.map((t, idx) => \`
-                <div class="item-row">
-                  <input placeholder="Name" value="\${t.name || ''}" onchange="window.testimonialsData[\${idx}].name=this.value">
-                  <textarea placeholder="Text" onchange="window.testimonialsData[\${idx}].text=this.value">\${t.text || ''}</textarea>
-                  <input type="number" placeholder="Rating (1-5)" value="\${t.rating || 5}" onchange="window.testimonialsData[\${idx}].rating=parseInt(this.value)">
-                  <button class="btn-danger" onclick="window.removeTestimonial(\${idx})">Remove</button>
-                </div>
-              \`).join('');
-            };
-            window.addTestimonial = function() { window.testimonialsData.push({}); window.renderTestimonials(); };
-            window.removeTestimonial = function(idx) { window.testimonialsData.splice(idx,1); window.renderTestimonials(); };
-            window.saveTestimonials = function() { window.settingsRef.update({testimonials: window.testimonialsData}).then(()=>alert('Testimonials saved')); };
+    <script>
+        // ================================================================
+        //  1. FIREBASE INIT
+        // ================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAE0lQWd2F9CBn28_gLezuFRLEdEh6URYE",
+            authDomain: "easyreservationsformom.firebaseapp.com",
+            projectId: "easyreservationsformom",
+            storageBucket: "easyreservationsformom.firebasestorage.app",
+            messagingSenderId: "375446268063",
+            appId: "1:375446268063:web:e621d39f741ce8a83f1aaa"
+        };
 
-            // Gallery
-            window.renderGallery = function() {
-              const container = document.getElementById('gallery-list');
-              if (!container) return;
-              container.innerHTML = window.galleryData.map((url, idx) => \`
-                <div class="gallery-thumb"><img src="\${url}" class="preview-img"><button onclick="window.removeGalleryItem(\${idx})">✕</button></div>
-              \`).join('');
-            };
-            window.removeGalleryItem = function(idx) { window.galleryData.splice(idx,1); window.renderGallery(); };
-            window.saveGallery = function() { window.settingsRef.update({gallery: window.galleryData}).then(()=>alert('Gallery saved')); };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-            // General save
-            window.saveGeneral = function() {
-              const updated = {
-                siteName: document.getElementById('siteName').value,
-                gradStart: document.getElementById('gradStart').value,
-                gradEnd: document.getElementById('gradEnd').value,
-                headerColor: document.getElementById('headerColor').value,
-                footerBg: document.getElementById('footerBg').value,
-                heroTitle: document.getElementById('heroTitle').value,
-                heroSubtitle: document.getElementById('heroSubtitle').value,
-                locationLong: document.getElementById('locationLong').value,
-                footerCopyright: document.getElementById('footerCopyright').value,
-                heroBackground: document.getElementById('heroBackground').value,
-                headingFont: document.getElementById('headingFont').value,
-                bodyFont: document.getElementById('bodyFont').value,
-                heroTitleSize: document.getElementById('heroTitleSize').value,
-                heroTitleAlign: document.getElementById('heroTitleAlign').value,
-                heroPosTop: document.getElementById('heroPosTop').value,
-                heroPosLeft: document.getElementById('heroPosLeft').value,
-                heroPosWidth: document.getElementById('heroPosWidth').value,
-                heroPosTransform: document.getElementById('heroPosTransform').value
-              };
-              window.settingsRef.update(updated).then(() => alert('General saved'));
-            };
-
-            // Tab switching
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-              btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                document.getElementById(e.target.dataset.tab+'-tab').classList.add('active');
-              });
+        // Enable offline persistence
+        db.enablePersistence({ synchronizeTabs: true })
+            .catch((err) => {
+                console.warn('Firestore persistence error:', err);
             });
-          })();
-        <\/script>
-        </body>
-        </html>
-      `);
-      adminWin.document.close();
-    }
-  </script>
+
+        // ================================================================
+        //  2. STATE
+        // ================================================================
+        let reservations = [];
+        let currentYear = new Date().getFullYear();
+        let viewMode = 'monthly';
+        let monthFrom = 0;
+        let monthTo = 11;
+        let editingSN = null;
+        let isLoading = false;
+        let isFirestoreReady = false;
+
+        const PROPERTIES = ['Studio', 'Apartment 1', 'Apartment 2', 'Villa'];
+        const MONTHS = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιουν', 'Ιουλ', 'Αυγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
+
+        // ================================================================
+        //  3. COLORS (localStorage)
+        // ================================================================
+        const DEFAULT_COLORS = {
+            'Booking': '#1e88e5',
+            'Airbnb': '#ff5a5f',
+            'WebHotelier': '#43a047',
+            'Direct': '#ff9800',
+            'fallback': '#94a3b8'
+        };
+
+        function loadColors() {
+            const stored = localStorage.getItem('platformColors');
+            if (stored) {
+                try { return { ...DEFAULT_COLORS, ...JSON.parse(stored) }; } catch (e) {}
+            }
+            return { ...DEFAULT_COLORS };
+        }
+        let PLATFORM_COLORS = loadColors();
+
+        function saveColors() {
+            localStorage.setItem('platformColors', JSON.stringify(PLATFORM_COLORS));
+        }
+
+        function getPlatformColor(platform) {
+            if (!platform) return PLATFORM_COLORS['fallback'];
+            const lower = platform.toLowerCase();
+            if (lower.includes('booking')) return PLATFORM_COLORS['Booking'];
+            if (lower.includes('airbnb')) return PLATFORM_COLORS['Airbnb'];
+            if (lower.includes('direct')) return PLATFORM_COLORS['Direct'];
+            if (lower.includes('webhotelier') || lower.includes('google') || lower.includes('travel') || lower.includes('natalie')) {
+                return PLATFORM_COLORS['WebHotelier'];
+            }
+            return PLATFORM_COLORS[platform] || PLATFORM_COLORS['fallback'];
+        }
+
+        // ================================================================
+        //  4. LOADING OVERLAY
+        // ================================================================
+        function showLoading(msg = 'Φόρτωση δεδομένων…') {
+            document.getElementById('loadingMsg').textContent = msg;
+            document.getElementById('loadingOverlay').classList.add('open');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('open');
+        }
+
+        // ================================================================
+        //  5. FIRESTORE CRUD
+        // ================================================================
+        const COLLECTION = 'reservations';
+
+        // Convert reservation to Firestore doc (dates as timestamps / strings)
+        function resToDoc(r) {
+            return {
+                property: r.property || '',
+                sn: r.sn || '',
+                platform: r.platform || '',
+                checkIn: r.checkIn ? firebase.firestore.Timestamp.fromDate(r.checkIn) : null,
+                checkOut: r.checkOut ? firebase.firestore.Timestamp.fromDate(r.checkOut) : null,
+                nights: r.nights || 1,
+                guestName: r.guestName || 'Άγνωστος',
+                guestContact: r.guestContact || '',
+                totalWithVAT: r.totalWithVAT || 0,
+                netPrice: r.netPrice || 0,
+                vatAmount: r.vatAmount || 0,
+                climateTax: r.climateTax || 0,
+                finalTotal: r.finalTotal || 0,
+                stayValue: r.stayValue || 0,
+                vat: r.vat || 0,
+                // preserve timestamps for sorting
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+        }
+
+        function docToRes(doc) {
+            const d = doc.data();
+            const checkIn = d.checkIn ? d.checkIn.toDate() : null;
+            const checkOut = d.checkOut ? d.checkOut.toDate() : null;
+            return {
+                id: doc.id,
+                property: d.property || '',
+                sn: d.sn || '',
+                platform: d.platform || '',
+                checkIn: checkIn,
+                checkOut: checkOut,
+                nights: d.nights || 1,
+                guestName: d.guestName || 'Άγνωστος',
+                guestContact: d.guestContact || '',
+                totalWithVAT: d.totalWithVAT || 0,
+                netPrice: d.netPrice || 0,
+                vatAmount: d.vatAmount || 0,
+                climateTax: d.climateTax || 0,
+                finalTotal: d.finalTotal || 0,
+                stayValue: d.stayValue || 0,
+                vat: d.vat || 0,
+            };
+        }
+
+        // --- LOAD ALL ---
+        async function loadAllReservations() {
+            if (isLoading) return;
+            isLoading = true;
+            showLoading('Φόρτωση δεδομένων από Firebase…');
+            try {
+                const snapshot = await db.collection(COLLECTION).orderBy('checkIn', 'desc').get();
+                reservations = [];
+                snapshot.forEach(doc => {
+                    reservations.push(docToRes(doc));
+                });
+                isFirestoreReady = true;
+                updateFirestoreStatus(true);
+                populateYearDropdown();
+                renderGrid();
+                updateStats();
+                hideLoading();
+            } catch (err) {
+                console.error('Load error:', err);
+                isFirestoreReady = false;
+                updateFirestoreStatus(false);
+                // Try to load from cache (offline)
+                try {
+                    const snapshot = await db.collection(COLLECTION).get();
+                    reservations = [];
+                    snapshot.forEach(doc => {
+                        reservations.push(docToRes(doc));
+                    });
+                    if (reservations.length > 0) {
+                        isFirestoreReady = true;
+                        updateFirestoreStatus(true);
+                        populateYearDropdown();
+                        renderGrid();
+                        updateStats();
+                        hideLoading();
+                        return;
+                    }
+                } catch (e2) {
+                    console.warn('Offline fallback failed:', e2);
+                }
+                document.getElementById('gridContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">⚠️</div>
+                        <h3>Σφάλμα σύνδεσης με Firebase</h3>
+                        <p>Ελέγξτε το internet ή δοκιμάστε αργότερα.</p>
+                        <button class="btn btn-primary" onclick="loadAllReservations()" style="margin-top:12px;">🔄 Επανάληψη</button>
+                    </div>
+                `;
+                hideLoading();
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // --- ADD / UPDATE ---
+        async function saveReservationToFirestore(reservation) {
+            const sn = reservation.sn;
+            if (!sn) throw new Error('S/N is required');
+
+            // Check if exists
+            const existing = reservations.find(r => r.sn === sn);
+            const docRef = db.collection(COLLECTION).doc(sn);
+
+            if (existing) {
+                // Update
+                await docRef.update(resToDoc(reservation));
+                // Update local array
+                const idx = reservations.findIndex(r => r.sn === sn);
+                if (idx !== -1) {
+                    reservations[idx] = { ...reservation, id: sn };
+                }
+            } else {
+                // Create
+                await docRef.set(resToDoc(reservation));
+                reservations.push({ ...reservation, id: sn });
+            }
+            populateYearDropdown();
+            renderGrid();
+            updateStats();
+            return true;
+        }
+
+        // --- DELETE ---
+        async function deleteReservationFromFirestore(sn) {
+            if (!sn) return;
+            await db.collection(COLLECTION).doc(sn).delete();
+            const idx = reservations.findIndex(r => r.sn === sn);
+            if (idx !== -1) {
+                reservations.splice(idx, 1);
+            }
+            populateYearDropdown();
+            renderGrid();
+            updateStats();
+            document.getElementById('detailPanel').classList.remove('open');
+        }
+
+        // --- BATCH IMPORT (with replace logic) ---
+        async function importReservationsToFirestore(newReservations) {
+            const batch = db.batch();
+            const replaced = [];
+            let added = 0;
+
+            for (const r of newReservations) {
+                if (!r.sn) continue;
+                const docRef = db.collection(COLLECTION).doc(r.sn);
+                const existing = reservations.find(res => res.sn === r.sn);
+
+                if (existing) {
+                    // Replace
+                    batch.set(docRef, resToDoc(r), { merge: true });
+                    replaced.push({ sn: r.sn, oldName: existing.guestName, newName: r.guestName });
+                    const idx = reservations.findIndex(res => res.sn === r.sn);
+                    if (idx !== -1) reservations[idx] = { ...r, id: r.sn };
+                } else {
+                    batch.set(docRef, resToDoc(r));
+                    reservations.push({ ...r, id: r.sn });
+                    added++;
+                }
+            }
+
+            await batch.commit();
+            populateYearDropdown();
+            renderGrid();
+            updateStats();
+            return { added, replaced };
+        }
+
+        // --- CLEAR ALL ---
+        async function clearAllReservations() {
+            if (reservations.length === 0) return;
+            const batch = db.batch();
+            reservations.forEach(r => {
+                if (r.sn) {
+                    const ref = db.collection(COLLECTION).doc(r.sn);
+                    batch.delete(ref);
+                }
+            });
+            await batch.commit();
+            reservations = [];
+            populateYearDropdown();
+            renderGrid();
+            updateStats();
+            document.getElementById('detailPanel').classList.remove('open');
+        }
+
+        // --- FIREBASE STATUS UI ---
+        function updateFirestoreStatus(online) {
+            const dot = document.getElementById('fbDot');
+            const label = document.getElementById('fbLabel');
+            if (online) {
+                dot.className = 'dot online';
+                label.textContent = 'Συνδεδεμένο';
+            } else {
+                dot.className = 'dot offline';
+                label.textContent = 'Offline';
+            }
+        }
+
+        // ================================================================
+        //  6. HELPERS (dates, parsing, tax)
+        // ================================================================
+        function parseDate(day, month, year) {
+            let y = parseInt(year);
+            if (y < 100) y += 2000;
+            return new Date(y, parseInt(month) - 1, parseInt(day));
+        }
+
+        function formatDate(d) {
+            if (!d) return '';
+            return d.toLocaleDateString('el-GR');
+        }
+
+        function dateToInput(d) {
+            if (!d) return '';
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function calculateClimateTax(property, checkInDate, nights) {
+            if (!checkInDate) return 0;
+            const month = checkInDate.getMonth() + 1;
+            const isSummer = (month >= 5 && month <= 10);
+            let rate;
+            if (property === 'Villa') {
+                rate = isSummer ? 15 : 4;
+            } else {
+                rate = isSummer ? 2 : 0.5;
+            }
+            return rate * nights;
+        }
+
+        function parseMoney(str) {
+            if (!str) return 0;
+            let cleaned = str.replace(/[^\d.,]/g, '');
+            cleaned = cleaned.replace(/,/g, '');
+            return parseFloat(cleaned) || 0;
+        }
+
+        // ================================================================
+        //  7. DATA PARSING (TSV / multi-line) – same as original
+        // ================================================================
+        function parseReservationData(text) {
+            const lines = text.split(/\r?\n/);
+            const nonEmpty = lines.filter(l => l.trim() !== '');
+            if (nonEmpty.length === 0) return [];
+            const first = nonEmpty[0];
+            const isHeader = /Property/i.test(first) && /S\/N/i.test(first) && first.includes('\t');
+            if (isHeader) {
+                const second = nonEmpty.length > 1 ? nonEmpty[1] : '';
+                const fields = second.split('\t');
+                if (fields.length >= 6 && /\d/.test(second)) {
+                    return parseTSV(nonEmpty);
+                } else {
+                    return parseMultiLine(nonEmpty.slice(1));
+                }
+            } else {
+                return parseMultiLine(nonEmpty);
+            }
+        }
+
+        function parseTSV(lines) {
+            const records = [];
+            let i = 0;
+            while (i < lines.length && lines[i].trim() === '') i++;
+            if (i >= lines.length) return records;
+            const header = lines[i].trim().split(/\t+/);
+            i++;
+            const idxProp = header.findIndex(h => /Property/i.test(h));
+            const idxSN = header.findIndex(h => /S\/N/i.test(h) || /SN/i.test(h));
+            const idxDetails = header.findIndex(h => /Details/i.test(h));
+            const idxNights = header.findIndex(h => /Nights/i.test(h) && !h.includes('Guests'));
+            const idxGuest = header.findIndex(h => /Guest/i.test(h));
+            const idxStayValue = header.findIndex(h => /Stay value/i.test(h) || /Value/i.test(h));
+            const idxClimateTax = header.findIndex(h => /Climate resilience tax/i.test(h) || /Climate/i.test(h));
+            for (let j = i; j < lines.length; j++) {
+                const line = lines[j].trim();
+                if (line === '') continue;
+                const fields = line.split(/\t+/);
+                if (fields.length < 6) continue;
+                const property = (idxProp !== -1) ? fields[idxProp]?.trim() || '' : '';
+                const sn = (idxSN !== -1) ? fields[idxSN]?.trim() || '' : '';
+                const details = (idxDetails !== -1) ? fields[idxDetails]?.trim() || '' : '';
+                const nightsStr = (idxNights !== -1) ? fields[idxNights]?.trim() || '1' : '1';
+                const guest = (idxGuest !== -1) ? fields[idxGuest]?.trim() || '' : '';
+                const stayValueStr = (idxStayValue !== -1) ? fields[idxStayValue]?.trim() || '0' : '0';
+                const climateTaxStr = (idxClimateTax !== -1) ? fields[idxClimateTax]?.trim() || '0' : '0';
+                const record = buildRecordFromRaw(property, sn, details, guest, stayValueStr, climateTaxStr, nightsStr);
+                if (record) records.push(record);
+            }
+            return records;
+        }
+
+        function parseMultiLine(lines) {
+            const records = [];
+            let i = 0;
+            while (i < lines.length) {
+                while (i < lines.length && lines[i].trim() === '') i++;
+                if (i >= lines.length) break;
+                const line = lines[i].trim();
+                if (!PROPERTIES.includes(line)) { i++; continue; }
+                const property = line;
+                i++;
+                if (i >= lines.length) break;
+                const sn = lines[i].trim();
+                i++;
+                if (i >= lines.length) break;
+                const detailsPart1 = lines[i].trim();
+                i++;
+                if (i >= lines.length) break;
+                const detailsPart2 = lines[i].trim();
+                i++;
+                const details = detailsPart1 + ' ' + detailsPart2;
+                if (i >= lines.length) break;
+                let guestName = lines[i].trim();
+                i++;
+                if (i >= lines.length) break;
+                let contactValues = lines[i].trim();
+                i++;
+                let status = '';
+                if (i < lines.length && !PROPERTIES.includes(lines[i].trim()) && lines[i].trim() !== '') {
+                    status = lines[i].trim();
+                    i++;
+                }
+                const record = buildRecordFromMultiLine(property, sn, details, guestName, contactValues, status);
+                if (record) records.push(record);
+            }
+            return records;
+        }
+
+        function buildRecordFromRaw(property, sn, details, guest, stayValueStr, climateTaxStr, nightsStr) {
+            const totalWithVAT = parseMoney(stayValueStr);
+            const climateTax = parseMoney(climateTaxStr);
+            const nights = parseInt(nightsStr) || 1;
+            return buildFinalRecord(property, sn, details, guest, totalWithVAT, climateTax, nights);
+        }
+
+        function buildRecordFromMultiLine(property, sn, details, guestName, contactValues, status) {
+            const euroMatches = contactValues.match(/€\s*(\d+[\.,\d]+)/g);
+            let totalWithVAT = 0,
+                climateTax = 0;
+            if (euroMatches && euroMatches.length >= 2) {
+                totalWithVAT = parseMoney(euroMatches[0]);
+                climateTax = parseMoney(euroMatches[1]);
+            } else {
+                const nums = contactValues.match(/\d+[\.,\d]+/g);
+                if (nums && nums.length >= 2) {
+                    totalWithVAT = parseMoney(nums[0]);
+                    climateTax = parseMoney(nums[1]);
+                }
+            }
+            let nights = 1;
+            const nightsMatch = details.match(/\s(\d+)\s*$/);
+            if (nightsMatch) nights = parseInt(nightsMatch[1]);
+            const parts = details.split(/\t/);
+            if (parts.length > 1) {
+                const last = parts[parts.length - 1].trim();
+                const num = parseInt(last);
+                if (!isNaN(num)) nights = num;
+            }
+            let guestContact = contactValues.replace(/\s*\d+[\.,\d]+\s*€/g, '').trim();
+            guestContact = guestContact.replace(/\s*\d+\s+\d+\s*$/, '').trim();
+            return buildFinalRecord(property, sn, details, guestName, totalWithVAT, climateTax, nights, guestContact);
+        }
+
+        function buildFinalRecord(property, sn, details, guest, totalWithVAT, climateTax, nights, guestContactOverride = '') {
+            let platform = '';
+            const platformMatch = details.match(
+                /\b(Booking|Airbnb|Google Hotel Ads|Google Hotel Ads Organic|Direct|Travel Agencies|natalieapartments\.com|WebHotelier)\b/i
+            );
+            if (platformMatch) {
+                platform = platformMatch[0];
+                const lower = platform.toLowerCase();
+                if (lower.includes('booking')) platform = 'Booking';
+                else if (lower.includes('airbnb')) platform = 'Airbnb';
+                else if (lower.includes('direct')) platform = 'Direct';
+                else if (lower.includes('google') || lower.includes('travel') || lower.includes('natalie') || lower
+                    .includes('webhotelier')) {
+                    platform = 'WebHotelier';
+                }
+            }
+
+            const datePattern = /(\d{2})\/(\d{2})\/(\d{2,4})\s*\([^)]*\)/g;
+            const dateMatches = [...details.matchAll(datePattern)];
+            let checkIn = null,
+                checkOut = null;
+            if (dateMatches.length >= 2) {
+                checkIn = parseDate(dateMatches[0][1], dateMatches[0][2], dateMatches[0][3]);
+                checkOut = parseDate(dateMatches[1][1], dateMatches[1][2], dateMatches[1][3]);
+            } else if (dateMatches.length === 1) {
+                const remaining = details.replace(dateMatches[0][0], '');
+                const match2 = remaining.match(/(\d{2})\/(\d{2})\/(\d{2,4})\s*\([^)]*\)/);
+                if (match2) {
+                    checkIn = parseDate(dateMatches[0][1], dateMatches[0][2], dateMatches[0][3]);
+                    checkOut = parseDate(match2[1], match2[2], match2[3]);
+                }
+            }
+            if (!checkIn || !checkOut) {
+                const allDates = details.match(/\d{2}\/\d{2}\/\d{2,4}/g);
+                if (allDates && allDates.length >= 2) {
+                    const d1 = allDates[0].split('/');
+                    const d2 = allDates[1].split('/');
+                    checkIn = parseDate(d1[0], d1[1], d1[2]);
+                    checkOut = parseDate(d2[0], d2[1], d2[2]);
+                }
+            }
+
+            let guestName = guest;
+            let guestContact = guestContactOverride;
+            if (!guestContact) {
+                const contactSplit = guest.split(/\s*\|\s*/);
+                if (contactSplit.length >= 2) {
+                    guestName = contactSplit[0].trim();
+                    guestContact = contactSplit.slice(1).join(' | ').trim();
+                } else if (guest.includes('@') || guest.includes('+')) {
+                    const parts = guest.split(/\s{2,}/);
+                    if (parts.length >= 2) {
+                        guestName = parts[0].trim();
+                        guestContact = parts.slice(1).join(' ').trim();
+                    }
+                }
+            }
+
+            if (!nights || nights === 0) {
+                if (checkIn && checkOut) {
+                    const diff = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+                    nights = diff > 0 ? diff : 1;
+                } else {
+                    nights = 1;
+                }
+            }
+
+            const netPrice = totalWithVAT / 1.13;
+            const vatAmount = totalWithVAT - netPrice;
+            const finalTotal = totalWithVAT + climateTax;
+
+            return {
+                property,
+                sn,
+                platform,
+                checkIn,
+                checkOut,
+                nights,
+                guestName: guestName || 'Άγνωστος',
+                guestContact: guestContact || '',
+                totalWithVAT,
+                netPrice,
+                vatAmount,
+                climateTax,
+                finalTotal,
+                stayValue: totalWithVAT,
+                vat: vatAmount,
+            };
+        }
+
+        // ================================================================
+        //  8. OVERLAP CHECK
+        // ================================================================
+        function hasOverlap(property, checkIn, checkOut, excludeSN = null) {
+            return reservations.some(r => {
+                if (r.property !== property) return false;
+                if (excludeSN && r.sn === excludeSN) return false;
+                if (!r.checkIn || !r.checkOut) return false;
+                return (checkIn <= r.checkOut && checkOut >= r.checkIn);
+            });
+        }
+
+        // ================================================================
+        //  9. GRID RENDER
+        // ================================================================
+        function renderGrid() {
+            const container = document.getElementById('gridContainer');
+            if (reservations.length === 0 && isFirestoreReady) {
+                container.innerHTML =
+                    `
+                    <div class="empty-state">
+                        <div class="icon">📅</div>
+                        <h3>Δεν υπάρχουν κρατήσεις</h3>
+                        <p>Πατήστε «Εισαγωγή» για να επικολλήσετε δεδομένα ή κάντε κλικ σε μια κενή ημέρα για να προσθέσετε.</p>
+                    </div>
+                `;
+                updateStatsBar();
+                return;
+            }
+            if (reservations.length === 0 && !isFirestoreReady) {
+                return;
+            }
+
+            let filtered = reservations.filter(r => {
+                if (!r.checkIn || isNaN(r.checkIn)) return false;
+                if (r.checkIn.getFullYear() !== currentYear) return false;
+                if (viewMode === 'daily') {
+                    const start = r.checkIn;
+                    let lastNight;
+                    if (r.checkOut) {
+                        lastNight = new Date(r.checkOut.getTime() - 86400000);
+                    } else {
+                        lastNight = new Date(start.getFullYear(), start.getMonth(), start.getDate() + r.nights - 1);
+                    }
+                    const rangeStart = new Date(currentYear, monthFrom, 1);
+                    const rangeEnd = new Date(currentYear, monthTo + 1, 0);
+                    return (start <= rangeEnd && lastNight >= rangeStart);
+                }
+                return true;
+            });
+
+            updateStatsBar();
+
+            if (filtered.length === 0 && reservations.length > 0) {
+                container.innerHTML =
+                    `
+                    <div class="empty-state">
+                        <div class="icon">📅</div>
+                        <h3>Δεν υπάρχουν κρατήσεις για την επιλογή</h3>
+                        <p>Αλλάξτε το έτος ή το εύρος μηνών.</p>
+                    </div>
+                `;
+                return;
+            } else if (reservations.length === 0) {
+                container.innerHTML =
+                    `
+                    <div class="empty-state">
+                        <div class="icon">📅</div>
+                        <h3>Δεν υπάρχουν κρατήσεις</h3>
+                        <p>Πατήστε «Εισαγωγή» ή κάντε κλικ σε μια κενή ημέρα για να προσθέσετε.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (viewMode === 'monthly') {
+                renderMonthlyView(container, filtered);
+            } else {
+                renderDailyView(container, filtered);
+            }
+        }
+
+        function updateStatsBar() {
+            const allYear = reservations.filter(r => r.checkIn && r.checkIn.getFullYear() === currentYear);
+            const counts = { 'Studio': 0, 'Apartment 1': 0, 'Apartment 2': 0, 'Villa': 0 };
+            allYear.forEach(r => { if (counts[r.property] !== undefined) counts[r.property]++; });
+            document.getElementById('cntStudio').textContent = counts['Studio'];
+            document.getElementById('cntA1').textContent = counts['Apartment 1'];
+            document.getElementById('cntA2').textContent = counts['Apartment 2'];
+            document.getElementById('cntVilla').textContent = counts['Villa'];
+            document.getElementById('cntTotal').textContent = allYear.length;
+            document.getElementById('resCountBadge').textContent = allYear.length + ' κρατ.';
+        }
+
+        function renderMonthlyView(container, filtered) {
+            const grouped = {};
+            PROPERTIES.forEach(p => {
+                grouped[p] = {};
+                for (let m = 0; m < 12; m++) {
+                    grouped[p][m] = { nights: 0, revenue: 0, reservations: [] };
+                }
+            });
+            filtered.forEach(r => {
+                const m = r.checkIn.getMonth();
+                const prop = r.property;
+                if (grouped[prop] && grouped[prop][m] !== undefined) {
+                    grouped[prop][m].nights += r.nights;
+                    grouped[prop][m].revenue += r.finalTotal;
+                    grouped[prop][m].reservations.push(r);
+                }
+            });
+            let html = `<div class="grid-scroll"><table class="grid"><thead><tr><th class="prop-header">Ιδιοκτησία</th>`;
+            MONTHS.forEach(m => html += `<th>${m}</th>`);
+            html += `</tr></thead><tbody>`;
+            PROPERTIES.forEach(prop => {
+                html += `<tr><td class="prop-header">${prop}</td>`;
+                for (let m = 0; m < 12; m++) {
+                    const data = grouped[prop][m];
+                    const nights = data.nights;
+                    const revenue = data.revenue;
+                    const resList = data.reservations;
+                    html += `<td class="month-cell" onclick="showDetailMonthly('${prop}', ${m})">`;
+                    if (nights === 0) {
+                        html += `<div class="empty">—</div>`;
+                    } else {
+                        html +=
+                            `<div class="cell-summary">${nights} νύχτες<br><span class="revenue">${revenue.toFixed(2)}€</span>`;
+                        const platforms = [...new Set(resList.map(r => r.platform).filter(Boolean))];
+                        if (platforms.length > 0) {
+                            html += `<br><span style="font-size:10px;font-weight:400;color:#64748b;">`;
+                            platforms.slice(0, 3).forEach(p => {
+                                const color = getPlatformColor(p);
+                                html +=
+                                    `<span class="platform-dot" style="background:${color};display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:2px;"></span>`;
+                            });
+                            if (platforms.length > 3) html += `<span style="font-size:9px;">+${platforms.length-3}</span>`;
+                            html += `</span>`;
+                        }
+                        html += `</div>`;
+                    }
+                    html += `</td>`;
+                }
+                html += `</tr>`;
+            });
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
+        }
+
+        function showDetailMonthly(property, month) {
+            const list = reservations.filter(r => {
+                if (!r.checkIn) return false;
+                return r.property === property && r.checkIn.getMonth() === month && r.checkIn.getFullYear() === currentYear;
+            });
+            if (list.length === 0) return;
+            showDetailPanel(`Λεπτομέρειες για ${property} – ${MONTHS[month]} ${currentYear}`, list);
+        }
+
+        function renderDailyView(container, filtered) {
+            const startDate = new Date(currentYear, monthFrom, 1);
+            const endDate = new Date(currentYear, monthTo + 1, 0);
+            const days = [];
+            let cur = new Date(startDate);
+            while (cur <= endDate) {
+                days.push(new Date(cur));
+                cur.setDate(cur.getDate() + 1);
+            }
+            if (days.length === 0) {
+                container.innerHTML =
+                    `
+                    <div class="empty-state"><div class="icon">📅</div><h3>Δεν υπάρχουν ημέρες στην επιλογή</h3></div>`;
+                return;
+            }
+
+            const monthGroups = [];
+            let currentM = -1;
+            let startIdx = 0;
+            for (let i = 0; i < days.length; i++) {
+                const m = days[i].getMonth();
+                if (m !== currentM) {
+                    if (currentM !== -1) {
+                        monthGroups.push({ month: currentM, start: startIdx, count: i - startIdx });
+                    }
+                    currentM = m;
+                    startIdx = i;
+                }
+            }
+            if (currentM !== -1) {
+                monthGroups.push({ month: currentM, start: startIdx, count: days.length - startIdx });
+            }
+
+            const dailyMap = {};
+            PROPERTIES.forEach(p => { dailyMap[p] = {}; });
+            filtered.forEach(r => {
+                const prop = r.property;
+                if (!dailyMap[prop]) return;
+                const start = r.checkIn;
+                let lastNight;
+                if (r.checkOut) {
+                    lastNight = new Date(r.checkOut.getTime() - 86400000);
+                } else {
+                    lastNight = new Date(start.getFullYear(), start.getMonth(), start.getDate() + r.nights - 1);
+                }
+                const effStart = start < startDate ? startDate : start;
+                const effEnd = lastNight > endDate ? endDate : lastNight;
+                let d = new Date(effStart);
+                while (d <= effEnd) {
+                    const key = d.toISOString().slice(0, 10);
+                    if (!dailyMap[prop][key]) dailyMap[prop][key] = [];
+                    dailyMap[prop][key].push(r);
+                    d.setDate(d.getDate() + 1);
+                }
+            });
+
+            let html = `<div class="grid-scroll"><table class="grid"><thead>`;
+            html += `<tr><th class="prop-header">Ιδιοκτησία</th>`;
+            monthGroups.forEach(g => {
+                html += `<th colspan="${g.count}" class="month-header-cell">${MONTHS[g.month]}</th>`;
+            });
+            html += `</tr>`;
+            html += `<tr><th class="prop-header"></th>`;
+            days.forEach((d) => {
+                const dayOfWeek = d.getDay();
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                html += `<th style="${isWeekend ? 'color:#ef4444;' : ''}">${d.getDate()}</th>`;
+            });
+            html += `</tr></thead><tbody>`;
+
+            PROPERTIES.forEach(prop => {
+                html += `<tr><td class="prop-header">${prop}</td>`;
+                days.forEach((d) => {
+                    const key = d.toISOString().slice(0, 10);
+                    const resOnDay = dailyMap[prop]?.[key] || [];
+                    const dayOfWeek = d.getDay();
+                    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                    const dateStr = d.toISOString().slice(0, 10);
+                    html += `<td class="day-cell ${isWeekend ? 'weekend' : ''}" onclick="onDayClick('${dateStr}', '${prop}')">`;
+                    if (resOnDay.length === 0) {
+                        html += `<span class="empty-day">+</span>`;
+                    } else {
+                        const names = resOnDay.map(r => r.guestName);
+                        const display = names.length === 1 ? names[0].substring(0, 8) : `${names.length}κ`;
+                        const tooltip = names.map((n, i) => `${n} (${resOnDay[i].finalTotal.toFixed(2)}€)`).join('\n');
+                        const multiple = names.length > 1 ? 'multiple' : '';
+                        let bgColor = '#dbeafe';
+                        if (resOnDay.length === 1) {
+                            bgColor = getPlatformColor(resOnDay[0].platform);
+                        } else {
+                            bgColor = '#fef3c7';
+                        }
+                        const sns = resOnDay.map(r => r.sn).filter(Boolean).join(',');
+                        const style =
+                            `background:${bgColor}; border-color:${bgColor}; color:${resOnDay.length === 1 ? '#fff' : '#92400e'};`;
+                        html +=
+                            `<span class="res-indicator ${multiple}" title="${tooltip}" style="${style}" onclick="event.stopPropagation();showDetailDaily('${sns}')">${display}</span>`;
+                    }
+                    html += `</td>`;
+                });
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
+        }
+
+        function onDayClick(dateStr, property) {
+            const d = new Date(dateStr);
+            const existing = reservations.filter(r => {
+                if (!r.checkIn) return false;
+                return r.checkIn.toISOString().slice(0, 10) === dateStr && r.property === property;
+            });
+            if (existing.length > 0) {
+                showDetailPanel(`Κρατήσεις για ${property} – ${d.toLocaleDateString('el-GR')}`, existing);
+                return;
+            }
+            editingSN = null;
+            document.getElementById('formModalTitle').textContent = '✏️ Νέα Κράτηση';
+            document.getElementById('formModalSub').textContent = 'Συμπληρώστε τα στοιχεία της νέας κράτησης.';
+            document.getElementById('formSubmitBtn').textContent = '💾 Αποθήκευση';
+            openAddForm(dateStr, property);
+        }
+
+        function showDetailDaily(snList) {
+            const sns = snList.split(',').map(s => s.trim()).filter(Boolean);
+            const uniqueSns = [...new Set(sns)];
+            const list = reservations.filter(r => r.sn && uniqueSns.includes(r.sn));
+            if (list.length === 0) return;
+            showDetailPanel(`Λεπτομέρειες κρατήσεων για την ημέρα`, list);
+        }
+
+        function showDetailPanel(title, list) {
+            const panel = document.getElementById('detailPanel');
+            const titleEl = document.getElementById('detailTitle');
+            const content = document.getElementById('detailContent');
+            titleEl.textContent = title;
+            let html = `<div class="detail-grid">`;
+            list.forEach(r => {
+                const checkInStr = r.checkIn ? r.checkIn.toLocaleDateString('el-GR') : '—';
+                const checkOutStr = r.checkOut ? r.checkOut.toLocaleDateString('el-GR') : '—';
+                const platformColor = getPlatformColor(r.platform);
+                html += `
+                        <div class="detail-card" style="border-left-color: ${platformColor}">
+                            <div class="guest">
+                                <span class="platform-dot" style="background:${platformColor};display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;vertical-align:middle;"></span>
+                                ${r.guestName}
+                            </div>
+                            <div class="row"><span class="lbl">Ακίνητο:</span><span class="val">${r.property}</span></div>
+                            <div class="row"><span class="lbl">S/N:</span><span class="val">${r.sn}</span></div>
+                            <div class="row"><span class="lbl">Πλατφόρμα:</span><span class="val">${r.platform || '—'}</span></div>
+                            <div class="row"><span class="lbl">Άφιξη:</span><span class="val">${checkInStr}</span></div>
+                            <div class="row"><span class="lbl">Αναχώρηση:</span><span class="val">${checkOutStr}</span></div>
+                            <div class="row"><span class="lbl">Διανυκτερεύσεις:</span><span class="val">${r.nights}</span></div>
+                            ${r.guestContact ? `<div class="row"><span class="lbl">Επικοινωνία:</span><span class="val">${r.guestContact}</span></div>` : ''}
+                            <div class="row"><span class="lbl">Καθαρή αξία (χωρίς ΦΠΑ):</span><span class="val">${r.netPrice.toFixed(2)}€</span></div>
+                            <div class="row"><span class="lbl">ΦΠΑ (13%):</span><span class="val">${r.vatAmount.toFixed(2)}€</span></div>
+                            <div class="row"><span class="lbl">Σύνολο με ΦΠΑ:</span><span class="val">${r.totalWithVAT.toFixed(2)}€</span></div>
+                            <div class="row"><span class="lbl">Φόρος ανθεκτικότητας:</span><span class="val">${r.climateTax.toFixed(2)}€</span></div>
+                            <div class="row total"><span class="lbl">Τελικό σύνολο:</span><span class="val">${r.finalTotal.toFixed(2)}€</span></div>
+                            <div class="card-actions">
+                                <button class="btn btn-warning" onclick="editReservation('${r.sn}')">✏️ Επεξεργασία</button>
+                                <button class="btn btn-danger" onclick="deleteReservation('${r.sn}')">🗑️ Διαγραφή</button>
+                            </div>
+                        </div>
+                    `;
+            });
+            html += `</div>`;
+            content.innerHTML = html;
+            panel.classList.add('open');
+        }
+
+        // ================================================================
+        //  10. EDIT / DELETE (wrappers)
+        // ================================================================
+        function editReservation(sn) {
+            const r = reservations.find(res => res.sn === sn);
+            if (!r) return;
+            editingSN = sn;
+            document.getElementById('formModalTitle').textContent = '✏️ Επεξεργασία Κράτησης';
+            document.getElementById('formModalSub').textContent = 'Τροποποιήστε τα πεδία που θέλετε.';
+            document.getElementById('formSubmitBtn').textContent = '💾 Ενημέρωση';
+
+            document.getElementById('fGuestName').value = r.guestName;
+            document.getElementById('fProperty').value = r.property;
+            document.getElementById('fSN').value = r.sn;
+            document.getElementById('fPlatform').value = r.platform || 'Booking';
+            document.getElementById('fCheckIn').value = dateToInput(r.checkIn);
+            document.getElementById('fCheckOut').value = dateToInput(r.checkOut);
+            document.getElementById('fNights').value = r.nights;
+            document.getElementById('fContact').value = r.guestContact;
+            document.getElementById('fTotalWithVAT').value = r.totalWithVAT.toFixed(2);
+            updateClimateTax();
+
+            document.getElementById('addReservationModal').classList.add('open');
+        }
+
+        async function deleteReservation(sn) {
+            if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε την κράτηση με S/N ${sn};`)) return;
+            showLoading('Διαγραφή…');
+            try {
+                await deleteReservationFromFirestore(sn);
+                hideLoading();
+            } catch (err) {
+                console.error('Delete error:', err);
+                alert('Σφάλμα διαγραφής: ' + err.message);
+                hideLoading();
+            }
+        }
+
+        // ================================================================
+        //  11. ADD / EDIT FORM
+        // ================================================================
+        let addFormTargetDate = null;
+        let addFormTargetProperty = null;
+
+        function openAddForm(dateStr, property) {
+            addFormTargetDate = dateStr;
+            addFormTargetProperty = property;
+            const modal = document.getElementById('addReservationModal');
+            const form = document.getElementById('addReservationForm');
+            form.reset();
+
+            const d = new Date(dateStr);
+            const checkInInput = document.getElementById('fCheckIn');
+            const checkOutInput = document.getElementById('fCheckOut');
+            checkInInput.value = dateStr;
+            const nextDay = new Date(d);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOutInput.value = dateToInput(nextDay);
+
+            document.getElementById('fProperty').value = property;
+            document.getElementById('fNights').value = 1;
+            document.getElementById('fGuestName').focus();
+
+            updateClimateTax();
+            modal.classList.add('open');
+        }
+
+        function updateClimateTax() {
+            const property = document.getElementById('fProperty').value;
+            const checkInVal = document.getElementById('fCheckIn').value;
+            const nights = parseInt(document.getElementById('fNights').value) || 1;
+            let tax = 0;
+            if (checkInVal) {
+                const d = new Date(checkInVal);
+                tax = calculateClimateTax(property, d, nights);
+            }
+            document.getElementById('fClimateTax').value = tax.toFixed(2);
+            const info = document.getElementById('fTaxInfo');
+            const month = checkInVal ? new Date(checkInVal).getMonth() + 1 : 0;
+            const isSummer = (month >= 5 && month <= 10);
+            const rate = property === 'Villa' ? (isSummer ? 15 : 4) : (isSummer ? 2 : 0.5);
+            info.textContent = `${rate.toFixed(1)}€/νύχτα × ${nights} = ${tax.toFixed(2)}€`;
+        }
+
+        document.getElementById('fCheckIn').addEventListener('change', updateNightsAndTax);
+        document.getElementById('fCheckOut').addEventListener('change', updateNightsAndTax);
+        document.getElementById('fProperty').addEventListener('change', updateClimateTax);
+
+        function updateNightsAndTax() {
+            const checkInVal = document.getElementById('fCheckIn').value;
+            const checkOutVal = document.getElementById('fCheckOut').value;
+            if (checkInVal && checkOutVal) {
+                const d1 = new Date(checkInVal);
+                const d2 = new Date(checkOutVal);
+                const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+                if (diff > 0) {
+                    document.getElementById('fNights').value = diff;
+                }
+            }
+            updateClimateTax();
+        }
+
+        document.getElementById('addReservationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const guestName = document.getElementById('fGuestName').value.trim();
+            const property = document.getElementById('fProperty').value;
+            const sn = document.getElementById('fSN').value.trim();
+            const platform = document.getElementById('fPlatform').value;
+            const checkInVal = document.getElementById('fCheckIn').value;
+            const checkOutVal = document.getElementById('fCheckOut').value;
+            const nights = parseInt(document.getElementById('fNights').value) || 1;
+            const contact = document.getElementById('fContact').value.trim();
+            const totalWithVAT = parseFloat(document.getElementById('fTotalWithVAT').value) || 0;
+
+            if (!guestName || !sn || !checkInVal || !checkOutVal || totalWithVAT <= 0) {
+                alert('Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία.');
+                return;
+            }
+
+            const checkIn = new Date(checkInVal);
+            const checkOut = new Date(checkOutVal);
+
+            // Overlap check
+            if (hasOverlap(property, checkIn, checkOut, editingSN)) {
+                alert(`Υπάρχει ήδη κράτηση για το ${property} αυτές τις ημερομηνίες.`);
+                return;
+            }
+
+            // Check duplicate S/N
+            const existingIdx = reservations.findIndex(r => r.sn === sn);
+            if (existingIdx !== -1 && editingSN !== sn) {
+                alert(`Το S/N "${sn}" υπάρχει ήδη.`);
+                return;
+            }
+
+            const climateTax = calculateClimateTax(property, checkIn, nights);
+            const netPrice = totalWithVAT / 1.13;
+            const vatAmount = totalWithVAT - netPrice;
+            const finalTotal = totalWithVAT + climateTax;
+
+            const newRes = {
+                property,
+                sn,
+                platform,
+                checkIn,
+                checkOut,
+                nights,
+                guestName: guestName || 'Άγνωστος',
+                guestContact: contact || '',
+                totalWithVAT,
+                netPrice,
+                vatAmount,
+                climateTax,
+                finalTotal,
+                stayValue: totalWithVAT,
+                vat: vatAmount,
+            };
+
+            showLoading('Αποθήκευση…');
+            try {
+                await saveReservationToFirestore(newRes);
+                hideLoading();
+                document.getElementById('addReservationModal').classList.remove('open');
+                editingSN = null;
+                renderGrid();
+                updateStats();
+            } catch (err) {
+                console.error('Save error:', err);
+                alert('Σφάλμα αποθήκευσης: ' + err.message);
+                hideLoading();
+            }
+        });
+
+        document.getElementById('closeAddModalBtn').addEventListener('click', function() {
+            document.getElementById('addReservationModal').classList.remove('open');
+            editingSN = null;
+        });
+        document.getElementById('cancelAddBtn').addEventListener('click', function() {
+            document.getElementById('addReservationModal').classList.remove('open');
+            editingSN = null;
+        });
+        document.getElementById('addReservationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('open');
+                editingSN = null;
+            }
+        });
+
+        // ================================================================
+        //  12. STATS DASHBOARD
+        // ================================================================
+        function updateStats() {
+            if (reservations.length === 0) {
+                document.getElementById('kpiGrid').innerHTML = `
+                        <div class="empty-state" style="grid-column:1/-1;">
+                            <div class="icon">📊</div>
+                            <h3>Δεν υπάρχουν δεδομένα για στατιστικά</h3>
+                            <p>Εισάγετε κρατήσεις για να δείτε αναλυτικά στατιστικά.</p>
+                        </div>
+                    `;
+                document.getElementById('chartGrid').innerHTML = '';
+                return;
+            }
+
+            const totalRes = reservations.length;
+            const totalNights = reservations.reduce((s, r) => s + r.nights, 0);
+            const totalRevenue = reservations.reduce((s, r) => s + r.finalTotal, 0);
+            const adr = totalNights > 0 ? totalRevenue / totalNights : 0;
+
+            let totalAvailableNights = 0;
+            const allYears = [...new Set(reservations.map(r => r.checkIn ? r.checkIn.getFullYear() : null).filter(Boolean))];
+            allYears.forEach(y => {
+                PROPERTIES.forEach(p => {
+                    const daysInYear = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 366 : 365;
+                    totalAvailableNights += daysInYear;
+                });
+            });
+            const occupiedNights = {};
+            PROPERTIES.forEach(p => occupiedNights[p] = 0);
+            reservations.forEach(r => {
+                if (occupiedNights[r.property] !== undefined) {
+                    occupiedNights[r.property] += r.nights;
+                }
+            });
+            const totalOccupied = Object.values(occupiedNights).reduce((s, v) => s + v, 0);
+            const occupancyRate = totalAvailableNights > 0 ? (totalOccupied / totalAvailableNights) * 100 : 0;
+
+            const revenueByProp = {};
+            PROPERTIES.forEach(p => revenueByProp[p] = 0);
+            reservations.forEach(r => {
+                if (revenueByProp[r.property] !== undefined) {
+                    revenueByProp[r.property] += r.finalTotal;
+                }
+            });
+
+            const revenueByPlatform = {};
+            reservations.forEach(r => {
+                const p = r.platform || 'Άλλο';
+                revenueByPlatform[p] = (revenueByPlatform[p] || 0) + r.finalTotal;
+            });
+
+            document.getElementById('kpiGrid').innerHTML = `
+                    <div class="stats-kpi-card" style="border-left-color:#3b82f6;">
+                        <div class="kpi-value">${totalRes}</div>
+                        <div class="kpi-label">Σύνολο Κρατήσεων</div>
+                    </div>
+                    <div class="stats-kpi-card" style="border-left-color:#059669;">
+                        <div class="kpi-value">${totalNights}</div>
+                        <div class="kpi-label">Σύνολο Διανυκτερεύσεων</div>
+                    </div>
+                    <div class="stats-kpi-card" style="border-left-color:#f59e0b;">
+                        <div class="kpi-value">${totalRevenue.toFixed(2)}€</div>
+                        <div class="kpi-label">Συνολικά Έσοδα</div>
+                    </div>
+                    <div class="stats-kpi-card" style="border-left-color:#8b5cf6;">
+                        <div class="kpi-value">${adr.toFixed(2)}€</div>
+                        <div class="kpi-label">Μέση Τιμή Δωματίου (ADR)</div>
+                        <div class="kpi-sub">Έσοδα / Διανυκτερεύσεις</div>
+                    </div>
+                    <div class="stats-kpi-card" style="border-left-color:#ef4444;">
+                        <div class="kpi-value">${occupancyRate.toFixed(1)}%</div>
+                        <div class="kpi-label">Πληρότητα</div>
+                        <div class="kpi-sub">${totalOccupied} / ${totalAvailableNights} νύχτες</div>
+                    </div>
+                    <div class="stats-kpi-card" style="border-left-color:#06b6d4;">
+                        <div class="kpi-value">${(totalRevenue / (totalRes || 1)).toFixed(2)}€</div>
+                        <div class="kpi-label">Μέσο Έσοδο ανά Κράτηση</div>
+                    </div>
+                `;
+
+            let chartsHtml = '';
+
+            const propRevenueData = PROPERTIES.map(p => ({ label: p, value: revenueByProp[p] || 0 }));
+            const maxPropRev = Math.max(...propRevenueData.map(d => d.value), 1);
+            chartsHtml += `
+                    <div class="stats-chart-card">
+                        <h4>💰 Έσοδα ανά Ιδιοκτησία</h4>
+                        <div class="chart-bar-container">
+                            ${propRevenueData.map(d => `
+                                <div class="chart-bar-row">
+                                    <span class="bar-label">${d.label}</span>
+                                    <div class="bar-track"><div class="bar-fill" style="width:${(d.value/maxPropRev)*100}%;background:#3b82f6;"></div></div>
+                                    <span class="bar-value">${d.value.toFixed(2)}€</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+            const platformData = Object.entries(revenueByPlatform).sort((a, b) => b[1] - a[1]);
+            const maxPlat = Math.max(...platformData.map(d => d[1]), 1);
+            chartsHtml += `
+                    <div class="stats-chart-card">
+                        <h4>📱 Έσοδα ανά Πλατφόρμα</h4>
+                        <div class="chart-bar-container">
+                            ${platformData.map(([p, val]) => `
+                                <div class="chart-bar-row">
+                                    <span class="bar-label">${p}</span>
+                                    <div class="bar-track"><div class="bar-fill" style="width:${(val/maxPlat)*100}%;background:${getPlatformColor(p) || '#94a3b8'};"></div></div>
+                                    <span class="bar-value">${val.toFixed(2)}€</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+            const monthlyRevenue = Array(12).fill(0);
+            const monthlyNights = Array(12).fill(0);
+            reservations.forEach(r => {
+                if (r.checkIn && r.checkIn.getFullYear() === currentYear) {
+                    const m = r.checkIn.getMonth();
+                    monthlyRevenue[m] += r.finalTotal;
+                    monthlyNights[m] += r.nights;
+                }
+            });
+            const maxMonthRev = Math.max(...monthlyRevenue, 1);
+            chartsHtml += `
+                    <div class="stats-chart-card">
+                        <h4>📈 Μηνιαία Έσοδα (${currentYear})</h4>
+                        <div class="chart-bar-container">
+                            ${MONTHS.map((m, i) => `
+                                <div class="chart-bar-row">
+                                    <span class="bar-label">${m}</span>
+                                    <div class="bar-track"><div class="bar-fill" style="width:${(monthlyRevenue[i]/maxMonthRev)*100}%;background:#059669;"></div></div>
+                                    <span class="bar-value small">${monthlyRevenue[i].toFixed(0)}€</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+            const maxMonthNights = Math.max(...monthlyNights, 1);
+            chartsHtml += `
+                    <div class="stats-chart-card">
+                        <h4>🏠 Μηνιαίες Διανυκτερεύσεις (${currentYear})</h4>
+                        <div class="chart-bar-container">
+                            ${MONTHS.map((m, i) => `
+                                <div class="chart-bar-row">
+                                    <span class="bar-label">${m}</span>
+                                    <div class="bar-track"><div class="bar-fill" style="width:${(monthlyNights[i]/maxMonthNights)*100}%;background:#8b5cf6;"></div></div>
+                                    <span class="bar-value small">${monthlyNights[i]}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+            const stayLengths = {};
+            reservations.forEach(r => {
+                const nights = r.nights || 1;
+                const key = nights > 5 ? '6+' : String(nights);
+                stayLengths[key] = (stayLengths[key] || 0) + 1;
+            });
+            const sortedLengths = Object.keys(stayLengths).sort((a, b) => {
+                if (a === '6+') return 1;
+                if (b === '6+') return -1;
+                return parseInt(a) - parseInt(b);
+            });
+            const maxStayCount = Math.max(...Object.values(stayLengths), 1);
+            chartsHtml += `
+                    <div class="stats-chart-card">
+                        <h4>📏 Κατανομή Διάρκειας Διαμονής</h4>
+                        <div class="chart-bar-container">
+                            ${sortedLengths.map(key => `
+                                <div class="chart-bar-row">
+                                    <span class="bar-label">${key === '6+' ? '6+ νύχτες' : key + ' νύχτες'}</span>
+                                    <div class="bar-track"><div class="bar-fill" style="width:${(stayLengths[key]/maxStayCount)*100}%;background:#f59e0b;"></div></div>
+                                    <span class="bar-value small">${stayLengths[key]}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+            const propTable = PROPERTIES.map(p => {
+                const res = reservations.filter(r => r.property === p);
+                const nights = res.reduce((s, r) => s + r.nights, 0);
+                const revenue = res.reduce((s, r) => s + r.finalTotal, 0);
+                const count = res.length;
+                const avgPrice = count > 0 ? revenue / count : 0;
+                return { property: p, count, nights, revenue, avgPrice };
+            });
+            chartsHtml += `
+                    <div class="stats-chart-card" style="grid-column:1/-1;">
+                        <h4>📋 Αναλυτικός Πίνακας Ιδιοκτησιών</h4>
+                        <table class="stats-table">
+                            <thead><tr><th>Ιδιοκτησία</th><th>Κρατήσεις</th><th>Διανυκτερεύσεις</th><th>Έσοδα</th><th>Μέση Τιμή</th></tr></thead>
+                            <tbody>
+                                ${propTable.map(p => `
+                                    <tr>
+                                        <td><strong>${p.property}</strong></td>
+                                        <td>${p.count}</td>
+                                        <td>${p.nights}</td>
+                                        <td>${p.revenue.toFixed(2)}€</td>
+                                        <td>${p.avgPrice.toFixed(2)}€</td>
+                                    </tr>
+                                `).join('')}
+                                <tr style="font-weight:700;background:#f8fafc;">
+                                    <td>ΣΥΝΟΛΟ</td>
+                                    <td>${reservations.length}</td>
+                                    <td>${reservations.reduce((s,r) => s + r.nights, 0)}</td>
+                                    <td>${reservations.reduce((s,r) => s + r.finalTotal, 0).toFixed(2)}€</td>
+                                    <td>${(reservations.reduce((s,r) => s + r.finalTotal, 0) / (reservations.length || 1)).toFixed(2)}€</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+            document.getElementById('chartGrid').innerHTML = chartsHtml;
+        }
+
+        // ================================================================
+        //  13. IMPORT / EXPORT
+        // ================================================================
+        async function importData(text) {
+            const records = parseReservationData(text);
+            if (records.length === 0) {
+                document.getElementById('importStatus').textContent = '❌ Δεν βρέθηκαν έγκυρα δεδομένα';
+                document.getElementById('importStatus').className = 'status err';
+                return false;
+            }
+
+            showLoading('Εισαγωγή δεδομένων…');
+            try {
+                const result = await importReservationsToFirestore(records);
+                hideLoading();
+                document.getElementById('importStatus').textContent =
+                    `✅ Εισήχθησαν ${result.added} νέες, αντικαταστάθηκαν ${result.replaced.length} (σύνολο ${reservations.length})`;
+                document.getElementById('importStatus').className = 'status ok';
+
+                if (result.replaced.length > 0) {
+                    showReplacementModal(result.replaced);
+                }
+                populateYearDropdown();
+                renderGrid();
+                updateStats();
+                return true;
+            } catch (err) {
+                console.error('Import error:', err);
+                hideLoading();
+                document.getElementById('importStatus').textContent = '❌ Σφάλμα εισαγωγής: ' + err.message;
+                document.getElementById('importStatus').className = 'status err';
+                return false;
+            }
+        }
+
+        function showReplacementModal(replacedList) {
+            const modal = document.getElementById('replacementModal');
+            const listContainer = document.getElementById('replacedList');
+            listContainer.innerHTML = '';
+            replacedList.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML =
+                    `<span class="sn">${item.sn}</span><span class="name">${item.oldName} → ${item.newName}</span>`;
+                listContainer.appendChild(div);
+            });
+            modal.classList.add('open');
+        }
+
+        document.getElementById('closeModalBtn').addEventListener('click', function() {
+            document.getElementById('replacementModal').classList.remove('open');
+        });
+        document.getElementById('replacementModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('open');
+        });
+
+        function exportData() {
+            if (reservations.length === 0) {
+                alert('Δεν υπάρχουν κρατήσεις για εξαγωγή.');
+                return;
+            }
+            let tsv = 'Property\tS/N\tDetails\tNights\tGuest\tStay value\tClimate resilience tax\tGuests number\tNights\n';
+            reservations.forEach(r => {
+                let details = '';
+                if (r.platform) details += r.platform + ' ';
+                if (r.checkIn) {
+                    const ci = r.checkIn.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit',
+                    year: 'numeric' });
+                    const co = r.checkOut ? r.checkOut.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit',
+                        year: 'numeric' }) : '';
+                    details += ci;
+                    if (co) details += ' ' + co;
+                }
+                let guest = r.guestName;
+                if (r.guestContact) guest += ' | ' + r.guestContact;
+                const guestsNumber = 1;
+                const nights = r.nights;
+                tsv +=
+                    `${r.property}\t${r.sn}\t${details}\t${nights}\t${guest}\t${r.totalWithVAT.toFixed(2)}€\t${r.climateTax.toFixed(2)}€\t${guestsNumber}\t${nights}\n`;
+            });
+            const blob = new Blob([tsv], { type: 'text/tab-separated-values;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reservations_${currentYear}.tsv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ================================================================
+        //  14. COLOR SETTINGS UI
+        // ================================================================
+        function initColorSettings() {
+            const grid = document.getElementById('colorSettingsGrid');
+            grid.innerHTML = '';
+            const keys = ['Booking', 'Airbnb', 'WebHotelier', 'Direct', 'fallback'];
+            const labels = {
+                'Booking': 'Booking',
+                'Airbnb': 'Airbnb',
+                'WebHotelier': 'WebHotelier (Google, Travel)',
+                'Direct': 'Direct',
+                'fallback': 'Fallback (λοιπά)'
+            };
+            keys.forEach(key => {
+                const div = document.createElement('div');
+                div.className = 'color-settings-item';
+                const label = document.createElement('label');
+                label.textContent = labels[key] || key;
+                const input = document.createElement('input');
+                input.type = 'color';
+                input.value = PLATFORM_COLORS[key] || '#000000';
+                input.addEventListener('input', function() {
+                    PLATFORM_COLORS[key] = this.value;
+                    saveColors();
+                    renderGrid();
+                });
+                div.appendChild(label);
+                div.appendChild(input);
+                grid.appendChild(div);
+            });
+        }
+
+        // ================================================================
+        //  15. DROPDOWNS
+        // ================================================================
+        function populateYearDropdown() {
+            const sel = document.getElementById('yearSelect');
+            const current = parseInt(sel.value) || currentYear;
+            let minYear = currentYear,
+                maxYear = currentYear;
+            reservations.forEach(r => {
+                if (r.checkIn && !isNaN(r.checkIn)) {
+                    const y = r.checkIn.getFullYear();
+                    if (y < minYear) minYear = y;
+                    if (y > maxYear) maxYear = y;
+                }
+            });
+            const now = new Date().getFullYear();
+            minYear = Math.min(minYear, now - 2);
+            maxYear = Math.max(maxYear, now + 2);
+            sel.innerHTML = '';
+            for (let y = minYear; y <= maxYear; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === current) opt.selected = true;
+                sel.appendChild(opt);
+            }
+            if (!sel.value) sel.value = current;
+            currentYear = parseInt(sel.value);
+        }
+
+        function populateMonthDropdowns() {
+            const from = document.getElementById('monthFrom');
+            const to = document.getElementById('monthTo');
+            from.innerHTML = '';
+            to.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const opt1 = document.createElement('option');
+                opt1.value = i;
+                opt1.textContent = MONTHS[i];
+                if (i === monthFrom) opt1.selected = true;
+                from.appendChild(opt1);
+                const opt2 = document.createElement('option');
+                opt2.value = i;
+                opt2.textContent = MONTHS[i];
+                if (i === monthTo) opt2.selected = true;
+                to.appendChild(opt2);
+            }
+        }
+
+        // ================================================================
+        //  16. TAB SWITCHING
+        // ================================================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const tab = this.dataset.tab;
+                if (tab === 'reservations') {
+                    document.getElementById('reservationsTab').style.display = 'block';
+                    document.getElementById('statsTab').style.display = 'none';
+                    document.getElementById('statsBar').style.display = 'flex';
+                    document.getElementById('reservationControls').style.display = 'flex';
+                } else {
+                    document.getElementById('reservationsTab').style.display = 'none';
+                    document.getElementById('statsTab').style.display = 'block';
+                    document.getElementById('statsBar').style.display = 'none';
+                    document.getElementById('reservationControls').style.display = 'none';
+                    updateStats();
+                }
+            });
+        });
+
+        // ================================================================
+        //  17. EVENT BINDING & INIT
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // File input
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    document.getElementById('dataInput').value = ev.target.result;
+                    document.getElementById('importStatus').textContent = '📄 Αρχείο φορτώθηκε, πατήστε Εισαγωγή';
+                    document.getElementById('importStatus').className = 'status';
+                };
+                reader.readAsText(file);
+                this.value = '';
+            });
+
+            // Year select
+            document.getElementById('yearSelect').addEventListener('change', function() {
+                currentYear = parseInt(this.value);
+                renderGrid();
+                if (document.getElementById('statsTab').style.display !== 'none') updateStats();
+            });
+
+            // Month selects
+            document.getElementById('monthFrom').addEventListener('change', function() {
+                monthFrom = parseInt(this.value);
+                if (monthFrom > monthTo) { monthTo = monthFrom;
+                    document.getElementById('monthTo').value = monthTo; }
+                if (viewMode === 'daily') renderGrid();
+            });
+            document.getElementById('monthTo').addEventListener('change', function() {
+                monthTo = parseInt(this.value);
+                if (monthTo < monthFrom) { monthFrom = monthTo;
+                    document.getElementById('monthFrom').value = monthFrom; }
+                if (viewMode === 'daily') renderGrid();
+            });
+
+            // View mode
+            document.getElementById('viewMonthlyBtn').addEventListener('click', function() {
+                viewMode = 'monthly';
+                this.classList.add('active');
+                document.getElementById('viewDailyBtn').classList.remove('active');
+                renderGrid();
+            });
+            document.getElementById('viewDailyBtn').addEventListener('click', function() {
+                viewMode = 'daily';
+                this.classList.add('active');
+                document.getElementById('viewMonthlyBtn').classList.remove('active');
+                renderGrid();
+            });
+
+            // Import panel toggle
+            document.getElementById('toggleImportBtn').addEventListener('click', function() {
+                document.getElementById('importPanel').classList.toggle('open');
+                if (document.getElementById('importPanel').classList.contains('open')) {
+                    document.getElementById('dataInput').focus();
+                }
+            });
+            document.getElementById('closeImportBtn').addEventListener('click', function() {
+                document.getElementById('importPanel').classList.remove('open');
+            });
+
+            // Import button
+            document.getElementById('importBtn').addEventListener('click', function() {
+                const text = document.getElementById('dataInput').value;
+                if (!text.trim()) {
+                    document.getElementById('importStatus').textContent = '⚠️ Παρακαλώ επικολλήστε δεδομένα';
+                    document.getElementById('importStatus').className = 'status err';
+                    return;
+                }
+                importData(text);
+                document.getElementById('importPanel').classList.remove('open');
+            });
+
+            // Clear all
+            document.getElementById('clearAllBtn').addEventListener('click', async function() {
+                if (reservations.length === 0) return;
+                if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε όλες τις κρατήσεις;')) return;
+                showLoading('Διαγραφή όλων…');
+                try {
+                    await clearAllReservations();
+                    hideLoading();
+                    document.getElementById('importStatus').textContent = '🗑️ Όλες οι κρατήσεις διαγράφηκαν';
+                    document.getElementById('importStatus').className = 'status';
+                } catch (err) {
+                    console.error('Clear error:', err);
+                    alert('Σφάλμα διαγραφής: ' + err.message);
+                    hideLoading();
+                }
+            });
+
+            // Export
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+
+            // Close detail
+            document.getElementById('closeDetailBtn').addEventListener('click', function() {
+                document.getElementById('detailPanel').classList.remove('open');
+            });
+
+            // Color settings
+            document.getElementById('colorSettingsBtn').addEventListener('click', function() {
+                document.getElementById('colorModal').classList.add('open');
+            });
+            document.getElementById('closeColorModalBtn').addEventListener('click', function() {
+                document.getElementById('colorModal').classList.remove('open');
+            });
+            document.getElementById('colorModal').addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('open');
+            });
+
+            // Ctrl+Enter import
+            document.getElementById('dataInput').addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    document.getElementById('importBtn').click();
+                }
+            });
+
+            // Initialize everything
+            initColorSettings();
+            populateMonthDropdowns();
+            loadAllReservations();
+        });
+
+        // Expose functions to global scope for onclick handlers
+        window.showDetailMonthly = showDetailMonthly;
+        window.showDetailDaily = showDetailDaily;
+        window.onDayClick = onDayClick;
+        window.editReservation = editReservation;
+        window.deleteReservation = deleteReservation;
+        window.loadAllReservations = loadAllReservations;
+    </script>
+
 </body>
 </html>
