@@ -379,54 +379,62 @@
         }
 
         /* ----- GRID & DETAIL PANEL LAYOUT (STACKED) ----- */
-        /* Το container που κρατάει το Grid και το Detail Panel, σε στοίβα */
         #reservationsTab {
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
 
-        /* Το κεντρικό Grid πλέγμα */
         .grid-container {
             background: white;
             border-radius: 14px;
             overflow: hidden;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
             border: 1px solid #eef2f6;
-            transition: all 0.4s ease;
+            /* PREMIUM ANIMATION: Ομαλή μετάβαση με bounce εφέ */
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 100%;
         }
         .grid-scroll {
             overflow-x: auto;
             width: 100%;
         }
 
-        /* ---- DYNAMIC FONT SIZES ---- */
+        /* ---- DYNAMIC FONT SIZES (ENHANCED) ---- */
         .grid-container.expanded {
-            /* Όταν το detail panel είναι κλειστό - μεγάλες γραμματοσειρές */
-            font-size: 16px;
-            letter-spacing: 0.3px;
+            /* Όταν το detail panel είναι κλειστό - ΠΟΛΥ ΜΕΓΑΛΕΣ ΓΡΑΜΜΑΤΟΣΕΙΡΕΣ */
+            font-size: 18px;
+            letter-spacing: 0.5px;
+            padding-bottom: 20px; /* Extra breathing room */
         }
         .grid-container.expanded .grid th,
         .grid-container.expanded .grid td {
-            padding: 10px 8px;
+            padding: 14px 12px;
         }
         .grid-container.expanded .grid .prop-header {
-            font-size: 18px;
-            padding: 12px 12px;
+            font-size: 24px;
+            font-weight: 800;
+            padding: 16px 14px;
         }
         .grid-container.expanded .month-cell .cell-summary {
-            font-size: 16px;
+            font-size: 20px;
+            font-weight: 700;
         }
         .grid-container.expanded .day-cell .res-indicator {
-            font-size: 11px;
-            padding: 3px 5px;
-            max-width: 60px;
+            font-size: 12px;
+            padding: 4px 6px;
+            max-width: 80px;
+            border-radius: 6px;
+        }
+        .grid-container.expanded .grid th {
+            font-size: 15px;
         }
 
         .grid-container.shrunk {
-            /* Όταν το detail panel είναι ανοιχτό - μικρές γραμματοσειρές */
+            /* Όταν το detail panel είναι ανοιχτό - ΜΙΚΡΕΣ ΓΡΑΜΜΑΤΟΣΕΙΡΕΣ */
             font-size: 13px;
             letter-spacing: 0px;
+            padding-bottom: 0px;
         }
         .grid-container.shrunk .grid th,
         .grid-container.shrunk .grid td {
@@ -434,6 +442,7 @@
         }
         .grid-container.shrunk .grid .prop-header {
             font-size: 14px;
+            font-weight: 700;
             padding: 8px 8px;
         }
         .grid-container.shrunk .month-cell .cell-summary {
@@ -445,7 +454,7 @@
             max-width: 50px;
         }
 
-        /* Detail Panel (δεξιά ή κάτω) */
+        /* ----- DETAIL PANEL (PREMIUM ANIMATION) ----- */
         .detail-panel {
             background: white;
             border-radius: 14px;
@@ -453,12 +462,26 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             display: none; /* Κλειστό από default */
             position: relative;
-            transition: all 0.3s ease;
-            min-height: 150px; /* Ελάχιστο ύψος όταν ανοίξει */
+            min-height: 150px;
             margin-top: 0px;
+            
+            /* Κρυφό και μεταμορφωμένο */
+            transform: translateY(-30px) scale(0.98);
+            opacity: 0;
+            pointer-events: none;
+            transform-origin: top center;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy animation */
         }
         .detail-panel.open {
             display: block; /* Εμφανίζεται */
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: all;
+            animation: slideDownBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes slideDownBounce {
+            0% { opacity: 0; transform: translateY(-40px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         .detail-panel .close-btn {
             position: absolute;
@@ -489,6 +512,27 @@
             padding: 12px 14px;
             border-left: 4px solid #94a3b8;
             position: relative;
+            
+            /* ANIMATION FOR CARDS */
+            animation: cardAppear 0.5s ease forwards;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        /* Staggered animation for multiple cards */
+        .detail-card:nth-child(1) { animation-delay: 0.1s; }
+        .detail-card:nth-child(2) { animation-delay: 0.15s; }
+        .detail-card:nth-child(3) { animation-delay: 0.2s; }
+        .detail-card:nth-child(4) { animation-delay: 0.25s; }
+        .detail-card:nth-child(5) { animation-delay: 0.3s; }
+        .detail-card:nth-child(6) { animation-delay: 0.35s; }
+        .detail-card:nth-child(7) { animation-delay: 0.4s; }
+        .detail-card:nth-child(8) { animation-delay: 0.45s; }
+        .detail-card:nth-child(9) { animation-delay: 0.5s; }
+        .detail-card:nth-child(10) { animation-delay: 0.55s; }
+
+        @keyframes cardAppear {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
         }
         .detail-card .guest {
             font-weight: 700;
@@ -1042,6 +1086,18 @@
             }
             .date-filter-select {
                 max-width: 100px;
+            }
+            
+            /* Στο κινητό, το expanded state είναι πιο συμπαγές */
+            .grid-container.expanded {
+                font-size: 14px;
+            }
+            .grid-container.expanded .grid .prop-header {
+                font-size: 16px;
+                padding: 10px 8px;
+            }
+            .grid-container.expanded .month-cell .cell-summary {
+                font-size: 14px;
             }
         }
 
