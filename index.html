@@ -12,7 +12,7 @@
     </script>
 
     <style>
-        /* ----- ΒΑΣΙΚΑ ----- */
+        /* ----- BASE ----- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -165,6 +165,49 @@
             border-radius: 20px;
             background: #e2e8f0;
             color: #475569;
+        }
+
+        /* ----- SEARCH BAR (NEW) ----- */
+        .search-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 2px 8px 2px 12px;
+            transition: 0.2s;
+        }
+        .search-wrapper:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+        .search-wrapper input {
+            border: none !important;
+            outline: none !important;
+            padding: 5px 0;
+            font-size: 13px;
+            background: transparent;
+            width: 120px;
+            min-width: 80px;
+        }
+        .search-wrapper .clear-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .search-wrapper .clear-btn:hover {
+            color: #1e293b;
+        }
+
+        @media (max-width: 700px) {
+            .search-wrapper input {
+                width: 90px;
+            }
         }
 
         /* ----- LOADING OVERLAY ----- */
@@ -792,6 +835,10 @@
             font-size: 18px;
             color: #475569;
         }
+        .empty-state .sub {
+            font-size: 14px;
+            color: #94a3b8;
+        }
 
         /* ----- RESPONSIVE ----- */
         @media (max-width: 700px) {
@@ -835,6 +882,9 @@
             }
             .stats-kpi-grid {
                 grid-template-columns: 1fr 1fr;
+            }
+            .search-wrapper input {
+                width: 90px;
             }
         }
 
@@ -968,6 +1018,13 @@
                 <select id="monthFrom"></select>
                 <label for="monthTo">Έως</label>
                 <select id="monthTo"></select>
+
+                <!-- NEW SEARCH BAR -->
+                <div class="search-wrapper">
+                    <input type="text" id="searchInput" placeholder="Αναζήτηση…" />
+                    <button class="clear-btn" id="clearSearchBtn" title="Καθαρισμός">✕</button>
+                </div>
+
                 <button class="btn btn-outline" id="toggleImportBtn">📥 Εισαγωγή</button>
                 <button class="btn btn-outline" id="exportBtn">📤 Εξαγωγή</button>
                 <button class="btn btn-outline" id="colorSettingsBtn">🎨 Χρώματα</button>
@@ -1167,6 +1224,7 @@
         let editingSN = null;
         let isLoading = false;
         let isFirestoreReady = false;
+        let searchTerm = ''; // new global filter
 
         const PROPERTIES = ['Studio', 'Apartment 1', 'Apartment 2', 'Villa'];
         const MONTHS = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιουν', 'Ιουλ', 'Αυγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
@@ -1224,7 +1282,6 @@
         // ================================================================
         const COLLECTION = 'reservations';
 
-        // Convert reservation to Firestore doc (dates as timestamps / strings)
         function resToDoc(r) {
             return {
                 property: r.property || '',
@@ -1242,7 +1299,6 @@
                 finalTotal: r.finalTotal || 0,
                 stayValue: r.stayValue || 0,
                 vat: r.vat || 0,
-                // preserve timestamps for sorting
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
         }
@@ -1292,7 +1348,6 @@
                 console.error('Load error:', err);
                 isFirestoreReady = false;
                 updateFirestoreStatus(false);
-                // Try to load from cache (offline)
                 try {
                     const snapshot = await db.collection(COLLECTION).get();
                     reservations = [];
@@ -1330,20 +1385,16 @@
             const sn = reservation.sn;
             if (!sn) throw new Error('S/N is required');
 
-            // Check if exists
             const existing = reservations.find(r => r.sn === sn);
             const docRef = db.collection(COLLECTION).doc(sn);
 
             if (existing) {
-                // Update
                 await docRef.update(resToDoc(reservation));
-                // Update local array
                 const idx = reservations.findIndex(r => r.sn === sn);
                 if (idx !== -1) {
                     reservations[idx] = { ...reservation, id: sn };
                 }
             } else {
-                // Create
                 await docRef.set(resToDoc(reservation));
                 reservations.push({ ...reservation, id: sn });
             }
@@ -1367,7 +1418,7 @@
             document.getElementById('detailPanel').classList.remove('open');
         }
 
-        // --- BATCH IMPORT (with replace logic) ---
+        // --- BATCH IMPORT ---
         async function importReservationsToFirestore(newReservations) {
             const batch = db.batch();
             const replaced = [];
@@ -1379,7 +1430,6 @@
                 const existing = reservations.find(res => res.sn === r.sn);
 
                 if (existing) {
-                    // Replace
                     batch.set(docRef, resToDoc(r), { merge: true });
                     replaced.push({ sn: r.sn, oldName: existing.guestName, newName: r.guestName });
                     const idx = reservations.findIndex(res => res.sn === r.sn);
@@ -1416,7 +1466,6 @@
             document.getElementById('detailPanel').classList.remove('open');
         }
 
-        // --- FIREBASE STATUS UI ---
         function updateFirestoreStatus(online) {
             const dot = document.getElementById('fbDot');
             const label = document.getElementById('fbLabel');
@@ -1472,7 +1521,7 @@
         }
 
         // ================================================================
-        //  7. DATA PARSING (TSV / multi-line) – FIXED CONTACT PARSING
+        //  7. DATA PARSING (fixed contact parsing)
         // ================================================================
         function parseReservationData(text) {
             const lines = text.split(/\r?\n/);
@@ -1572,31 +1621,21 @@
         function buildRecordFromMultiLine(property, sn, details, guestName, contactValues, status) {
             let totalWithVAT = 0,
                 climateTax = 0;
-            let guestContact = contactValues; // start with full contact string
+            let guestContact = contactValues;
 
-            // Try to extract totals from contactValues (with € sign)
             const euroMatches = contactValues.match(/€\s*(\d+[\.,\d]+)/g);
             if (euroMatches && euroMatches.length >= 2) {
                 totalWithVAT = parseMoney(euroMatches[0]);
                 climateTax = parseMoney(euroMatches[1]);
-                // Remove the matched euro patterns from guestContact
                 guestContact = contactValues.replace(/€\s*\d+[\.,\d]+/g, '').trim();
             } else {
-                // Fallback: try to find two numbers without euro sign (e.g., "103.50 2.00")
                 const nums = contactValues.match(/\d+[\.,\d]+/g);
                 if (nums && nums.length >= 2) {
                     totalWithVAT = parseMoney(nums[0]);
                     climateTax = parseMoney(nums[1]);
-                    // Do NOT remove these numbers from guestContact because they might be part of phone number
-                    // We keep guestContact as is.
                 }
-                // No removal of any numbers if no euro sign found
             }
 
-            // If we removed euro patterns, we may have extra spaces, but we keep the rest.
-            // If no euro patterns, we keep full contactValues.
-
-            // Extract nights from details
             let nights = 1;
             const nightsMatch = details.match(/\s(\d+)\s*$/);
             if (nightsMatch) nights = parseInt(nightsMatch[1]);
@@ -1655,7 +1694,6 @@
             let guestName = guest;
             let guestContact = guestContactOverride;
             if (!guestContact) {
-                // If no override, try to split guest name and contact from guest string
                 const contactSplit = guest.split(/\s*\|\s*/);
                 if (contactSplit.length >= 2) {
                     guestName = contactSplit[0].trim();
@@ -1714,7 +1752,7 @@
         }
 
         // ================================================================
-        //  9. GRID RENDER (unchanged)
+        //  9. GRID RENDER (with search filter)
         // ================================================================
         function renderGrid() {
             const container = document.getElementById('gridContainer');
@@ -1734,6 +1772,7 @@
                 return;
             }
 
+            // ---- FILTER LOGIC ----
             let filtered = reservations.filter(r => {
                 if (!r.checkIn || isNaN(r.checkIn)) return false;
                 if (r.checkIn.getFullYear() !== currentYear) return false;
@@ -1747,30 +1786,30 @@
                     }
                     const rangeStart = new Date(currentYear, monthFrom, 1);
                     const rangeEnd = new Date(currentYear, monthTo + 1, 0);
-                    return (start <= rangeEnd && lastNight >= rangeStart);
+                    if (!(start <= rangeEnd && lastNight >= rangeStart)) return false;
+                }
+                // Apply search filter
+                if (searchTerm.trim() !== '') {
+                    const term = searchTerm.trim().toLowerCase();
+                    const name = (r.guestName || '').toLowerCase();
+                    const contact = (r.guestContact || '').toLowerCase();
+                    const sn = (r.sn || '').toLowerCase();
+                    // Also match platform and property if you like, but we keep to name, contact, SN
+                    if (!name.includes(term) && !contact.includes(term) && !sn.includes(term)) {
+                        return false;
+                    }
                 }
                 return true;
             });
 
             updateStatsBar();
 
-            if (filtered.length === 0 && reservations.length > 0) {
-                container.innerHTML =
-                    `
+            if (filtered.length === 0) {
+                container.innerHTML = `
                     <div class="empty-state">
-                        <div class="icon">📅</div>
-                        <h3>Δεν υπάρχουν κρατήσεις για την επιλογή</h3>
-                        <p>Αλλάξτε το έτος ή το εύρος μηνών.</p>
-                    </div>
-                `;
-                return;
-            } else if (reservations.length === 0) {
-                container.innerHTML =
-                    `
-                    <div class="empty-state">
-                        <div class="icon">📅</div>
-                        <h3>Δεν υπάρχουν κρατήσεις</h3>
-                        <p>Πατήστε «Εισαγωγή» ή κάντε κλικ σε μια κενή ημέρα για να προσθέσετε.</p>
+                        <div class="icon">🔍</div>
+                        <h3>Δεν βρέθηκαν αποτελέσματα</h3>
+                        <p class="sub">Δοκιμάστε άλλη αναζήτηση ή αλλάξτε τα φίλτρα.</p>
                     </div>
                 `;
                 return;
@@ -2031,7 +2070,7 @@
         }
 
         // ================================================================
-        //  10. EDIT / DELETE (wrappers)
+        //  10. EDIT / DELETE
         // ================================================================
         function editReservation(sn) {
             const r = reservations.find(res => res.sn === sn);
@@ -2152,13 +2191,11 @@
             const checkIn = new Date(checkInVal);
             const checkOut = new Date(checkOutVal);
 
-            // Overlap check
             if (hasOverlap(property, checkIn, checkOut, editingSN)) {
                 alert(`Υπάρχει ήδη κράτηση για το ${property} αυτές τις ημερομηνίες.`);
                 return;
             }
 
-            // Check duplicate S/N
             const existingIdx = reservations.findIndex(r => r.sn === sn);
             if (existingIdx !== -1 && editingSN !== sn) {
                 alert(`Το S/N "${sn}" υπάρχει ήδη.`);
@@ -2219,7 +2256,7 @@
         });
 
         // ================================================================
-        //  12. STATS DASHBOARD
+        //  12. STATS DASHBOARD (unchanged)
         // ================================================================
         function updateStats() {
             if (reservations.length === 0) {
@@ -2642,7 +2679,24 @@
         //  17. EVENT BINDING & INIT
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
-            // File input
+            // --- SEARCH INPUT ---
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+
+            function doSearch() {
+                searchTerm = searchInput.value;
+                renderGrid();
+            }
+
+            searchInput.addEventListener('input', doSearch);
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                searchTerm = '';
+                renderGrid();
+                searchInput.focus();
+            });
+
+            // --- File input ---
             document.getElementById('fileInput').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -2656,14 +2710,14 @@
                 this.value = '';
             });
 
-            // Year select
+            // --- Year select ---
             document.getElementById('yearSelect').addEventListener('change', function() {
                 currentYear = parseInt(this.value);
                 renderGrid();
                 if (document.getElementById('statsTab').style.display !== 'none') updateStats();
             });
 
-            // Month selects
+            // --- Month selects ---
             document.getElementById('monthFrom').addEventListener('change', function() {
                 monthFrom = parseInt(this.value);
                 if (monthFrom > monthTo) { monthTo = monthFrom;
@@ -2677,7 +2731,7 @@
                 if (viewMode === 'daily') renderGrid();
             });
 
-            // View mode
+            // --- View mode ---
             document.getElementById('viewMonthlyBtn').addEventListener('click', function() {
                 viewMode = 'monthly';
                 this.classList.add('active');
@@ -2691,7 +2745,7 @@
                 renderGrid();
             });
 
-            // Import panel toggle
+            // --- Import panel toggle ---
             document.getElementById('toggleImportBtn').addEventListener('click', function() {
                 document.getElementById('importPanel').classList.toggle('open');
                 if (document.getElementById('importPanel').classList.contains('open')) {
@@ -2702,7 +2756,7 @@
                 document.getElementById('importPanel').classList.remove('open');
             });
 
-            // Import button
+            // --- Import button ---
             document.getElementById('importBtn').addEventListener('click', function() {
                 const text = document.getElementById('dataInput').value;
                 if (!text.trim()) {
@@ -2714,7 +2768,7 @@
                 document.getElementById('importPanel').classList.remove('open');
             });
 
-            // Clear all
+            // --- Clear all ---
             document.getElementById('clearAllBtn').addEventListener('click', async function() {
                 if (reservations.length === 0) return;
                 if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε όλες τις κρατήσεις;')) return;
@@ -2731,15 +2785,15 @@
                 }
             });
 
-            // Export
+            // --- Export ---
             document.getElementById('exportBtn').addEventListener('click', exportData);
 
-            // Close detail
+            // --- Close detail ---
             document.getElementById('closeDetailBtn').addEventListener('click', function() {
                 document.getElementById('detailPanel').classList.remove('open');
             });
 
-            // Color settings
+            // --- Color settings ---
             document.getElementById('colorSettingsBtn').addEventListener('click', function() {
                 document.getElementById('colorModal').classList.add('open');
             });
@@ -2750,20 +2804,20 @@
                 if (e.target === this) this.classList.remove('open');
             });
 
-            // Ctrl+Enter import
+            // --- Ctrl+Enter import ---
             document.getElementById('dataInput').addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.key === 'Enter') {
                     document.getElementById('importBtn').click();
                 }
             });
 
-            // Initialize everything
+            // --- Init ---
             initColorSettings();
             populateMonthDropdowns();
             loadAllReservations();
         });
 
-        // Expose functions to global scope for onclick handlers
+        // Expose functions to global scope
         window.showDetailMonthly = showDetailMonthly;
         window.showDetailDaily = showDetailDaily;
         window.onDayClick = onDayClick;
