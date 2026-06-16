@@ -652,6 +652,60 @@
             background: #1a3f7a;
         }
 
+        /* ----- SEARCH RESULTS MODAL (NEW) ----- */
+        #searchResultsModal .modal-box {
+            max-width: 750px;
+            padding: 20px 25px;
+        }
+        #searchResultsModal .result-item {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3b82f6;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px 12px;
+        }
+        #searchResultsModal .result-item .info {
+            flex: 1;
+            min-width: 150px;
+        }
+        #searchResultsModal .result-item .info .name {
+            font-weight: 700;
+            font-size: 15px;
+            color: #0f2b5b;
+        }
+        #searchResultsModal .result-item .info .details {
+            font-size: 13px;
+            color: #475569;
+        }
+        #searchResultsModal .result-item .info .details span {
+            margin-right: 8px;
+        }
+        #searchResultsModal .result-item .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        #searchResultsModal .result-item .actions .btn {
+            font-size: 12px;
+            padding: 3px 10px;
+        }
+        #searchResultsModal .result-count {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        #searchResultsModal .no-results {
+            text-align: center;
+            padding: 30px 10px;
+            color: #94a3b8;
+        }
+
         /* ----- FORM ----- */
         .form-grid {
             display: grid;
@@ -886,6 +940,13 @@
             .search-wrapper input {
                 width: 90px;
             }
+            #searchResultsModal .result-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #searchResultsModal .result-item .actions {
+                justify-content: flex-start;
+            }
         }
 
         .flex {
@@ -1019,7 +1080,7 @@
                 <label for="monthTo">Έως</label>
                 <select id="monthTo"></select>
 
-                <!-- NEW SEARCH BAR -->
+                <!-- SEARCH BAR -->
                 <div class="search-wrapper">
                     <input type="text" id="searchInput" placeholder="Αναζήτηση…" />
                     <button class="clear-btn" id="clearSearchBtn" title="Καθαρισμός">✕</button>
@@ -1191,6 +1252,19 @@
         </div>
     </div>
 
+    <!-- NEW: SEARCH RESULTS MODAL -->
+    <div class="modal-overlay" id="searchResultsModal">
+        <div class="modal-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <h2 style="margin:0;">🔍 Αποτελέσματα Αναζήτησης</h2>
+                <button class="btn btn-outline" id="closeSearchModalBtn" style="font-size:20px;padding:0 10px;">✕</button>
+            </div>
+            <div class="result-count" id="searchResultCount">Βρέθηκαν 0 κρατήσεις</div>
+            <div id="searchResultsList"></div>
+            <button class="btn-close-modal" id="closeSearchModalBottomBtn">Κλείσιμο</button>
+        </div>
+    </div>
+
     <script>
         // ================================================================
         //  1. FIREBASE INIT
@@ -1207,7 +1281,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Enable offline persistence
         db.enablePersistence({ synchronizeTabs: true })
             .catch((err) => {
                 console.warn('Firestore persistence error:', err);
@@ -1224,13 +1297,13 @@
         let editingSN = null;
         let isLoading = false;
         let isFirestoreReady = false;
-        let searchTerm = ''; // new global filter
+        let searchTerm = '';
 
         const PROPERTIES = ['Studio', 'Apartment 1', 'Apartment 2', 'Villa'];
         const MONTHS = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιουν', 'Ιουλ', 'Αυγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
 
         // ================================================================
-        //  3. COLORS (localStorage)
+        //  3. COLORS
         // ================================================================
         const DEFAULT_COLORS = {
             'Booking': '#1e88e5',
@@ -1266,7 +1339,7 @@
         }
 
         // ================================================================
-        //  4. LOADING OVERLAY
+        //  4. LOADING
         // ================================================================
         function showLoading(msg = 'Φόρτωση δεδομένων…') {
             document.getElementById('loadingMsg').textContent = msg;
@@ -1327,7 +1400,6 @@
             };
         }
 
-        // --- LOAD ALL ---
         async function loadAllReservations() {
             if (isLoading) return;
             isLoading = true;
@@ -1380,7 +1452,6 @@
             }
         }
 
-        // --- ADD / UPDATE ---
         async function saveReservationToFirestore(reservation) {
             const sn = reservation.sn;
             if (!sn) throw new Error('S/N is required');
@@ -1404,7 +1475,6 @@
             return true;
         }
 
-        // --- DELETE ---
         async function deleteReservationFromFirestore(sn) {
             if (!sn) return;
             await db.collection(COLLECTION).doc(sn).delete();
@@ -1416,9 +1486,10 @@
             renderGrid();
             updateStats();
             document.getElementById('detailPanel').classList.remove('open');
+            // Close search modal if open
+            closeSearchModal();
         }
 
-        // --- BATCH IMPORT ---
         async function importReservationsToFirestore(newReservations) {
             const batch = db.batch();
             const replaced = [];
@@ -1448,7 +1519,6 @@
             return { added, replaced };
         }
 
-        // --- CLEAR ALL ---
         async function clearAllReservations() {
             if (reservations.length === 0) return;
             const batch = db.batch();
@@ -1464,6 +1534,7 @@
             renderGrid();
             updateStats();
             document.getElementById('detailPanel').classList.remove('open');
+            closeSearchModal();
         }
 
         function updateFirestoreStatus(online) {
@@ -1479,7 +1550,7 @@
         }
 
         // ================================================================
-        //  6. HELPERS (dates, parsing, tax)
+        //  6. HELPERS
         // ================================================================
         function parseDate(day, month, year) {
             let y = parseInt(year);
@@ -1521,7 +1592,7 @@
         }
 
         // ================================================================
-        //  7. DATA PARSING (fixed contact parsing)
+        //  7. DATA PARSING (fixed contact)
         // ================================================================
         function parseReservationData(text) {
             const lines = text.split(/\r?\n/);
@@ -1772,7 +1843,6 @@
                 return;
             }
 
-            // ---- FILTER LOGIC ----
             let filtered = reservations.filter(r => {
                 if (!r.checkIn || isNaN(r.checkIn)) return false;
                 if (r.checkIn.getFullYear() !== currentYear) return false;
@@ -1788,13 +1858,11 @@
                     const rangeEnd = new Date(currentYear, monthTo + 1, 0);
                     if (!(start <= rangeEnd && lastNight >= rangeStart)) return false;
                 }
-                // Apply search filter
                 if (searchTerm.trim() !== '') {
                     const term = searchTerm.trim().toLowerCase();
                     const name = (r.guestName || '').toLowerCase();
                     const contact = (r.guestContact || '').toLowerCase();
                     const sn = (r.sn || '').toLowerCase();
-                    // Also match platform and property if you like, but we keep to name, contact, SN
                     if (!name.includes(term) && !contact.includes(term) && !sn.includes(term)) {
                         return false;
                     }
@@ -2092,6 +2160,7 @@
             updateClimateTax();
 
             document.getElementById('addReservationModal').classList.add('open');
+            closeSearchModal();
         }
 
         async function deleteReservation(sn) {
@@ -2100,6 +2169,7 @@
             try {
                 await deleteReservationFromFirestore(sn);
                 hideLoading();
+                closeSearchModal();
             } catch (err) {
                 console.error('Delete error:', err);
                 alert('Σφάλμα διαγραφής: ' + err.message);
@@ -2134,6 +2204,7 @@
 
             updateClimateTax();
             modal.classList.add('open');
+            closeSearchModal();
         }
 
         function updateClimateTax() {
@@ -2233,6 +2304,7 @@
                 editingSN = null;
                 renderGrid();
                 updateStats();
+                closeSearchModal();
             } catch (err) {
                 console.error('Save error:', err);
                 alert('Σφάλμα αποθήκευσης: ' + err.message);
@@ -2256,7 +2328,7 @@
         });
 
         // ================================================================
-        //  12. STATS DASHBOARD (unchanged)
+        //  12. STATS DASHBOARD
         // ================================================================
         function updateStats() {
             if (reservations.length === 0) {
@@ -2504,6 +2576,7 @@
                 populateYearDropdown();
                 renderGrid();
                 updateStats();
+                closeSearchModal();
                 return true;
             } catch (err) {
                 console.error('Import error:', err);
@@ -2653,7 +2726,64 @@
         }
 
         // ================================================================
-        //  16. TAB SWITCHING
+        //  16. SEARCH POPUP (NEW)
+        // ================================================================
+        function openSearchModal(results) {
+            const modal = document.getElementById('searchResultsModal');
+            const list = document.getElementById('searchResultsList');
+            const countEl = document.getElementById('searchResultCount');
+
+            if (results.length === 0) {
+                list.innerHTML = `<div class="no-results">😕 Δεν βρέθηκαν κρατήσεις</div>`;
+                countEl.textContent = 'Βρέθηκαν 0 κρατήσεις';
+                modal.classList.add('open');
+                return;
+            }
+
+            countEl.textContent = `Βρέθηκαν ${results.length} κρατήσεις`;
+            let html = '';
+            results.forEach(r => {
+                const checkInStr = r.checkIn ? r.checkIn.toLocaleDateString('el-GR') : '—';
+                const checkOutStr = r.checkOut ? r.checkOut.toLocaleDateString('el-GR') : '—';
+                const platformColor = getPlatformColor(r.platform);
+                html += `
+                    <div class="result-item" style="border-left-color: ${platformColor};">
+                        <div class="info">
+                            <div class="name">${r.guestName}</div>
+                            <div class="details">
+                                <span>🏠 ${r.property}</span>
+                                <span>📅 ${checkInStr} → ${checkOutStr}</span>
+                                <span>💰 ${r.finalTotal.toFixed(2)}€</span>
+                                <span>#${r.sn}</span>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-primary" onclick="viewResult('${r.sn}')">👁️ Λεπτομέρειες</button>
+                            <button class="btn btn-warning" onclick="editReservation('${r.sn}')">✏️</button>
+                            <button class="btn btn-danger" onclick="deleteReservation('${r.sn}')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+            modal.classList.add('open');
+        }
+
+        function closeSearchModal() {
+            document.getElementById('searchResultsModal').classList.remove('open');
+        }
+
+        // View details from search result
+        function viewResult(sn) {
+            const r = reservations.find(res => res.sn === sn);
+            if (r) {
+                showDetailPanel(`Λεπτομέρειες κράτησης #${sn}`, [r]);
+                closeSearchModal();
+            }
+        }
+
+        // ================================================================
+        //  17. TAB SWITCHING
         // ================================================================
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -2676,24 +2806,50 @@
         });
 
         // ================================================================
-        //  17. EVENT BINDING & INIT
+        //  18. EVENT BINDING & INIT
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             // --- SEARCH INPUT ---
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearchBtn');
 
-            function doSearch() {
-                searchTerm = searchInput.value;
+            function handleSearch() {
+                const term = searchInput.value;
+                searchTerm = term;
+
+                // Update grid filter
                 renderGrid();
+
+                // Show search popup if term length >= 2
+                if (term.length >= 2) {
+                    const lower = term.toLowerCase();
+                    const results = reservations.filter(r => {
+                        const name = (r.guestName || '').toLowerCase();
+                        const contact = (r.guestContact || '').toLowerCase();
+                        const sn = (r.sn || '').toLowerCase();
+                        return name.includes(lower) || contact.includes(lower) || sn.includes(lower);
+                    });
+                    openSearchModal(results);
+                } else {
+                    closeSearchModal();
+                }
             }
 
-            searchInput.addEventListener('input', doSearch);
+            searchInput.addEventListener('input', handleSearch);
+
             clearBtn.addEventListener('click', function() {
                 searchInput.value = '';
                 searchTerm = '';
+                closeSearchModal();
                 renderGrid();
                 searchInput.focus();
+            });
+
+            // Close search modal buttons
+            document.getElementById('closeSearchModalBtn').addEventListener('click', closeSearchModal);
+            document.getElementById('closeSearchModalBottomBtn').addEventListener('click', closeSearchModal);
+            document.getElementById('searchResultsModal').addEventListener('click', function(e) {
+                if (e.target === this) closeSearchModal();
             });
 
             // --- File input ---
@@ -2778,6 +2934,7 @@
                     hideLoading();
                     document.getElementById('importStatus').textContent = '🗑️ Όλες οι κρατήσεις διαγράφηκαν';
                     document.getElementById('importStatus').className = 'status';
+                    closeSearchModal();
                 } catch (err) {
                     console.error('Clear error:', err);
                     alert('Σφάλμα διαγραφής: ' + err.message);
@@ -2824,6 +2981,8 @@
         window.editReservation = editReservation;
         window.deleteReservation = deleteReservation;
         window.loadAllReservations = loadAllReservations;
+        window.viewResult = viewResult;
+        window.closeSearchModal = closeSearchModal;
     </script>
 
 </body>
