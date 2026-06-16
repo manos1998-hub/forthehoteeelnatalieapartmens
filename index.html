@@ -23,6 +23,7 @@
             font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
             padding: 16px;
             color: #1e293b;
+            min-height: 100vh;
         }
         .app {
             max-width: 1600px;
@@ -209,7 +210,6 @@
             color: #1e293b;
         }
 
-        /* ----- DATE FILTER DROPDOWN (NEW) ----- */
         .date-filter-select {
             font-size: 12px;
             padding: 4px 8px;
@@ -378,18 +378,138 @@
             background: #f59e0b;
         }
 
-        /* ----- GRID ----- */
+        /* ----- RESERVATIONS LAYOUT (NEW) ----- */
+        .reservations-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        /* ----- GRID CONTAINER ----- */
         .grid-container {
             background: white;
             border-radius: 14px;
             overflow: hidden;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
             border: 1px solid #eef2f6;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
+
+        /* Daily view: takes ~50-55% of viewport */
+        .grid-container.daily-mode {
+            max-height: 55vh;
+            min-height: 280px;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* When detail is open: shrink */
+        .grid-container.daily-mode.with-detail {
+            max-height: 38vh;
+            min-height: 180px;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Monthly view: full height */
+        .grid-container.monthly-mode {
+            max-height: none;
+            min-height: auto;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .grid-scroll {
             overflow-x: auto;
+            overflow-y: auto;
             padding: 4px 0 8px 0;
+            height: 100%;
+            max-height: inherit;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .grid-container.daily-mode .grid-scroll {
+            max-height: 55vh;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .grid-container.daily-mode.with-detail .grid-scroll {
+            max-height: 38vh;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ----- DETAIL PANEL (sliding from bottom) ----- */
+        .detail-panel {
+            background: white;
+            border-radius: 14px;
+            padding: 0 20px;
+            margin-top: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transform: translateY(12px) scale(0.98);
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+            visibility: hidden;
+            border: 1px solid transparent;
+        }
+
+        .detail-panel.open {
+            max-height: 55vh;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            visibility: visible;
+            padding: 16px 20px;
+            margin-top: 16px;
+            border-color: #eef2f6;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .detail-panel .close-btn {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 0 6px;
+            transition: 0.2s;
+            line-height: 1;
+        }
+        .detail-panel .close-btn:hover {
+            color: #1e293b;
+            transform: rotate(90deg);
+        }
+        .detail-panel h3 {
+            margin-bottom: 8px;
+            color: #0f2b5b;
+            font-size: 18px;
+            padding-right: 36px;
+        }
+        .detail-panel .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+            max-height: 42vh;
+            overflow-y: auto;
+            padding-bottom: 4px;
+        }
+
+        /* Scrollbar styling for detail grid */
+        .detail-panel .detail-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        .detail-panel .detail-grid::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .detail-panel .detail-grid::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .detail-panel .detail-grid::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* ----- GRID TABLE (unchanged) ----- */
         .grid {
             display: table;
             width: 100%;
@@ -495,9 +615,12 @@
             white-space: nowrap;
             max-width: 50px;
             background: #dbeafe;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
         .day-cell .res-indicator:hover {
-            filter: brightness(0.9);
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            filter: brightness(0.95);
         }
         .day-cell .res-indicator.multiple {
             background: #fef3c7;
@@ -507,6 +630,7 @@
         .day-cell .empty-day {
             color: #e2e8f0;
             font-size: 9px;
+            transition: 0.2s;
         }
         .day-cell .empty-day:hover {
             color: #3b82f6;
@@ -525,44 +649,18 @@
             border-bottom: 2px solid #d1d9e6 !important;
         }
 
-        /* ----- DETAIL PANEL ----- */
-        .detail-panel {
-            background: white;
-            border-radius: 14px;
-            padding: 16px 20px;
-            margin-top: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            display: none;
-        }
-        .detail-panel.open {
-            display: block;
-        }
-        .detail-panel .close-btn {
-            float: right;
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #94a3b8;
-        }
-        .detail-panel .close-btn:hover {
-            color: #1e293b;
-        }
-        .detail-panel h3 {
-            margin-bottom: 8px;
-            color: #0f2b5b;
-        }
-        .detail-panel .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 12px;
-        }
+        /* ----- DETAIL CARD ----- */
         .detail-card {
             background: #f8fafc;
             border-radius: 10px;
             padding: 12px 14px;
             border-left: 4px solid #94a3b8;
             position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .detail-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
         }
         .detail-card .guest {
             font-weight: 700;
@@ -674,7 +772,7 @@
             background: #1a3f7a;
         }
 
-        /* ----- SEARCH RESULTS MODAL (with input) ----- */
+        /* ----- SEARCH RESULTS MODAL ----- */
         #searchResultsModal .modal-box {
             max-width: 750px;
             padding: 20px 25px;
@@ -979,6 +1077,7 @@
             }
             .detail-panel .detail-grid {
                 grid-template-columns: 1fr;
+                max-height: 30vh;
             }
             .modal-box {
                 padding: 20px;
@@ -1004,6 +1103,21 @@
             }
             .date-filter-select {
                 max-width: 100px;
+            }
+            .grid-container.daily-mode {
+                max-height: 45vh;
+                min-height: 200px;
+            }
+            .grid-container.daily-mode.with-detail {
+                max-height: 30vh;
+                min-height: 140px;
+            }
+            .detail-panel.open {
+                max-height: 45vh;
+                padding: 12px 14px;
+            }
+            .detail-panel .detail-grid {
+                max-height: 32vh;
             }
         }
 
@@ -1138,7 +1252,6 @@
                 <label for="monthTo">Έως</label>
                 <select id="monthTo"></select>
 
-                <!-- DATE FILTER DROPDOWN (NEW) -->
                 <select id="dateFilterSelect" class="date-filter-select">
                     <option value="">📅 Κανένα</option>
                     <option value="today">Σήμερα</option>
@@ -1150,7 +1263,6 @@
                     <option value="next_month">Επόμενο μήνα</option>
                 </select>
 
-                <!-- SEARCH BAR -->
                 <div class="search-wrapper" id="searchWrapper">
                     <input type="text" id="searchInput" placeholder="Αναζήτηση…" />
                     <button class="clear-btn" id="clearSearchBtn" title="Καθαρισμός">✕</button>
@@ -1209,23 +1321,26 @@
             <span class="stat-item" style="margin-left:auto;"><span class="label">Σύνολο</span> <span class="num" id="cntTotal">0</span></span>
         </div>
 
-        <!-- RESERVATIONS TAB -->
+        <!-- RESERVATIONS TAB with new layout -->
         <div id="reservationsTab">
-            <div class="grid-container">
-                <div class="grid-scroll">
-                    <div id="gridContainer">
-                        <div class="empty-state">
-                            <div class="icon">📅</div>
-                            <h3>Φόρτωση δεδομένων…</h3>
-                            <p>Παρακαλώ περιμένετε.</p>
+            <div class="reservations-layout">
+                <div class="grid-container" id="gridContainerWrapper">
+                    <div class="grid-scroll" id="gridScroll">
+                        <div id="gridContainer">
+                            <div class="empty-state">
+                                <div class="icon">📅</div>
+                                <h3>Φόρτωση δεδομένων…</h3>
+                                <p>Παρακαλώ περιμένετε.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="detail-panel" id="detailPanel">
-                <button class="close-btn" id="closeDetailBtn">&times;</button>
-                <h3 id="detailTitle">Λεπτομέρειες</h3>
-                <div id="detailContent"></div>
+
+                <div class="detail-panel" id="detailPanel">
+                    <button class="close-btn" id="closeDetailBtn">&times;</button>
+                    <h3 id="detailTitle">Λεπτομέρειες</h3>
+                    <div id="detailContent"></div>
+                </div>
             </div>
         </div>
 
@@ -1322,7 +1437,7 @@
         </div>
     </div>
 
-    <!-- SEARCH RESULTS MODAL (with input) -->
+    <!-- SEARCH RESULTS MODAL -->
     <div class="modal-overlay" id="searchResultsModal">
         <div class="modal-box">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -1372,8 +1487,9 @@
         let isLoading = false;
         let isFirestoreReady = false;
         let searchTerm = '';
-        let dateRangeStart = null; // Date object
-        let dateRangeEnd = null; // Date object
+        let dateRangeStart = null;
+        let dateRangeEnd = null;
+        let isDetailOpen = false;
 
         const PROPERTIES = ['Studio', 'Apartment 1', 'Apartment 2', 'Villa'];
         const MONTHS = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιουν', 'Ιουλ', 'Αυγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
@@ -1561,7 +1677,7 @@
             populateYearDropdown();
             renderGrid();
             updateStats();
-            document.getElementById('detailPanel').classList.remove('open');
+            closeDetailPanel();
             closeSearchModal();
         }
 
@@ -1608,7 +1724,7 @@
             populateYearDropdown();
             renderGrid();
             updateStats();
-            document.getElementById('detailPanel').classList.remove('open');
+            closeDetailPanel();
             closeSearchModal();
         }
 
@@ -1667,7 +1783,7 @@
         }
 
         // ================================================================
-        //  7. DATA PARSING (fixed contact)
+        //  7. DATA PARSING
         // ================================================================
         function parseReservationData(text) {
             const lines = text.split(/\r?\n/);
@@ -1898,101 +2014,91 @@
         }
 
         // ================================================================
-        //  9. DATE FILTER LOGIC (NEW)
+        //  9. DETAIL PANEL CONTROL
         // ================================================================
-        function applyDateFilter(filterValue) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            let start = null,
-                end = null;
+        function openDetailPanel(title, list) {
+            const panel = document.getElementById('detailPanel');
+            const titleEl = document.getElementById('detailTitle');
+            const content = document.getElementById('detailContent');
+            const gridWrapper = document.getElementById('gridContainerWrapper');
 
-            switch (filterValue) {
-                case 'today':
-                    start = new Date(today);
-                    end = new Date(today);
-                    break;
-                case 'yesterday':
-                    start = new Date(today);
-                    start.setDate(start.getDate() - 1);
-                    end = new Date(start);
-                    break;
-                case 'tomorrow':
-                    start = new Date(today);
-                    start.setDate(start.getDate() + 1);
-                    end = new Date(start);
-                    break;
-                case 'this_week': {
-                    const day = today.getDay(); // 0=Sun
-                    const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Monday
-                    start = new Date(today);
-                    start.setDate(diff);
-                    end = new Date(start);
-                    end.setDate(end.getDate() + 6);
-                    break;
-                }
-                case 'this_month':
-                    start = new Date(today.getFullYear(), today.getMonth(), 1);
-                    end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                    break;
-                case 'last_month': {
-                    const m = today.getMonth() - 1;
-                    const y = today.getFullYear() + (m < 0 ? -1 : 0);
-                    const monthIdx = (m + 12) % 12;
-                    start = new Date(y, monthIdx, 1);
-                    end = new Date(y, monthIdx + 1, 0);
-                    break;
-                }
-                case 'next_month': {
-                    const m = today.getMonth() + 1;
-                    const y = today.getFullYear() + (m > 11 ? 1 : 0);
-                    const monthIdx = m % 12;
-                    start = new Date(y, monthIdx, 1);
-                    end = new Date(y, monthIdx + 1, 0);
-                    break;
-                }
-                default:
-                    // 'none' or empty
-                    dateRangeStart = null;
-                    dateRangeEnd = null;
-                    // Restore monthFrom/monthTo from dropdowns
-                    monthFrom = parseInt(document.getElementById('monthFrom').value);
-                    monthTo = parseInt(document.getElementById('monthTo').value);
-                    // Re-render
-                    renderGrid();
-                    return;
+            titleEl.textContent = title;
+            let html = `<div class="detail-grid">`;
+            list.forEach(r => {
+                const checkInStr = r.checkIn ? r.checkIn.toLocaleDateString('el-GR') : '—';
+                const checkOutStr = r.checkOut ? r.checkOut.toLocaleDateString('el-GR') : '—';
+                const platformColor = getPlatformColor(r.platform);
+                html += `
+                    <div class="detail-card" style="border-left-color: ${platformColor}">
+                        <div class="guest">
+                            <span class="platform-dot" style="background:${platformColor};display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;vertical-align:middle;"></span>
+                            ${r.guestName}
+                        </div>
+                        <div class="row"><span class="lbl">Ακίνητο:</span><span class="val">${r.property}</span></div>
+                        <div class="row"><span class="lbl">S/N:</span><span class="val">${r.sn}</span></div>
+                        <div class="row"><span class="lbl">Πλατφόρμα:</span><span class="val">${r.platform || '—'}</span></div>
+                        <div class="row"><span class="lbl">Άφιξη:</span><span class="val">${checkInStr}</span></div>
+                        <div class="row"><span class="lbl">Αναχώρηση:</span><span class="val">${checkOutStr}</span></div>
+                        <div class="row"><span class="lbl">Διανυκτερεύσεις:</span><span class="val">${r.nights}</span></div>
+                        ${r.guestContact ? `<div class="row"><span class="lbl">Επικοινωνία:</span><span class="val">${r.guestContact}</span></div>` : ''}
+                        <div class="row"><span class="lbl">Καθαρή αξία (χωρίς ΦΠΑ):</span><span class="val">${r.netPrice.toFixed(2)}€</span></div>
+                        <div class="row"><span class="lbl">ΦΠΑ (13%):</span><span class="val">${r.vatAmount.toFixed(2)}€</span></div>
+                        <div class="row"><span class="lbl">Σύνολο με ΦΠΑ:</span><span class="val">${r.totalWithVAT.toFixed(2)}€</span></div>
+                        <div class="row"><span class="lbl">Φόρος ανθεκτικότητας:</span><span class="val">${r.climateTax.toFixed(2)}€</span></div>
+                        <div class="row total"><span class="lbl">Τελικό σύνολο:</span><span class="val">${r.finalTotal.toFixed(2)}€</span></div>
+                        <div class="card-actions">
+                            <button class="btn btn-warning" onclick="editReservation('${r.sn}')">✏️ Επεξεργασία</button>
+                            <button class="btn btn-danger" onclick="deleteReservation('${r.sn}')">🗑️ Διαγραφή</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            content.innerHTML = html;
+
+            // Add class to shrink grid
+            if (viewMode === 'daily') {
+                gridWrapper.classList.add('with-detail');
             }
-
-            if (start && end) {
-                // Set viewMode to daily
-                viewMode = 'daily';
-                document.getElementById('viewDailyBtn').classList.add('active');
-                document.getElementById('viewMonthlyBtn').classList.remove('active');
-
-                // Adjust monthFrom/monthTo to cover the range
-                monthFrom = start.getMonth();
-                monthTo = end.getMonth();
-                // If range spans multiple months, we need to set monthFrom/To accordingly
-                // But for simplicity, we set to the month of start, but we also filter days.
-                // We'll store dateRangeStart/End and use them in renderDailyView.
-                dateRangeStart = start;
-                dateRangeEnd = end;
-
-                // Update the dropdowns to reflect the months (optional)
-                document.getElementById('monthFrom').value = monthFrom;
-                document.getElementById('monthTo').value = monthTo;
-
-                renderGrid();
-            }
+            panel.classList.add('open');
+            isDetailOpen = true;
         }
 
+        function closeDetailPanel() {
+            const panel = document.getElementById('detailPanel');
+            const gridWrapper = document.getElementById('gridContainerWrapper');
+
+            panel.classList.remove('open');
+            gridWrapper.classList.remove('with-detail');
+            isDetailOpen = false;
+        }
+
+        document.getElementById('closeDetailBtn').addEventListener('click', closeDetailPanel);
+
         // ================================================================
-        //  10. GRID RENDER (with date filter & search)
+        //  10. GRID RENDER
         // ================================================================
         function renderGrid() {
             const container = document.getElementById('gridContainer');
+            const gridWrapper = document.getElementById('gridContainerWrapper');
+            const scrollEl = document.getElementById('gridScroll');
+
+            // Update mode classes
+            if (viewMode === 'daily') {
+                gridWrapper.classList.add('daily-mode');
+                gridWrapper.classList.remove('monthly-mode');
+                if (isDetailOpen) {
+                    gridWrapper.classList.add('with-detail');
+                } else {
+                    gridWrapper.classList.remove('with-detail');
+                }
+            } else {
+                gridWrapper.classList.remove('daily-mode', 'with-detail');
+                gridWrapper.classList.add('monthly-mode');
+            }
+
             if (reservations.length === 0 && isFirestoreReady) {
-                container.innerHTML =
-                    `
+                container.innerHTML = `
                     <div class="empty-state">
                         <div class="icon">📅</div>
                         <h3>Δεν υπάρχουν κρατήσεις</h3>
@@ -2017,14 +2123,11 @@
                     } else {
                         lastNight = new Date(start.getFullYear(), start.getMonth(), start.getDate() + r.nights - 1);
                     }
-                    // Apply date range filter if set
                     if (dateRangeStart && dateRangeEnd) {
-                        // Check if reservation overlaps with range
                         if (!(start <= dateRangeEnd && lastNight >= dateRangeStart)) {
                             return false;
                         }
                     }
-                    // Also check month range from dropdowns (if no date filter)
                     if (!dateRangeStart) {
                         const rangeStart = new Date(currentYear, monthFrom, 1);
                         const rangeEnd = new Date(currentYear, monthTo + 1, 0);
@@ -2135,17 +2238,14 @@
                 return r.property === property && r.checkIn.getMonth() === month && r.checkIn.getFullYear() === currentYear;
             });
             if (list.length === 0) return;
-            showDetailPanel(`Λεπτομέρειες για ${property} – ${MONTHS[month]} ${currentYear}`, list);
+            openDetailPanel(`Λεπτομέρειες για ${property} – ${MONTHS[month]} ${currentYear}`, list);
         }
 
         function renderDailyView(container, filtered) {
             let startDate, endDate;
             if (dateRangeStart && dateRangeEnd) {
-                // Use the date filter range
                 startDate = new Date(dateRangeStart);
                 endDate = new Date(dateRangeEnd);
-                // Also ensure we include full month for month grouping?
-                // We'll just use the range.
             } else {
                 startDate = new Date(currentYear, monthFrom, 1);
                 endDate = new Date(currentYear, monthTo + 1, 0);
@@ -2164,7 +2264,6 @@
                 return;
             }
 
-            // Build month groups for headers
             const monthGroups = [];
             let currentM = -1;
             let startIdx = 0;
@@ -2263,7 +2362,7 @@
                 return r.checkIn.toISOString().slice(0, 10) === dateStr && r.property === property;
             });
             if (existing.length > 0) {
-                showDetailPanel(`Κρατήσεις για ${property} – ${d.toLocaleDateString('el-GR')}`, existing);
+                openDetailPanel(`Κρατήσεις για ${property} – ${d.toLocaleDateString('el-GR')}`, existing);
                 return;
             }
             editingSN = null;
@@ -2278,51 +2377,93 @@
             const uniqueSns = [...new Set(sns)];
             const list = reservations.filter(r => r.sn && uniqueSns.includes(r.sn));
             if (list.length === 0) return;
-            showDetailPanel(`Λεπτομέρειες κρατήσεων για την ημέρα`, list);
-        }
-
-        function showDetailPanel(title, list) {
-            const panel = document.getElementById('detailPanel');
-            const titleEl = document.getElementById('detailTitle');
-            const content = document.getElementById('detailContent');
-            titleEl.textContent = title;
-            let html = `<div class="detail-grid">`;
-            list.forEach(r => {
-                const checkInStr = r.checkIn ? r.checkIn.toLocaleDateString('el-GR') : '—';
-                const checkOutStr = r.checkOut ? r.checkOut.toLocaleDateString('el-GR') : '—';
-                const platformColor = getPlatformColor(r.platform);
-                html += `
-                        <div class="detail-card" style="border-left-color: ${platformColor}">
-                            <div class="guest">
-                                <span class="platform-dot" style="background:${platformColor};display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;vertical-align:middle;"></span>
-                                ${r.guestName}
-                            </div>
-                            <div class="row"><span class="lbl">Ακίνητο:</span><span class="val">${r.property}</span></div>
-                            <div class="row"><span class="lbl">S/N:</span><span class="val">${r.sn}</span></div>
-                            <div class="row"><span class="lbl">Πλατφόρμα:</span><span class="val">${r.platform || '—'}</span></div>
-                            <div class="row"><span class="lbl">Άφιξη:</span><span class="val">${checkInStr}</span></div>
-                            <div class="row"><span class="lbl">Αναχώρηση:</span><span class="val">${checkOutStr}</span></div>
-                            <div class="row"><span class="lbl">Διανυκτερεύσεις:</span><span class="val">${r.nights}</span></div>
-                            ${r.guestContact ? `<div class="row"><span class="lbl">Επικοινωνία:</span><span class="val">${r.guestContact}</span></div>` : ''}
-                            <div class="row"><span class="lbl">Καθαρή αξία (χωρίς ΦΠΑ):</span><span class="val">${r.netPrice.toFixed(2)}€</span></div>
-                            <div class="row"><span class="lbl">ΦΠΑ (13%):</span><span class="val">${r.vatAmount.toFixed(2)}€</span></div>
-                            <div class="row"><span class="lbl">Σύνολο με ΦΠΑ:</span><span class="val">${r.totalWithVAT.toFixed(2)}€</span></div>
-                            <div class="row"><span class="lbl">Φόρος ανθεκτικότητας:</span><span class="val">${r.climateTax.toFixed(2)}€</span></div>
-                            <div class="row total"><span class="lbl">Τελικό σύνολο:</span><span class="val">${r.finalTotal.toFixed(2)}€</span></div>
-                            <div class="card-actions">
-                                <button class="btn btn-warning" onclick="editReservation('${r.sn}')">✏️ Επεξεργασία</button>
-                                <button class="btn btn-danger" onclick="deleteReservation('${r.sn}')">🗑️ Διαγραφή</button>
-                            </div>
-                        </div>
-                    `;
-            });
-            html += `</div>`;
-            content.innerHTML = html;
-            panel.classList.add('open');
+            openDetailPanel(`Λεπτομέρειες κρατήσεων για την ημέρα`, list);
         }
 
         // ================================================================
-        //  11. EDIT / DELETE
+        //  11. DATE FILTER
+        // ================================================================
+        function applyDateFilter(filterValue) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            let start = null,
+                end = null;
+
+            switch (filterValue) {
+                case 'today':
+                    start = new Date(today);
+                    end = new Date(today);
+                    break;
+                case 'yesterday':
+                    start = new Date(today);
+                    start.setDate(start.getDate() - 1);
+                    end = new Date(start);
+                    break;
+                case 'tomorrow':
+                    start = new Date(today);
+                    start.setDate(start.getDate() + 1);
+                    end = new Date(start);
+                    break;
+                case 'this_week': {
+                    const day = today.getDay();
+                    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+                    start = new Date(today);
+                    start.setDate(diff);
+                    end = new Date(start);
+                    end.setDate(end.getDate() + 6);
+                    break;
+                }
+                case 'this_month':
+                    start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+                case 'last_month': {
+                    const m = today.getMonth() - 1;
+                    const y = today.getFullYear() + (m < 0 ? -1 : 0);
+                    const monthIdx = (m + 12) % 12;
+                    start = new Date(y, monthIdx, 1);
+                    end = new Date(y, monthIdx + 1, 0);
+                    break;
+                }
+                case 'next_month': {
+                    const m = today.getMonth() + 1;
+                    const y = today.getFullYear() + (m > 11 ? 1 : 0);
+                    const monthIdx = m % 12;
+                    start = new Date(y, monthIdx, 1);
+                    end = new Date(y, monthIdx + 1, 0);
+                    break;
+                }
+                default:
+                    dateRangeStart = null;
+                    dateRangeEnd = null;
+                    monthFrom = parseInt(document.getElementById('monthFrom').value);
+                    monthTo = parseInt(document.getElementById('monthTo').value);
+                    closeDetailPanel();
+                    renderGrid();
+                    return;
+            }
+
+            if (start && end) {
+                viewMode = 'daily';
+                document.getElementById('viewDailyBtn').classList.add('active');
+                document.getElementById('viewMonthlyBtn').classList.remove('active');
+
+                monthFrom = start.getMonth();
+                monthTo = end.getMonth();
+                dateRangeStart = start;
+                dateRangeEnd = end;
+
+                document.getElementById('monthFrom').value = monthFrom;
+                document.getElementById('monthTo').value = monthTo;
+
+                // Close any open detail
+                closeDetailPanel();
+                renderGrid();
+            }
+        }
+
+        // ================================================================
+        //  12. EDIT / DELETE
         // ================================================================
         function editReservation(sn) {
             const r = reservations.find(res => res.sn === sn);
@@ -2354,6 +2495,7 @@
                 await deleteReservationFromFirestore(sn);
                 hideLoading();
                 closeSearchModal();
+                closeDetailPanel();
             } catch (err) {
                 console.error('Delete error:', err);
                 alert('Σφάλμα διαγραφής: ' + err.message);
@@ -2362,7 +2504,7 @@
         }
 
         // ================================================================
-        //  12. ADD / EDIT FORM
+        //  13. ADD / EDIT FORM
         // ================================================================
         let addFormTargetDate = null;
         let addFormTargetProperty = null;
@@ -2512,17 +2654,17 @@
         });
 
         // ================================================================
-        //  13. STATS DASHBOARD
+        //  14. STATS DASHBOARD
         // ================================================================
         function updateStats() {
             if (reservations.length === 0) {
                 document.getElementById('kpiGrid').innerHTML = `
-                        <div class="empty-state" style="grid-column:1/-1;">
-                            <div class="icon">📊</div>
-                            <h3>Δεν υπάρχουν δεδομένα για στατιστικά</h3>
-                            <p>Εισάγετε κρατήσεις για να δείτε αναλυτικά στατιστικά.</p>
-                        </div>
-                    `;
+                    <div class="empty-state" style="grid-column:1/-1;">
+                        <div class="icon">📊</div>
+                        <h3>Δεν υπάρχουν δεδομένα για στατιστικά</h3>
+                        <p>Εισάγετε κρατήσεις για να δείτε αναλυτικά στατιστικά.</p>
+                    </div>
+                `;
                 document.getElementById('chartGrid').innerHTML = '';
                 return;
             }
@@ -2565,69 +2707,69 @@
             });
 
             document.getElementById('kpiGrid').innerHTML = `
-                    <div class="stats-kpi-card" style="border-left-color:#3b82f6;">
-                        <div class="kpi-value">${totalRes}</div>
-                        <div class="kpi-label">Σύνολο Κρατήσεων</div>
-                    </div>
-                    <div class="stats-kpi-card" style="border-left-color:#059669;">
-                        <div class="kpi-value">${totalNights}</div>
-                        <div class="kpi-label">Σύνολο Διανυκτερεύσεων</div>
-                    </div>
-                    <div class="stats-kpi-card" style="border-left-color:#f59e0b;">
-                        <div class="kpi-value">${totalRevenue.toFixed(2)}€</div>
-                        <div class="kpi-label">Συνολικά Έσοδα</div>
-                    </div>
-                    <div class="stats-kpi-card" style="border-left-color:#8b5cf6;">
-                        <div class="kpi-value">${adr.toFixed(2)}€</div>
-                        <div class="kpi-label">Μέση Τιμή Δωματίου (ADR)</div>
-                        <div class="kpi-sub">Έσοδα / Διανυκτερεύσεις</div>
-                    </div>
-                    <div class="stats-kpi-card" style="border-left-color:#ef4444;">
-                        <div class="kpi-value">${occupancyRate.toFixed(1)}%</div>
-                        <div class="kpi-label">Πληρότητα</div>
-                        <div class="kpi-sub">${totalOccupied} / ${totalAvailableNights} νύχτες</div>
-                    </div>
-                    <div class="stats-kpi-card" style="border-left-color:#06b6d4;">
-                        <div class="kpi-value">${(totalRevenue / (totalRes || 1)).toFixed(2)}€</div>
-                        <div class="kpi-label">Μέσο Έσοδο ανά Κράτηση</div>
-                    </div>
-                `;
+                <div class="stats-kpi-card" style="border-left-color:#3b82f6;">
+                    <div class="kpi-value">${totalRes}</div>
+                    <div class="kpi-label">Σύνολο Κρατήσεων</div>
+                </div>
+                <div class="stats-kpi-card" style="border-left-color:#059669;">
+                    <div class="kpi-value">${totalNights}</div>
+                    <div class="kpi-label">Σύνολο Διανυκτερεύσεων</div>
+                </div>
+                <div class="stats-kpi-card" style="border-left-color:#f59e0b;">
+                    <div class="kpi-value">${totalRevenue.toFixed(2)}€</div>
+                    <div class="kpi-label">Συνολικά Έσοδα</div>
+                </div>
+                <div class="stats-kpi-card" style="border-left-color:#8b5cf6;">
+                    <div class="kpi-value">${adr.toFixed(2)}€</div>
+                    <div class="kpi-label">Μέση Τιμή Δωματίου (ADR)</div>
+                    <div class="kpi-sub">Έσοδα / Διανυκτερεύσεις</div>
+                </div>
+                <div class="stats-kpi-card" style="border-left-color:#ef4444;">
+                    <div class="kpi-value">${occupancyRate.toFixed(1)}%</div>
+                    <div class="kpi-label">Πληρότητα</div>
+                    <div class="kpi-sub">${totalOccupied} / ${totalAvailableNights} νύχτες</div>
+                </div>
+                <div class="stats-kpi-card" style="border-left-color:#06b6d4;">
+                    <div class="kpi-value">${(totalRevenue / (totalRes || 1)).toFixed(2)}€</div>
+                    <div class="kpi-label">Μέσο Έσοδο ανά Κράτηση</div>
+                </div>
+            `;
 
             let chartsHtml = '';
 
             const propRevenueData = PROPERTIES.map(p => ({ label: p, value: revenueByProp[p] || 0 }));
             const maxPropRev = Math.max(...propRevenueData.map(d => d.value), 1);
             chartsHtml += `
-                    <div class="stats-chart-card">
-                        <h4>💰 Έσοδα ανά Ιδιοκτησία</h4>
-                        <div class="chart-bar-container">
-                            ${propRevenueData.map(d => `
-                                <div class="chart-bar-row">
-                                    <span class="bar-label">${d.label}</span>
-                                    <div class="bar-track"><div class="bar-fill" style="width:${(d.value/maxPropRev)*100}%;background:#3b82f6;"></div></div>
-                                    <span class="bar-value">${d.value.toFixed(2)}€</span>
-                                </div>
-                            `).join('')}
-                        </div>
+                <div class="stats-chart-card">
+                    <h4>💰 Έσοδα ανά Ιδιοκτησία</h4>
+                    <div class="chart-bar-container">
+                        ${propRevenueData.map(d => `
+                            <div class="chart-bar-row">
+                                <span class="bar-label">${d.label}</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:${(d.value/maxPropRev)*100}%;background:#3b82f6;"></div></div>
+                                <span class="bar-value">${d.value.toFixed(2)}€</span>
+                            </div>
+                        `).join('')}
                     </div>
-                `;
+                </div>
+            `;
 
             const platformData = Object.entries(revenueByPlatform).sort((a, b) => b[1] - a[1]);
             const maxPlat = Math.max(...platformData.map(d => d[1]), 1);
             chartsHtml += `
-                    <div class="stats-chart-card">
-                        <h4>📱 Έσοδα ανά Πλατφόρμα</h4>
-                        <div class="chart-bar-container">
-                            ${platformData.map(([p, val]) => `
-                                <div class="chart-bar-row">
-                                    <span class="bar-label">${p}</span>
-                                    <div class="bar-track"><div class="bar-fill" style="width:${(val/maxPlat)*100}%;background:${getPlatformColor(p) || '#94a3b8'};"></div></div>
-                                    <span class="bar-value">${val.toFixed(2)}€</span>
-                                </div>
-                            `).join('')}
-                        </div>
+                <div class="stats-chart-card">
+                    <h4>📱 Έσοδα ανά Πλατφόρμα</h4>
+                    <div class="chart-bar-container">
+                        ${platformData.map(([p, val]) => `
+                            <div class="chart-bar-row">
+                                <span class="bar-label">${p}</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:${(val/maxPlat)*100}%;background:${getPlatformColor(p) || '#94a3b8'};"></div></div>
+                                <span class="bar-value">${val.toFixed(2)}€</span>
+                            </div>
+                        `).join('')}
                     </div>
-                `;
+                </div>
+            `;
 
             const monthlyRevenue = Array(12).fill(0);
             const monthlyNights = Array(12).fill(0);
@@ -2640,35 +2782,35 @@
             });
             const maxMonthRev = Math.max(...monthlyRevenue, 1);
             chartsHtml += `
-                    <div class="stats-chart-card">
-                        <h4>📈 Μηνιαία Έσοδα (${currentYear})</h4>
-                        <div class="chart-bar-container">
-                            ${MONTHS.map((m, i) => `
-                                <div class="chart-bar-row">
-                                    <span class="bar-label">${m}</span>
-                                    <div class="bar-track"><div class="bar-fill" style="width:${(monthlyRevenue[i]/maxMonthRev)*100}%;background:#059669;"></div></div>
-                                    <span class="bar-value small">${monthlyRevenue[i].toFixed(0)}€</span>
-                                </div>
-                            `).join('')}
-                        </div>
+                <div class="stats-chart-card">
+                    <h4>📈 Μηνιαία Έσοδα (${currentYear})</h4>
+                    <div class="chart-bar-container">
+                        ${MONTHS.map((m, i) => `
+                            <div class="chart-bar-row">
+                                <span class="bar-label">${m}</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:${(monthlyRevenue[i]/maxMonthRev)*100}%;background:#059669;"></div></div>
+                                <span class="bar-value small">${monthlyRevenue[i].toFixed(0)}€</span>
+                            </div>
+                        `).join('')}
                     </div>
-                `;
+                </div>
+            `;
 
             const maxMonthNights = Math.max(...monthlyNights, 1);
             chartsHtml += `
-                    <div class="stats-chart-card">
-                        <h4>🏠 Μηνιαίες Διανυκτερεύσεις (${currentYear})</h4>
-                        <div class="chart-bar-container">
-                            ${MONTHS.map((m, i) => `
-                                <div class="chart-bar-row">
-                                    <span class="bar-label">${m}</span>
-                                    <div class="bar-track"><div class="bar-fill" style="width:${(monthlyNights[i]/maxMonthNights)*100}%;background:#8b5cf6;"></div></div>
-                                    <span class="bar-value small">${monthlyNights[i]}</span>
-                                </div>
-                            `).join('')}
-                        </div>
+                <div class="stats-chart-card">
+                    <h4>🏠 Μηνιαίες Διανυκτερεύσεις (${currentYear})</h4>
+                    <div class="chart-bar-container">
+                        ${MONTHS.map((m, i) => `
+                            <div class="chart-bar-row">
+                                <span class="bar-label">${m}</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:${(monthlyNights[i]/maxMonthNights)*100}%;background:#8b5cf6;"></div></div>
+                                <span class="bar-value small">${monthlyNights[i]}</span>
+                            </div>
+                        `).join('')}
                     </div>
-                `;
+                </div>
+            `;
 
             const stayLengths = {};
             reservations.forEach(r => {
@@ -2683,19 +2825,19 @@
             });
             const maxStayCount = Math.max(...Object.values(stayLengths), 1);
             chartsHtml += `
-                    <div class="stats-chart-card">
-                        <h4>📏 Κατανομή Διάρκειας Διαμονής</h4>
-                        <div class="chart-bar-container">
-                            ${sortedLengths.map(key => `
-                                <div class="chart-bar-row">
-                                    <span class="bar-label">${key === '6+' ? '6+ νύχτες' : key + ' νύχτες'}</span>
-                                    <div class="bar-track"><div class="bar-fill" style="width:${(stayLengths[key]/maxStayCount)*100}%;background:#f59e0b;"></div></div>
-                                    <span class="bar-value small">${stayLengths[key]}</span>
-                                </div>
-                            `).join('')}
-                        </div>
+                <div class="stats-chart-card">
+                    <h4>📏 Κατανομή Διάρκειας Διαμονής</h4>
+                    <div class="chart-bar-container">
+                        ${sortedLengths.map(key => `
+                            <div class="chart-bar-row">
+                                <span class="bar-label">${key === '6+' ? '6+ νύχτες' : key + ' νύχτες'}</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:${(stayLengths[key]/maxStayCount)*100}%;background:#f59e0b;"></div></div>
+                                <span class="bar-value small">${stayLengths[key]}</span>
+                            </div>
+                        `).join('')}
                     </div>
-                `;
+                </div>
+            `;
 
             const propTable = PROPERTIES.map(p => {
                 const res = reservations.filter(r => r.property === p);
@@ -2706,37 +2848,37 @@
                 return { property: p, count, nights, revenue, avgPrice };
             });
             chartsHtml += `
-                    <div class="stats-chart-card" style="grid-column:1/-1;">
-                        <h4>📋 Αναλυτικός Πίνακας Ιδιοκτησιών</h4>
-                        <table class="stats-table">
-                            <thead><tr><th>Ιδιοκτησία</th><th>Κρατήσεις</th><th>Διανυκτερεύσεις</th><th>Έσοδα</th><th>Μέση Τιμή</th></tr></thead>
-                            <tbody>
-                                ${propTable.map(p => `
-                                    <tr>
-                                        <td><strong>${p.property}</strong></td>
-                                        <td>${p.count}</td>
-                                        <td>${p.nights}</td>
-                                        <td>${p.revenue.toFixed(2)}€</td>
-                                        <td>${p.avgPrice.toFixed(2)}€</td>
-                                    </tr>
-                                `).join('')}
-                                <tr style="font-weight:700;background:#f8fafc;">
-                                    <td>ΣΥΝΟΛΟ</td>
-                                    <td>${reservations.length}</td>
-                                    <td>${reservations.reduce((s,r) => s + r.nights, 0)}</td>
-                                    <td>${reservations.reduce((s,r) => s + r.finalTotal, 0).toFixed(2)}€</td>
-                                    <td>${(reservations.reduce((s,r) => s + r.finalTotal, 0) / (reservations.length || 1)).toFixed(2)}€</td>
+                <div class="stats-chart-card" style="grid-column:1/-1;">
+                    <h4>📋 Αναλυτικός Πίνακας Ιδιοκτησιών</h4>
+                    <table class="stats-table">
+                        <thead><tr><th>Ιδιοκτησία</th><th>Κρατήσεις</th><th>Διανυκτερεύσεις</th><th>Έσοδα</th><th>Μέση Τιμή</th></tr></thead>
+                        <tbody>
+                            ${propTable.map(p => `
+                                <tr>
+                                    <td><strong>${p.property}</strong></td>
+                                    <td>${p.count}</td>
+                                    <td>${p.nights}</td>
+                                    <td>${p.revenue.toFixed(2)}€</td>
+                                    <td>${p.avgPrice.toFixed(2)}€</td>
                                 </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                `;
+                            `).join('')}
+                            <tr style="font-weight:700;background:#f8fafc;">
+                                <td>ΣΥΝΟΛΟ</td>
+                                <td>${reservations.length}</td>
+                                <td>${reservations.reduce((s,r) => s + r.nights, 0)}</td>
+                                <td>${reservations.reduce((s,r) => s + r.finalTotal, 0).toFixed(2)}€</td>
+                                <td>${(reservations.reduce((s,r) => s + r.finalTotal, 0) / (reservations.length || 1)).toFixed(2)}€</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
 
             document.getElementById('chartGrid').innerHTML = chartsHtml;
         }
 
         // ================================================================
-        //  14. IMPORT / EXPORT
+        //  15. IMPORT / EXPORT
         // ================================================================
         async function importData(text) {
             const records = parseReservationData(text);
@@ -2828,7 +2970,7 @@
         }
 
         // ================================================================
-        //  15. COLOR SETTINGS UI
+        //  16. COLOR SETTINGS UI
         // ================================================================
         function initColorSettings() {
             const grid = document.getElementById('colorSettingsGrid');
@@ -2861,7 +3003,7 @@
         }
 
         // ================================================================
-        //  16. DROPDOWNS
+        //  17. DROPDOWNS
         // ================================================================
         function populateYearDropdown() {
             const sel = document.getElementById('yearSelect');
@@ -2910,22 +3052,20 @@
         }
 
         // ================================================================
-        //  17. SEARCH POPUP (with input)
+        //  18. SEARCH POPUP
         // ================================================================
         function openSearchModal() {
             const modal = document.getElementById('searchResultsModal');
             modal.classList.add('open');
-            // Focus the input inside modal
             const input = document.getElementById('searchModalInput');
             setTimeout(() => input.focus(), 100);
-            // Sync with header search value
             const headerVal = document.getElementById('searchInput').value;
             input.value = headerVal;
             if (headerVal) {
                 performSearch(headerVal);
             } else {
-                // Show empty results
-                document.getElementById('searchResultsList').innerHTML = `<div class="no-results">💡 Πληκτρολογήστε για αναζήτηση</div>`;
+                document.getElementById('searchResultsList').innerHTML =
+                    `<div class="no-results">💡 Πληκτρολογήστε για αναζήτηση</div>`;
                 document.getElementById('searchResultCount').textContent = 'Πληκτρολογήστε…';
             }
         }
@@ -2980,17 +3120,16 @@
             list.innerHTML = html;
         }
 
-        // View details from search result
         function viewResult(sn) {
             const r = reservations.find(res => res.sn === sn);
             if (r) {
-                showDetailPanel(`Λεπτομέρειες κράτησης #${sn}`, [r]);
+                openDetailPanel(`Λεπτομέρειες κράτησης #${sn}`, [r]);
                 closeSearchModal();
             }
         }
 
         // ================================================================
-        //  18. TAB SWITCHING
+        //  19. TAB SWITCHING
         // ================================================================
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -3002,6 +3141,8 @@
                     document.getElementById('statsTab').style.display = 'none';
                     document.getElementById('statsBar').style.display = 'flex';
                     document.getElementById('reservationControls').style.display = 'flex';
+                    // Re-render to fix layout
+                    setTimeout(renderGrid, 50);
                 } else {
                     document.getElementById('reservationsTab').style.display = 'none';
                     document.getElementById('statsTab').style.display = 'block';
@@ -3013,27 +3154,22 @@
         });
 
         // ================================================================
-        //  19. EVENT BINDING & INIT
+        //  20. EVENT BINDING & INIT
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             // --- DATE FILTER ---
-            const dateFilterSelect = document.getElementById('dateFilterSelect');
-            dateFilterSelect.addEventListener('change', function() {
+            document.getElementById('dateFilterSelect').addEventListener('change', function() {
                 applyDateFilter(this.value);
             });
 
-            // --- SEARCH: header input & modal input sync ---
+            // --- SEARCH ---
             const headerSearch = document.getElementById('searchInput');
             const modalSearch = document.getElementById('searchModalInput');
             const clearHeader = document.getElementById('clearSearchBtn');
             const clearModal = document.getElementById('clearSearchModalBtn');
 
-            // Header focus -> open modal
-            headerSearch.addEventListener('focus', function() {
-                openSearchModal();
-            });
+            headerSearch.addEventListener('focus', openSearchModal);
 
-            // Header input -> update modal and search
             headerSearch.addEventListener('input', function() {
                 const val = this.value;
                 searchTerm = val;
@@ -3045,11 +3181,9 @@
                         `<div class="no-results">💡 Πληκτρολογήστε τουλάχιστον 2 χαρακτήρες</div>`;
                     document.getElementById('searchResultCount').textContent = 'Πληκτρολογήστε…';
                 }
-                // Update grid filter
                 renderGrid();
             });
 
-            // Modal input -> update header and search
             modalSearch.addEventListener('input', function() {
                 const val = this.value;
                 headerSearch.value = val;
@@ -3064,7 +3198,6 @@
                 renderGrid();
             });
 
-            // Clear buttons
             clearHeader.addEventListener('click', function() {
                 headerSearch.value = '';
                 modalSearch.value = '';
@@ -3087,7 +3220,6 @@
                 modalSearch.focus();
             });
 
-            // Close search modal buttons
             document.getElementById('closeSearchModalBtn').addEventListener('click', closeSearchModal);
             document.getElementById('closeSearchModalBottomBtn').addEventListener('click', closeSearchModal);
             document.getElementById('searchResultsModal').addEventListener('click', function(e) {
@@ -3111,33 +3243,34 @@
             // --- Year select ---
             document.getElementById('yearSelect').addEventListener('change', function() {
                 currentYear = parseInt(this.value);
+                closeDetailPanel();
                 renderGrid();
                 if (document.getElementById('statsTab').style.display !== 'none') updateStats();
             });
 
-            // --- Month selects (only used when date filter is none) ---
+            // --- Month selects ---
             document.getElementById('monthFrom').addEventListener('change', function() {
-                // If date filter is active, ignore
-                if (dateFilterSelect.value !== '') {
-                    // Reset filter to none
-                    dateFilterSelect.value = '';
+                if (document.getElementById('dateFilterSelect').value !== '') {
+                    document.getElementById('dateFilterSelect').value = '';
                     dateRangeStart = null;
                     dateRangeEnd = null;
                 }
                 monthFrom = parseInt(this.value);
                 if (monthFrom > monthTo) { monthTo = monthFrom;
                     document.getElementById('monthTo').value = monthTo; }
+                closeDetailPanel();
                 if (viewMode === 'daily') renderGrid();
             });
             document.getElementById('monthTo').addEventListener('change', function() {
-                if (dateFilterSelect.value !== '') {
-                    dateFilterSelect.value = '';
+                if (document.getElementById('dateFilterSelect').value !== '') {
+                    document.getElementById('dateFilterSelect').value = '';
                     dateRangeStart = null;
                     dateRangeEnd = null;
                 }
                 monthTo = parseInt(this.value);
                 if (monthTo < monthFrom) { monthFrom = monthTo;
                     document.getElementById('monthFrom').value = monthFrom; }
+                closeDetailPanel();
                 if (viewMode === 'daily') renderGrid();
             });
 
@@ -3146,18 +3279,19 @@
                 viewMode = 'monthly';
                 this.classList.add('active');
                 document.getElementById('viewDailyBtn').classList.remove('active');
-                // Reset date filter if active
-                if (dateFilterSelect.value !== '') {
-                    dateFilterSelect.value = '';
+                if (document.getElementById('dateFilterSelect').value !== '') {
+                    document.getElementById('dateFilterSelect').value = '';
                     dateRangeStart = null;
                     dateRangeEnd = null;
                 }
+                closeDetailPanel();
                 renderGrid();
             });
             document.getElementById('viewDailyBtn').addEventListener('click', function() {
                 viewMode = 'daily';
                 this.classList.add('active');
                 document.getElementById('viewMonthlyBtn').classList.remove('active');
+                closeDetailPanel();
                 renderGrid();
             });
 
@@ -3195,6 +3329,7 @@
                     document.getElementById('importStatus').textContent = '🗑️ Όλες οι κρατήσεις διαγράφηκαν';
                     document.getElementById('importStatus').className = 'status';
                     closeSearchModal();
+                    closeDetailPanel();
                 } catch (err) {
                     console.error('Clear error:', err);
                     alert('Σφάλμα διαγραφής: ' + err.message);
@@ -3204,11 +3339,6 @@
 
             // --- Export ---
             document.getElementById('exportBtn').addEventListener('click', exportData);
-
-            // --- Close detail ---
-            document.getElementById('closeDetailBtn').addEventListener('click', function() {
-                document.getElementById('detailPanel').classList.remove('open');
-            });
 
             // --- Color settings ---
             document.getElementById('colorSettingsBtn').addEventListener('click', function() {
@@ -3243,6 +3373,8 @@
         window.loadAllReservations = loadAllReservations;
         window.viewResult = viewResult;
         window.closeSearchModal = closeSearchModal;
+        window.openDetailPanel = openDetailPanel;
+        window.closeDetailPanel = closeDetailPanel;
     </script>
 
 </body>
