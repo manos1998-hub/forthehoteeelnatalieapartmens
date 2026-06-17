@@ -451,6 +451,150 @@
             max-width: 50px;
         }
 
+        /* ----- GRID TABLES (UPDATED STICKY HEADERS FOR DAILY VIEW) ----- */
+        .grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        .grid th,
+        .grid td {
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+            text-align: center;
+        }
+        
+        /* STICKY HEADERS: Month Name Row (1st row) */
+        .grid thead tr:first-child th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #eef2f6 !important; /* Force dark header color */
+            border-bottom: 2px solid #d1d9e6;
+        }
+        /* STICKY HEADERS: Day Numbers Row (2nd row) */
+        .grid thead tr:last-child th {
+            position: sticky;
+            z-index: 9;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        /* ENSURE PROPERTY HEADER ALWAYS STAYS ON TOP OF DAY HEADERS */
+        .grid .prop-header {
+            position: sticky;
+            left: 0;
+            z-index: 12 !important;
+            background: #fafcff;
+            border-right: 2px solid #e2e8f0;
+            text-align: left;
+        }
+        .grid .prop-header .sub {
+            font-weight: 400;
+            font-size: 11px;
+            color: #64748b;
+            display: block;
+        }
+
+        /* DYNAMIC HEIGHTS FOR STICKY HEADERS (Expanded) */
+        .grid-container.expanded .grid thead tr:first-child th {
+            top: 0;
+            padding: 14px 12px;
+            height: 58px; /* Fixed height for seamless scroll */
+        }
+        .grid-container.expanded .grid thead tr:last-child th {
+            top: 58px; /* Exactly under the 1st row */
+            padding: 8px 4px;
+            height: 40px;
+        }
+
+        /* DYNAMIC HEIGHTS FOR STICKY HEADERS (Shrunk) */
+        .grid-container.shrunk .grid thead tr:first-child th {
+            top: 0;
+            padding: 8px 4px;
+            height: 38px;
+        }
+        .grid-container.shrunk .grid thead tr:last-child th {
+            top: 38px; /* Exactly under the 1st row */
+            padding: 4px 2px;
+            height: 28px;
+        }
+
+        /* ----- MONTH CELLS & DAY CELLS ----- */
+        .month-cell {
+            min-width: 120px;
+            vertical-align: top;
+            background: white;
+            cursor: pointer;
+        }
+        .month-cell .cell-summary {
+            font-weight: 600;
+            color: #0f2b5b;
+        }
+        .month-cell .cell-summary .nights {
+            font-weight: 400;
+            color: #475569;
+        }
+        .month-cell .cell-summary .revenue {
+            color: #059669;
+        }
+        .month-cell .empty {
+            color: #cbd5e1;
+            padding: 10px 0;
+            cursor: pointer;
+        }
+        .month-cell .empty:hover {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+
+        .day-cell {
+            min-width: 36px;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+        .day-cell .day-number {
+            font-weight: 600;
+            color: #94a3b8;
+            display: block;
+        }
+        .day-cell .res-indicator {
+            border-radius: 4px;
+            color: #1e3a8a;
+            cursor: pointer;
+            border: 1px solid #bfdbfe;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            background: #dbeafe;
+        }
+        .day-cell .res-indicator:hover {
+            filter: brightness(0.9);
+        }
+        .day-cell .res-indicator.multiple {
+            background: #fef3c7;
+            border-color: #fcd34d;
+            color: #92400e;
+        }
+        .day-cell .empty-day {
+            color: #e2e8f0;
+            cursor: pointer;
+        }
+        .day-cell .empty-day:hover {
+            color: #3b82f6;
+        }
+        .day-cell.weekend .day-number {
+            color: #ef4444;
+        }
+        .month-header-cell {
+            color: #0f2b5b !important;
+            background: #eef2f6 !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+        }
+
         /* ----- DETAIL PANEL (PREMIUM ANIMATION) ----- */
         .detail-panel {
             background: white;
@@ -562,124 +706,6 @@
             border-radius: 50%;
             margin-right: 4px;
             vertical-align: middle;
-        }
-
-        /* ----- GRID TABLES ----- */
-        .grid {
-            display: table;
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px;
-        }
-        .grid th,
-        .grid td {
-            border-bottom: 1px solid #edf2f7;
-            vertical-align: middle;
-            text-align: center;
-        }
-        .grid th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: #334155;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            position: sticky;
-            top: 0;
-            z-index: 5;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        .grid .prop-header {
-            font-weight: 700;
-            color: #0f2b5b;
-            white-space: nowrap;
-            padding-right: 12px;
-            min-width: 110px;
-            background: #fafcff;
-            position: sticky;
-            left: 0;
-            z-index: 4;
-            border-right: 2px solid #e2e8f0;
-            text-align: left;
-        }
-        .grid .prop-header .sub {
-            font-weight: 400;
-            font-size: 11px;
-            color: #64748b;
-            display: block;
-        }
-
-        .month-cell {
-            min-width: 120px;
-            vertical-align: top;
-            background: white;
-            cursor: pointer;
-        }
-        .month-cell .cell-summary {
-            font-weight: 600;
-            color: #0f2b5b;
-        }
-        .month-cell .cell-summary .nights {
-            font-weight: 400;
-            color: #475569;
-        }
-        .month-cell .cell-summary .revenue {
-            color: #059669;
-        }
-        .month-cell .empty {
-            color: #cbd5e1;
-            padding: 10px 0;
-            cursor: pointer;
-        }
-        .month-cell .empty:hover {
-            color: #3b82f6;
-            text-decoration: underline;
-        }
-
-        .day-cell {
-            min-width: 36px;
-            vertical-align: middle;
-            cursor: pointer;
-        }
-        .day-cell .day-number {
-            font-weight: 600;
-            color: #94a3b8;
-            display: block;
-        }
-        .day-cell .res-indicator {
-            border-radius: 4px;
-            color: #1e3a8a;
-            cursor: pointer;
-            border: 1px solid #bfdbfe;
-            display: block;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            background: #dbeafe;
-        }
-        .day-cell .res-indicator:hover {
-            filter: brightness(0.9);
-        }
-        .day-cell .res-indicator.multiple {
-            background: #fef3c7;
-            border-color: #fcd34d;
-            color: #92400e;
-        }
-        .day-cell .empty-day {
-            color: #e2e8f0;
-            cursor: pointer;
-        }
-        .day-cell .empty-day:hover {
-            color: #3b82f6;
-        }
-        .day-cell.weekend .day-number {
-            color: #ef4444;
-        }
-        .month-header-cell {
-            color: #0f2b5b !important;
-            background: #eef2f6 !important;
-            text-transform: none !important;
-            letter-spacing: normal !important;
-            border-bottom: 2px solid #d1d9e6 !important;
         }
 
         /* ----- MODALS ----- */
@@ -1089,6 +1115,12 @@
             .grid-container.expanded .month-cell .cell-summary {
                 font-size: 14px;
             }
+
+            /* Adjust sticky heights for mobile */
+            .grid-container.expanded .grid thead tr:first-child th { height: 46px; }
+            .grid-container.expanded .grid thead tr:last-child th { top: 46px; height: 34px; }
+            .grid-container.shrunk .grid thead tr:first-child th { height: 34px; }
+            .grid-container.shrunk .grid thead tr:last-child th { top: 34px; height: 24px; }
         }
 
         .flex {
