@@ -472,6 +472,7 @@
             z-index: 10;
             background: #eef2f6 !important; /* Force dark header color */
             border-bottom: 2px solid #d1d9e6;
+            font-weight: 800;
         }
         /* STICKY HEADERS: Day Numbers Row (2nd row) */
         .grid thead tr:last-child th {
@@ -587,12 +588,6 @@
         }
         .day-cell.weekend .day-number {
             color: #ef4444;
-        }
-        .month-header-cell {
-            color: #0f2b5b !important;
-            background: #eef2f6 !important;
-            text-transform: none !important;
-            letter-spacing: normal !important;
         }
 
         /* ----- DETAIL PANEL (PREMIUM ANIMATION) ----- */
@@ -1466,7 +1461,7 @@
             <div class="live-upload-area" id="liveUploadArea">
                 <div class="icon">📊</div>
                 <h3>Ανεβάστε το CSV αρχείο Live Analytics</h3>
-                <p>Μεταφέρετε το αρχείο εδώ ή κάντε κλικ για να το επιλέξετε.</p>
+                <p>Μεταφέρετε το αρχείο εδώ ή κάντε κλικ για να το επιλέξετε. Αποθηκεύεται στη βάση.</p>
                 <div class="live-actions">
                     <div class="file-input-wrapper">
                         <button class="btn btn-success">📂 Επιλογή αρχείου</button>
@@ -1676,6 +1671,7 @@
         //  5. FIRESTORE CRUD
         // ================================================================
         const COLLECTION = 'reservations';
+        const LIVE_COLLECTION = 'liveStats';
 
         function resToDoc(r) {
             return {
@@ -2432,24 +2428,6 @@
                 return;
             }
 
-            // Build month groups for headers
-            const monthGroups = [];
-            let currentM = -1;
-            let startIdx = 0;
-            for (let i = 0; i < days.length; i++) {
-                const m = days[i].getMonth();
-                if (m !== currentM) {
-                    if (currentM !== -1) {
-                        monthGroups.push({ month: currentM, start: startIdx, count: i - startIdx });
-                    }
-                    currentM = m;
-                    startIdx = i;
-                }
-            }
-            if (currentM !== -1) {
-                monthGroups.push({ month: currentM, start: startIdx, count: days.length - startIdx });
-            }
-
             const dailyMap = {};
             PROPERTIES.forEach(p => { dailyMap[p] = {}; });
             filtered.forEach(r => {
@@ -2474,11 +2452,15 @@
             });
 
             let html = `<table class="grid"><thead>`;
-            html += `<tr><th class="prop-header">Ιδιοκτησία</th>`;
-            monthGroups.forEach(g => {
-                html += `<th colspan="${g.count}" class="month-header-cell">${MONTHS[g.month]}</th>`;
+            // Row 1: Month Abbreviations for each individual day
+            html += `<tr><th class="prop-header"></th>`;
+            days.forEach(d => {
+                const dayOfWeek = d.getDay();
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                html += `<th style="${isWeekend ? 'color:#ef4444;' : ''}">${MONTHS[d.getMonth()]}</th>`;
             });
             html += `</tr>`;
+            // Row 2: Day numbers
             html += `<tr><th class="prop-header"></th>`;
             days.forEach((d) => {
                 const dayOfWeek = d.getDay();
@@ -2591,7 +2573,7 @@
         }
 
         // ================================================================
-        //  11. TOGGLE GRID SIZE (THE NEW FEATURE)
+        //  11. TOGGLE GRID SIZE
         // ================================================================
         function toggleGridSize() {
             const gridContainer = document.querySelector('.grid-container');
@@ -3022,24 +3004,48 @@
         }
 
         // ================================================================
-        //  15. LIVE STATISTICS FUNCTIONS
+        //  15. LIVE STATISTICS FUNCTIONS (UPDATED FOR FIRESTORE)
         // ================================================================
-        function loadLiveStats() {
-            const stored = localStorage.getItem('liveStatsData');
-            if (stored) {
-                try {
-                    liveStatsData = JSON.parse(stored);
-                    renderLiveDashboard(liveStatsData);
-                } catch (e) {
-                    console.error('Error parsing live stats', e);
-                    liveStatsData = [];
-                }
+        
+        async function saveLiveStatsToFirestore(data) {
+            if (!data || data.length === 0) return;
+            showLoading('Αποθήκευση Live Statistics στη βάση...');
+            try {
+                const batch = db.batch();
+                data.forEach(item => {
+                    const docRef = db.collection(LIVE_COLLECTION).doc(item.period);
+                    batch.set(docRef, item);
+                });
+                await batch.commit();
+                hideLoading();
+                // Update local variable after successful save
+                liveStatsData = data;
+            } catch (err) {
+                console.error('Error saving live stats', err);
+                hideLoading();
+                alert('Σφάλμα κατά την αποθήκευση των Live Statistics: ' + err.message);
             }
         }
 
-        function saveLiveStats(data) {
-            localStorage.setItem('liveStatsData', JSON.stringify(data));
-            liveStatsData = data;
+        async function loadLiveStatsFromFirestore() {
+            showLoading('Φόρτωση Live Statistics...');
+            try {
+                const snapshot = await db.collection(LIVE_COLLECTION).orderBy('period', 'asc').get();
+                const data = [];
+                snapshot.forEach(doc => data.push(doc.data()));
+                hideLoading();
+                liveStatsData = data;
+                if (data.length > 0) {
+                    renderLiveDashboard(data);
+                } else {
+                    renderLiveDashboard([]);
+                }
+            } catch (err) {
+                console.error("Error loading live stats", err);
+                hideLoading();
+                // Optionally show an error message
+                renderLiveDashboard([]);
+            }
         }
 
         function parseLiveStatsCSV(text) {
@@ -3468,7 +3474,7 @@
                     updateStats();
                 } else if (tab === 'live') {
                     document.getElementById('liveTab').style.display = 'flex';
-                    loadLiveStats(); // Reload just in case
+                    loadLiveStatsFromFirestore(); // Load from Firebase when tab opens
                 }
             });
         });
@@ -3578,9 +3584,11 @@
                     const text = ev.target.result;
                     const parsed = parseLiveStatsCSV(text);
                     if (parsed.length > 0) {
-                        saveLiveStats(parsed);
-                        renderLiveDashboard(parsed);
-                        alert('✅ Τα δεδομένα φορτώθηκαν επιτυχώς!');
+                        // Save to Firestore instead of localStorage
+                        saveLiveStatsToFirestore(parsed).then(() => {
+                            alert('✅ Τα δεδομένα φορτώθηκαν και αποθηκεύτηκαν στη βάση επιτυχώς!');
+                            loadLiveStatsFromFirestore(); // Reload to show
+                        });
                     } else {
                         alert('❌ Το αρχείο δεν είναι έγκυρο ή είναι κενό.');
                     }
@@ -3590,13 +3598,26 @@
             });
 
             // --- Clear Live Stats ---
-            document.getElementById('clearLiveStatsBtn').addEventListener('click', function() {
+            document.getElementById('clearLiveStatsBtn').addEventListener('click', async function() {
                 if (liveStatsData.length === 0) return;
                 if (confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε τα δεδομένα Live Statistics;')) {
-                    localStorage.removeItem('liveStatsData');
-                    liveStatsData = [];
-                    renderLiveDashboard([]);
-                    document.getElementById('liveUploadArea').style.display = 'block';
+                    showLoading('Διαγραφή...');
+                    try {
+                        const batch = db.batch();
+                        liveStatsData.forEach(item => {
+                            const ref = db.collection(LIVE_COLLECTION).doc(item.period);
+                            batch.delete(ref);
+                        });
+                        await batch.commit();
+                        hideLoading();
+                        liveStatsData = [];
+                        renderLiveDashboard([]);
+                        document.getElementById('liveUploadArea').style.display = 'block';
+                    } catch (err) {
+                        console.error('Error clearing live stats', err);
+                        hideLoading();
+                        alert('Σφάλμα διαγραφής: ' + err.message);
+                    }
                 }
             });
 
@@ -3725,7 +3746,6 @@
             initColorSettings();
             populateMonthDropdowns();
             loadAllReservations();
-            loadLiveStats(); // Load live stats on startup
             // Initial check for grid size (detail panel is closed by default)
             const gridContainer = document.querySelector('.grid-container');
             gridContainer.classList.remove('shrunk');
