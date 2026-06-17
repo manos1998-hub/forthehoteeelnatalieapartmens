@@ -708,6 +708,113 @@
             vertical-align: middle;
         }
 
+        /* ----- LIVE STATISTICS DASHBOARD ----- */
+        #liveTab {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+        #liveTab.active {
+            display: flex;
+        }
+
+        /* ---- LIVE CSV UPLOAD AREA ---- */
+        .live-upload-area {
+            background: white;
+            border-radius: 14px;
+            padding: 30px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 2px dashed #cbd5e1;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .live-upload-area:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+        .live-upload-area .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .live-upload-area h3 {
+            color: #0f2b5b;
+            margin-bottom: 4px;
+        }
+        .live-upload-area p {
+            color: #64748b;
+            font-size: 14px;
+        }
+        .live-upload-area input[type="file"] {
+            margin-top: 12px;
+        }
+        .live-actions {
+            margin-top: 16px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ---- LIVE STATS DASHBOARD (PREMIUM) ---- */
+        .live-stats-dashboard {
+            display: none;
+            gap: 16px;
+            grid-template-columns: 1fr;
+            animation: slideDownBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .live-stats-dashboard.active {
+            display: grid;
+        }
+
+        .live-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        .live-kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            border-left: 4px solid #3b82f6;
+        }
+        .live-kpi-card .kpi-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f2b5b;
+        }
+        .live-kpi-card .kpi-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .live-chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 16px;
+        }
+        .live-chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .live-chart-card h4 {
+            font-size: 15px;
+            color: #0f2b5b;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eef2f6;
+            padding-bottom: 8px;
+        }
+        .live-status-msg {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+        }
+
         /* ----- MODALS ----- */
         .modal-overlay {
             position: fixed;
@@ -915,7 +1022,7 @@
             border-top: 1px solid #e2e8f0;
         }
 
-        /* ----- STATS DASHBOARD ----- */
+        /* ----- STATS DASHBOARD (Reservations) ----- */
         .stats-dashboard {
             display: none;
             gap: 16px;
@@ -1241,6 +1348,7 @@
             <div class="header-tabs">
                 <button class="tab-btn active" data-tab="reservations">📋 Κρατήσεις</button>
                 <button class="tab-btn" data-tab="stats">📊 Στατιστικά</button>
+                <button class="tab-btn" data-tab="live">📈 Live Stats</button>
             </div>
             <div class="header-controls" id="reservationControls">
                 <label for="yearSelect">📅 Έτος</label>
@@ -1353,9 +1461,30 @@
             </div>
         </div>
 
+        <!-- LIVE STATISTICS TAB (NEW) -->
+        <div id="liveTab">
+            <div class="live-upload-area" id="liveUploadArea">
+                <div class="icon">📊</div>
+                <h3>Ανεβάστε το CSV αρχείο Live Analytics</h3>
+                <p>Μεταφέρετε το αρχείο εδώ ή κάντε κλικ για να το επιλέξετε.</p>
+                <div class="live-actions">
+                    <div class="file-input-wrapper">
+                        <button class="btn btn-success">📂 Επιλογή αρχείου</button>
+                        <input type="file" id="liveFileInput" accept=".csv" />
+                    </div>
+                    <button class="btn btn-danger" id="clearLiveStatsBtn">🗑️ Διαγραφή δεδομένων</button>
+                </div>
+            </div>
+
+            <div class="live-stats-dashboard" id="liveStatsDashboard">
+                <div class="live-kpi-grid" id="liveKpiGrid"></div>
+                <div class="live-chart-grid" id="liveChartGrid"></div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- MODAL: ΑΝΤΙΚΑΤΑΣΤΑΣΗ / ΑΚΥΡΩΣΗ (Ενιαίο Modal) -->
+    <!-- MODAL: ΑΝΤΙΚΑΤΑΣΤΑΣΗ / ΑΚΥΡΩΣΗ -->
     <div class="modal-overlay" id="replacementModal">
         <div class="modal-box">
             <div class="modal-icon" id="modalIcon">🔄</div>
@@ -1490,6 +1619,7 @@
         let searchTerm = '';
         let dateRangeStart = null; // Date object
         let dateRangeEnd = null; // Date object
+        let liveStatsData = []; // For Live Statistics
 
         const PROPERTIES = ['Studio', 'Apartment 1', 'Apartment 2', 'Villa'];
         const MONTHS = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιουν', 'Ιουλ', 'Αυγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
@@ -2019,7 +2149,7 @@
                 finalTotal,
                 stayValue: totalWithVAT,
                 vat: vatAmount,
-                status: status // The cancellation status is passed here
+                status: status
             };
         }
 
@@ -2668,7 +2798,7 @@
         });
 
         // ================================================================
-        //  14. STATS DASHBOARD
+        //  14. STATS DASHBOARD (Reservations)
         // ================================================================
         function updateStats() {
             if (reservations.length === 0) {
@@ -2892,7 +3022,157 @@
         }
 
         // ================================================================
-        //  15. IMPORT / EXPORT (UPDATED LOGIC)
+        //  15. LIVE STATISTICS FUNCTIONS
+        // ================================================================
+        function loadLiveStats() {
+            const stored = localStorage.getItem('liveStatsData');
+            if (stored) {
+                try {
+                    liveStatsData = JSON.parse(stored);
+                    renderLiveDashboard(liveStatsData);
+                } catch (e) {
+                    console.error('Error parsing live stats', e);
+                    liveStatsData = [];
+                }
+            }
+        }
+
+        function saveLiveStats(data) {
+            localStorage.setItem('liveStatsData', JSON.stringify(data));
+            liveStatsData = data;
+        }
+
+        function parseLiveStatsCSV(text) {
+            const lines = text.split(/\r?\n/);
+            const data = [];
+            // Skip header (index 0)
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                // Handle quoted fields manually since simple split fails with commas inside quotes
+                const fields = [];
+                let current = '';
+                let inQuote = false;
+                for (let char of line) {
+                    if (char === '"') {
+                        inQuote = !inQuote;
+                    } else if (char === ',' && !inQuote) {
+                        fields.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                fields.push(current); // push last field
+
+                if (fields.length >= 12) {
+                    const p = fields.map(f => f.replace(/^"|"$/g, '').trim()); // strip quotes
+                    const period = p[0]; // e.g. "2026-01"
+                    const nights = parseInt(p[10]) || 0;
+                    const occupancy = parseFloat(p[11].replace('%', '')) || 0;
+
+                    data.push({
+                        period: period,
+                        transfer: parseFloat(p[1]) || 0,
+                        meal: parseFloat(p[2]) || 0,
+                        commission: parseFloat(p[3]) || 0,
+                        noCommission: parseFloat(p[4]) || 0,
+                        totalIncome: parseFloat(p[5]) || 0,
+                        expenses: parseFloat(p[6]) || 0,
+                        profit: parseFloat(p[7]) || 0,
+                        personalExpenses: parseFloat(p[8]) || 0,
+                        netAfterPersonal: parseFloat(p[9]) || 0,
+                        nights: nights,
+                        occupancy: occupancy
+                    });
+                }
+            }
+            return data;
+        }
+
+        function renderLiveDashboard(data) {
+            const kpiGrid = document.getElementById('liveKpiGrid');
+            const chartGrid = document.getElementById('liveChartGrid');
+            const dashboard = document.getElementById('liveStatsDashboard');
+            const uploadArea = document.getElementById('liveUploadArea');
+
+            if (data.length === 0) {
+                dashboard.classList.remove('active');
+                uploadArea.style.display = 'block';
+                return;
+            }
+
+            dashboard.classList.add('active');
+            uploadArea.style.display = 'none';
+
+            // 1. Calculate KPIs
+            const totalIncome = data.reduce((s, r) => s + r.totalIncome, 0);
+            const totalProfit = data.reduce((s, r) => s + r.profit, 0);
+            const totalNights = data.reduce((s, r) => s + r.nights, 0);
+            const avgOccupancy = data.reduce((s, r) => s + r.occupancy, 0) / data.length;
+
+            kpiGrid.innerHTML = `
+                <div class="live-kpi-card" style="border-left-color:#3b82f6;">
+                    <div class="kpi-value">${totalIncome.toFixed(2)}€</div>
+                    <div class="kpi-label">Συνολικά Έσοδα</div>
+                </div>
+                <div class="live-kpi-card" style="border-left-color:#059669;">
+                    <div class="kpi-value">${totalProfit.toFixed(2)}€</div>
+                    <div class="kpi-label">Συνολικό Κέρδος</div>
+                </div>
+                <div class="live-kpi-card" style="border-left-color:#f59e0b;">
+                    <div class="kpi-value">${totalNights}</div>
+                    <div class="kpi-label">Σύνολο Διανυκτερεύσεων</div>
+                </div>
+                <div class="live-kpi-card" style="border-left-color:#8b5cf6;">
+                    <div class="kpi-value">${avgOccupancy.toFixed(1)}%</div>
+                    <div class="kpi-label">Μέση Πληρότητα</div>
+                </div>
+            `;
+
+            // 2. Generate Charts
+            const maxIncome = Math.max(...data.map(d => d.totalIncome), 1);
+            const maxProfit = Math.max(...data.map(d => d.profit), 1);
+            const maxNights = Math.max(...data.map(d => d.nights), 1);
+            const maxOccupancy = Math.max(...data.map(d => d.occupancy), 1);
+
+            let incomeChart = `<div class="live-chart-card"><h4>💰 Έσοδα & Κέρδη ανά Μήνα</h4><div class="chart-bar-container">`;
+            data.forEach(d => {
+                const label = d.period.replace('2026-', '');
+                incomeChart += `
+                    <div class="chart-bar-row">
+                        <span class="bar-label">${label}</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:${(d.totalIncome/maxIncome)*100}%;background:#3b82f6; margin-bottom: 2px;"></div>
+                            <div class="bar-fill" style="width:${(d.profit/maxProfit)*100}%;background:#059669; height: 12px;"></div>
+                        </div>
+                        <span class="bar-value small">${d.totalIncome.toFixed(0)}€</span>
+                    </div>
+                `;
+            });
+            incomeChart += `</div><div style="font-size:11px;color:#64748b;padding-top:4px;"><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:2px;"></span> Έσοδα <span style="display:inline-block;width:12px;height:12px;background:#059669;border-radius:2px;margin-left:12px;"></span> Κέρδος</div></div>`;
+
+            let occChart = `<div class="live-chart-card"><h4>🏠 Διανυκτερεύσεις & Πληρότητα</h4><div class="chart-bar-container">`;
+            data.forEach(d => {
+                const label = d.period.replace('2026-', '');
+                occChart += `
+                    <div class="chart-bar-row">
+                        <span class="bar-label">${label}</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:${(d.occupancy/maxOccupancy)*100}%;background:#8b5cf6; margin-bottom: 2px;"></div>
+                            <div class="bar-fill" style="width:${(d.nights/maxNights)*100}%;background:#f59e0b; height: 12px;"></div>
+                        </div>
+                        <span class="bar-value small">${d.nights}ν</span>
+                    </div>
+                `;
+            });
+            occChart += `</div><div style="font-size:11px;color:#64748b;padding-top:4px;"><span style="display:inline-block;width:12px;height:12px;background:#8b5cf6;border-radius:2px;"></span> Πληρότητα <span style="display:inline-block;width:12px;height:12px;background:#f59e0b;border-radius:2px;margin-left:12px;"></span> Διανυκτερεύσεις</div></div>`;
+
+            chartGrid.innerHTML = incomeChart + occChart;
+        }
+
+        // ================================================================
+        //  16. IMPORT / EXPORT (Reservations)
         // ================================================================
         async function importData(text) {
             const records = parseReservationData(text);
@@ -3002,7 +3282,7 @@
         }
 
         // ================================================================
-        //  16. COLOR SETTINGS UI
+        //  17. COLOR SETTINGS UI
         // ================================================================
         function initColorSettings() {
             const grid = document.getElementById('colorSettingsGrid');
@@ -3035,7 +3315,7 @@
         }
 
         // ================================================================
-        //  17. DROPDOWNS
+        //  18. DROPDOWNS
         // ================================================================
         function populateYearDropdown() {
             const sel = document.getElementById('yearSelect');
@@ -3084,7 +3364,7 @@
         }
 
         // ================================================================
-        //  18. SEARCH POPUP (with input)
+        //  19. SEARCH POPUP (with input)
         // ================================================================
         function openSearchModal() {
             const modal = document.getElementById('searchResultsModal');
@@ -3164,30 +3444,37 @@
         }
 
         // ================================================================
-        //  19. TAB SWITCHING
+        //  20. TAB SWITCHING
         // ================================================================
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 const tab = this.dataset.tab;
+                
+                // Hide all tabs
+                document.getElementById('reservationsTab').style.display = 'none';
+                document.getElementById('statsTab').style.display = 'none';
+                document.getElementById('liveTab').style.display = 'none';
+                document.getElementById('statsBar').style.display = 'none';
+                document.getElementById('reservationControls').style.display = 'none';
+                
                 if (tab === 'reservations') {
                     document.getElementById('reservationsTab').style.display = 'flex';
-                    document.getElementById('statsTab').style.display = 'none';
                     document.getElementById('statsBar').style.display = 'flex';
                     document.getElementById('reservationControls').style.display = 'flex';
-                } else {
-                    document.getElementById('reservationsTab').style.display = 'none';
+                } else if (tab === 'stats') {
                     document.getElementById('statsTab').style.display = 'block';
-                    document.getElementById('statsBar').style.display = 'none';
-                    document.getElementById('reservationControls').style.display = 'none';
                     updateStats();
+                } else if (tab === 'live') {
+                    document.getElementById('liveTab').style.display = 'flex';
+                    loadLiveStats(); // Reload just in case
                 }
             });
         });
 
         // ================================================================
-        //  20. EVENT BINDING & INIT
+        //  21. EVENT BINDING & INIT
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             // --- DATE FILTER ---
@@ -3268,7 +3555,7 @@
                 if (e.target === this) closeSearchModal();
             });
 
-            // --- File input ---
+            // --- File input (Reservations) ---
             document.getElementById('fileInput').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -3280,6 +3567,37 @@
                 };
                 reader.readAsText(file);
                 this.value = '';
+            });
+
+            // --- File input (Live Statistics) ---
+            document.getElementById('liveFileInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const text = ev.target.result;
+                    const parsed = parseLiveStatsCSV(text);
+                    if (parsed.length > 0) {
+                        saveLiveStats(parsed);
+                        renderLiveDashboard(parsed);
+                        alert('✅ Τα δεδομένα φορτώθηκαν επιτυχώς!');
+                    } else {
+                        alert('❌ Το αρχείο δεν είναι έγκυρο ή είναι κενό.');
+                    }
+                };
+                reader.readAsText(file);
+                this.value = '';
+            });
+
+            // --- Clear Live Stats ---
+            document.getElementById('clearLiveStatsBtn').addEventListener('click', function() {
+                if (liveStatsData.length === 0) return;
+                if (confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε τα δεδομένα Live Statistics;')) {
+                    localStorage.removeItem('liveStatsData');
+                    liveStatsData = [];
+                    renderLiveDashboard([]);
+                    document.getElementById('liveUploadArea').style.display = 'block';
+                }
             });
 
             // --- Year select ---
@@ -3407,6 +3725,7 @@
             initColorSettings();
             populateMonthDropdowns();
             loadAllReservations();
+            loadLiveStats(); // Load live stats on startup
             // Initial check for grid size (detail panel is closed by default)
             const gridContainer = document.querySelector('.grid-container');
             gridContainer.classList.remove('shrunk');
