@@ -451,7 +451,7 @@
             max-width: 50px;
         }
 
-        /* ----- GRID TABLES (UPDATED STICKY HEADERS FOR DAILY VIEW) ----- */
+        /* ----- GRID TABLES (STICKY HEADERS & MONTH COLSPAN) ----- */
         .grid {
             display: table;
             width: 100%;
@@ -464,15 +464,13 @@
             vertical-align: middle;
             text-align: center;
         }
-        
         /* STICKY HEADERS: Month Name Row (1st row) */
         .grid thead tr:first-child th {
             position: sticky;
             top: 0;
             z-index: 10;
-            background: #eef2f6 !important; /* Force dark header color */
+            background: #eef2f6 !important;
             border-bottom: 2px solid #d1d9e6;
-            font-weight: 800;
         }
         /* STICKY HEADERS: Day Numbers Row (2nd row) */
         .grid thead tr:last-child th {
@@ -481,7 +479,6 @@
             background: #f8fafc;
             border-bottom: 2px solid #e2e8f0;
         }
-        
         /* ENSURE PROPERTY HEADER ALWAYS STAYS ON TOP OF DAY HEADERS */
         .grid .prop-header {
             position: sticky;
@@ -502,10 +499,10 @@
         .grid-container.expanded .grid thead tr:first-child th {
             top: 0;
             padding: 14px 12px;
-            height: 58px; /* Fixed height for seamless scroll */
+            height: 58px;
         }
         .grid-container.expanded .grid thead tr:last-child th {
-            top: 58px; /* Exactly under the 1st row */
+            top: 58px;
             padding: 8px 4px;
             height: 40px;
         }
@@ -517,7 +514,7 @@
             height: 38px;
         }
         .grid-container.shrunk .grid thead tr:last-child th {
-            top: 38px; /* Exactly under the 1st row */
+            top: 38px;
             padding: 4px 2px;
             height: 28px;
         }
@@ -703,7 +700,7 @@
             vertical-align: middle;
         }
 
-        /* ----- LIVE STATISTICS DASHBOARD ----- */
+        /* ----- LIVE STATISTICS DASHBOARD (Premium Redesign) ----- */
         #liveTab {
             display: none;
             flex-direction: column;
@@ -713,7 +710,6 @@
             display: flex;
         }
 
-        /* ---- LIVE CSV UPLOAD AREA ---- */
         .live-upload-area {
             background: white;
             border-radius: 14px;
@@ -751,7 +747,7 @@
             flex-wrap: wrap;
         }
 
-        /* ---- LIVE STATS DASHBOARD (PREMIUM) ---- */
+        /* --- LIVE STATS DASHBOARD --- */
         .live-stats-dashboard {
             display: none;
             gap: 16px;
@@ -764,28 +760,61 @@
 
         .live-kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
             gap: 12px;
         }
         .live-kpi-card {
             background: white;
             border-radius: 12px;
-            padding: 14px 18px;
+            padding: 16px 18px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            text-align: center;
-            border-left: 4px solid #3b82f6;
-        }
-        .live-kpi-card .kpi-value {
-            font-size: 26px;
-            font-weight: 700;
-            color: #0f2b5b;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
         }
         .live-kpi-card .kpi-label {
             font-size: 13px;
             color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .live-kpi-card .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f2b5b;
+            padding-top: 4px;
+        }
+        .live-kpi-card .kpi-sub {
+            font-size: 12px;
+            color: #94a3b8;
             margin-top: 2px;
         }
+        .icon-box {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        .icon-box.green { background: #10b981; }
+        .icon-box.blue { background: #3b82f6; }
+        .icon-box.orange { background: #f59e0b; }
+        .icon-box.purple { background: #8b5cf6; }
+        .icon-box.grey { background: #64748b; }
+        .icon-box.red { background: #ef4444; }
+        .icon-box.teal { background: #14b8a6; }
+        .icon-box.indigo { background: #6366f1; }
+        .icon-box.lightblue { background: #06b6d4; }
 
+        /* Charts */
         .live-chart-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -800,14 +829,113 @@
         .live-chart-card h4 {
             font-size: 15px;
             color: #0f2b5b;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
             border-bottom: 1px solid #eef2f6;
             padding-bottom: 8px;
         }
-        .live-status-msg {
+
+        .chart-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .chart-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        .chart-bar-row .bar-label {
+            min-width: 50px;
+            text-align: right;
+            color: #475569;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .chart-bar-row .bar-track {
+            flex: 1;
+            height: 24px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+        }
+        .chart-bar-row .bar-track .bar-fill {
+            height: 100%;
+            transition: width 0.6s ease;
+        }
+        .chart-bar-row .bar-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+            color: #0f2b5b;
+            flex-shrink: 0;
+        }
+
+        /* Advanced SVG Styling */
+        .pie-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+        .pie-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .pie-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pie-legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* Responsive Tables */
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .stats-table th {
+            background: #f8fafc;
+            text-align: left;
+            padding: 6px 10px;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .stats-table td {
+            padding: 5px 10px;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .stats-table tr:hover td {
+            background: #fafcff;
+        }
+
+        .empty-state {
             text-align: center;
-            padding: 20px;
-            color: #64748b;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+        .empty-state .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .empty-state h3 {
+            font-size: 18px;
+            color: #475569;
+        }
+        .empty-state .sub {
+            font-size: 14px;
+            color: #94a3b8;
         }
 
         /* ----- MODALS ----- */
@@ -1118,45 +1246,6 @@
             font-size: 11px;
         }
 
-        .stats-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        .stats-table th {
-            background: #f8fafc;
-            text-align: left;
-            padding: 6px 10px;
-            font-weight: 600;
-            color: #475569;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        .stats-table td {
-            padding: 5px 10px;
-            border-bottom: 1px solid #edf2f7;
-        }
-        .stats-table tr:hover td {
-            background: #fafcff;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #94a3b8;
-        }
-        .empty-state .icon {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-        .empty-state h3 {
-            font-size: 18px;
-            color: #475569;
-        }
-        .empty-state .sub {
-            font-size: 14px;
-            color: #94a3b8;
-        }
-
         /* ----- RESPONSIVE (Mobile) ----- */
         @media (max-width: 700px) {
             body {
@@ -1223,6 +1312,10 @@
             .grid-container.expanded .grid thead tr:last-child th { top: 46px; height: 34px; }
             .grid-container.shrunk .grid thead tr:first-child th { height: 34px; }
             .grid-container.shrunk .grid thead tr:last-child th { top: 34px; height: 24px; }
+            .live-kpi-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .pie-wrapper { flex-direction: column; }
         }
 
         .flex {
@@ -1612,9 +1705,9 @@
         let isLoading = false;
         let isFirestoreReady = false;
         let searchTerm = '';
-        let dateRangeStart = null; // Date object
-        let dateRangeEnd = null; // Date object
-        let liveStatsData = []; // For Live Statistics
+        let dateRangeStart = null;
+        let dateRangeEnd = null;
+        let liveStatsData = [];
 
         const PROPERTIES = ['Studio', 'Apartment 1', 'Apartment 2', 'Villa'];
         const MONTHS = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιουν', 'Ιουλ', 'Αυγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
@@ -1804,7 +1897,6 @@
             renderGrid();
             updateStats();
             document.getElementById('detailPanel').classList.remove('open');
-            // After closing detail panel, switch grid back to expanded
             toggleGridSize();
             closeSearchModal();
         }
@@ -1820,22 +1912,18 @@
                 const docRef = db.collection(COLLECTION).doc(r.sn);
                 const existing = reservations.find(res => res.sn === r.sn);
 
-                // CHECK IF CANCELLED
                 if (r.status && r.status.toLowerCase().trim() === 'cancelled') {
                     if (existing) {
                         batch.delete(docRef);
-                        // remove from local array
                         const idx = reservations.findIndex(res => res.sn === r.sn);
                         if (idx !== -1) {
                             reservations.splice(idx, 1);
                             cancelled.push({ sn: r.sn, guestName: existing.guestName });
                         }
                     }
-                    // If it's cancelled but doesn't exist, we ignore it completely
                     continue;
                 }
 
-                // Normal add/update logic for non-cancelled
                 if (existing) {
                     batch.set(docRef, resToDoc(r), { merge: true });
                     replaced.push({ sn: r.sn, oldName: existing.guestName, newName: r.guestName });
@@ -1870,7 +1958,6 @@
             renderGrid();
             updateStats();
             document.getElementById('detailPanel').classList.remove('open');
-            // After closing detail panel, switch grid back to expanded
             toggleGridSize();
             closeSearchModal();
         }
@@ -2408,8 +2495,6 @@
                 // Use the date filter range
                 startDate = new Date(dateRangeStart);
                 endDate = new Date(dateRangeEnd);
-                // Also ensure we include full month for month grouping?
-                // We'll just use the range.
             } else {
                 startDate = new Date(currentYear, monthFrom, 1);
                 endDate = new Date(currentYear, monthTo + 1, 0);
@@ -3004,7 +3089,7 @@
         }
 
         // ================================================================
-        //  15. LIVE STATISTICS FUNCTIONS (UPDATED FOR FIRESTORE)
+        //  15. LIVE STATISTICS FUNCTIONS (UPDATED UI RENDER)
         // ================================================================
         
         async function saveLiveStatsToFirestore(data) {
@@ -3018,7 +3103,6 @@
                 });
                 await batch.commit();
                 hideLoading();
-                // Update local variable after successful save
                 liveStatsData = data;
             } catch (err) {
                 console.error('Error saving live stats', err);
@@ -3043,7 +3127,6 @@
             } catch (err) {
                 console.error("Error loading live stats", err);
                 hideLoading();
-                // Optionally show an error message
                 renderLiveDashboard([]);
             }
         }
@@ -3051,11 +3134,9 @@
         function parseLiveStatsCSV(text) {
             const lines = text.split(/\r?\n/);
             const data = [];
-            // Skip header (index 0)
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
-                // Handle quoted fields manually since simple split fails with commas inside quotes
                 const fields = [];
                 let current = '';
                 let inQuote = false;
@@ -3069,11 +3150,11 @@
                         current += char;
                     }
                 }
-                fields.push(current); // push last field
+                fields.push(current);
 
                 if (fields.length >= 12) {
-                    const p = fields.map(f => f.replace(/^"|"$/g, '').trim()); // strip quotes
-                    const period = p[0]; // e.g. "2026-01"
+                    const p = fields.map(f => f.replace(/^"|"$/g, '').trim());
+                    const period = p[0];
                     const nights = parseInt(p[10]) || 0;
                     const occupancy = parseFloat(p[11].replace('%', '')) || 0;
 
@@ -3096,6 +3177,44 @@
             return data;
         }
 
+        // Helper to create SVG Pie Chart
+        function renderPieChart(data, colors) {
+            if (!data || data.length === 0) return '<div class="text-muted">No data</div>';
+            const total = data.reduce((sum, d) => sum + d.value, 0);
+            if (total === 0) return '<div class="text-muted">No income data</div>';
+
+            const size = 200;
+            const cx = size / 2;
+            const cy = size / 2;
+            const radius = 90;
+            let startAngle = -Math.PI / 2;
+            let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="max-width: 200px;">`;
+            
+            data.forEach((item, index) => {
+                const sliceAngle = (item.value / total) * 2 * Math.PI;
+                const endAngle = startAngle + sliceAngle;
+                
+                const x1 = cx + radius * Math.cos(startAngle);
+                const y1 = cy + radius * Math.sin(startAngle);
+                const x2 = cx + radius * Math.cos(endAngle);
+                const y2 = cy + radius * Math.sin(endAngle);
+
+                const largeArcFlag = sliceAngle > Math.PI ? 1 : 0;
+                const pathData = [
+                    `M ${cx} ${cy}`,
+                    `L ${x1} ${y1}`,
+                    `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                    `Z`
+                ].join(' ');
+
+                const color = colors[index % colors.length];
+                svg += `<path d="${pathData}" fill="${color}" stroke="white" stroke-width="2"/>`;
+                startAngle = endAngle;
+            });
+            svg += `</svg>`;
+            return svg;
+        }
+
         function renderLiveDashboard(data) {
             const kpiGrid = document.getElementById('liveKpiGrid');
             const chartGrid = document.getElementById('liveChartGrid');
@@ -3111,70 +3230,142 @@
             dashboard.classList.add('active');
             uploadArea.style.display = 'none';
 
-            // 1. Calculate KPIs
-            const totalIncome = data.reduce((s, r) => s + r.totalIncome, 0);
-            const totalProfit = data.reduce((s, r) => s + r.profit, 0);
-            const totalNights = data.reduce((s, r) => s + r.nights, 0);
-            const avgOccupancy = data.reduce((s, r) => s + r.occupancy, 0) / data.length;
+            // 1. Calculate KPIs & Aggregations
+            let sumTransfer = 0, sumMeal = 0, sumCommission = 0, sumNoCommission = 0;
+            let sumTotalIncome = 0, sumExpenses = 0, sumProfit = 0;
+            let sumPersonalExpenses = 0, sumNetAfterPersonal = 0;
+            let sumNights = 0, sumOccupancy = 0;
 
-            kpiGrid.innerHTML = `
-                <div class="live-kpi-card" style="border-left-color:#3b82f6;">
-                    <div class="kpi-value">${totalIncome.toFixed(2)}€</div>
-                    <div class="kpi-label">Συνολικά Έσοδα</div>
+            data.forEach(d => {
+                sumTransfer += d.transfer;
+                sumMeal += d.meal;
+                sumCommission += d.commission;
+                sumNoCommission += d.noCommission;
+                sumTotalIncome += d.totalIncome;
+                sumExpenses += d.expenses;
+                sumProfit += d.profit;
+                sumPersonalExpenses += d.personalExpenses;
+                sumNetAfterPersonal += d.netAfterPersonal;
+                sumNights += d.nights;
+                sumOccupancy += d.occupancy;
+            });
+            const avgOccupancy = data.length > 0 ? sumOccupancy / data.length : 0;
+
+            // 2. Render KPI Cards
+            const kpiMap = [
+                { label: 'Total Revenue', value: sumTotalIncome.toFixed(2) + '€', sub: 'All income', icon: '$', iconClass: 'green' },
+                { label: 'Transfer Income', value: sumTransfer.toFixed(2) + '€', sub: 'From transfers', icon: '🚛', iconClass: 'blue' },
+                { label: 'Meal Income', value: sumMeal.toFixed(2) + '€', sub: 'From meals', icon: '🍴', iconClass: 'orange' },
+                { label: 'Commission Income', value: sumCommission.toFixed(2) + '€', sub: 'From commission', icon: '📊', iconClass: 'purple' },
+                { label: 'No Commission Income', value: sumNoCommission.toFixed(2) + '€', sub: 'From no commission', icon: '❌', iconClass: 'grey' },
+                { label: 'Expenses', value: sumExpenses.toFixed(2) + '€', sub: 'All expenses', icon: '💰', iconClass: 'red' },
+                { label: 'Profit', value: sumProfit.toFixed(2) + '€', sub: 'Total Income - Expenses', icon: '📈', iconClass: 'teal' },
+                { label: 'Net After Personal', value: sumNetAfterPersonal.toFixed(2) + '€', sub: 'Profit - Personal', icon: '💼', iconClass: 'indigo' },
+                { label: 'Total Nights', value: sumNights, sub: 'Total nights', icon: '🌙', iconClass: 'lightblue' },
+                { label: 'Occupancy', value: avgOccupancy.toFixed(1) + '%', sub: 'Avg over selected period', icon: '🏠', iconClass: 'purple' }
+            ];
+
+            kpiGrid.innerHTML = kpiMap.map(item => `
+                <div class="live-kpi-card">
+                    <div class="kpi-label">${item.label}</div>
+                    <div class="kpi-value">${item.value}</div>
+                    <div class="kpi-sub">${item.sub}</div>
+                    <div class="icon-box ${item.iconClass}">${item.icon}</div>
                 </div>
-                <div class="live-kpi-card" style="border-left-color:#059669;">
-                    <div class="kpi-value">${totalProfit.toFixed(2)}€</div>
-                    <div class="kpi-label">Συνολικό Κέρδος</div>
-                </div>
-                <div class="live-kpi-card" style="border-left-color:#f59e0b;">
-                    <div class="kpi-value">${totalNights}</div>
-                    <div class="kpi-label">Σύνολο Διανυκτερεύσεων</div>
-                </div>
-                <div class="live-kpi-card" style="border-left-color:#8b5cf6;">
-                    <div class="kpi-value">${avgOccupancy.toFixed(1)}%</div>
-                    <div class="kpi-label">Μέση Πληρότητα</div>
+            `).join('');
+
+            // 3. Render Charts
+            let chartsHtml = '';
+
+            // Chart 1: Income vs Expenses (Bar Chart - Monthly)
+            const maxIncome = Math.max(...data.map(d => d.totalIncome), 1);
+            const maxExpenses = Math.max(...data.map(d => d.expenses), 1);
+            const maxVal = Math.max(maxIncome, maxExpenses, 1);
+            
+            chartsHtml += `
+                <div class="live-chart-card">
+                    <h4>💰 Income vs Expenses</h4>
+                    <div class="chart-bar-container">
+                        ${data.map(d => `
+                            <div class="chart-bar-row">
+                                <span class="bar-label">${d.period}</span>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="width:${(d.totalIncome/maxVal)*100}%;background:#10b981; margin-bottom: 2px;"></div>
+                                    <div class="bar-fill" style="width:${(d.expenses/maxVal)*100}%;background:#ef4444; height: 12px;"></div>
+                                </div>
+                                <span class="bar-value small">${d.totalIncome.toFixed(0)}€</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="font-size:11px;color:#64748b;padding-top:4px;">
+                        <span style="display:inline-block;width:12px;height:12px;background:#10b981;border-radius:2px;"></span> Income 
+                        <span style="display:inline-block;width:12px;height:12px;background:#ef4444;border-radius:2px;margin-left:12px;"></span> Expenses
+                    </div>
                 </div>
             `;
 
-            // 2. Generate Charts
-            const maxIncome = Math.max(...data.map(d => d.totalIncome), 1);
-            const maxProfit = Math.max(...data.map(d => d.profit), 1);
-            const maxNights = Math.max(...data.map(d => d.nights), 1);
-            const maxOccupancy = Math.max(...data.map(d => d.occupancy), 1);
+            // Chart 2: Income Distribution (Pie Chart - SVG)
+            const pieData = [
+                { label: 'Transfer', value: sumTransfer, color: '#3b82f6' },
+                { label: 'Meal', value: sumMeal, color: '#f59e0b' },
+                { label: 'Commission', value: sumCommission, color: '#8b5cf6' },
+                { label: 'No Commission', value: sumNoCommission, color: '#06b6d4' }
+            ];
+            const pieSvg = renderPieChart(pieData, pieData.map(d => d.color));
 
-            let incomeChart = `<div class="live-chart-card"><h4>💰 Έσοδα & Κέρδη ανά Μήνα</h4><div class="chart-bar-container">`;
-            data.forEach(d => {
-                const label = d.period.replace('2026-', '');
-                incomeChart += `
-                    <div class="chart-bar-row">
-                        <span class="bar-label">${label}</span>
-                        <div class="bar-track">
-                            <div class="bar-fill" style="width:${(d.totalIncome/maxIncome)*100}%;background:#3b82f6; margin-bottom: 2px;"></div>
-                            <div class="bar-fill" style="width:${(d.profit/maxProfit)*100}%;background:#059669; height: 12px;"></div>
+            chartsHtml += `
+                <div class="live-chart-card">
+                    <h4>📊 Income Distribution</h4>
+                    <div class="pie-wrapper">
+                        ${pieSvg}
+                        <div class="pie-legend">
+                            ${pieData.map(d => `
+                                <div class="pie-legend-item">
+                                    <span class="pie-legend-color" style="background:${d.color};"></span>
+                                    <span>${d.label} (${d.value.toFixed(0)}€)</span>
+                                </div>
+                            `).join('')}
                         </div>
-                        <span class="bar-value small">${d.totalIncome.toFixed(0)}€</span>
                     </div>
-                `;
-            });
-            incomeChart += `</div><div style="font-size:11px;color:#64748b;padding-top:4px;"><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:2px;"></span> Έσοδα <span style="display:inline-block;width:12px;height:12px;background:#059669;border-radius:2px;margin-left:12px;"></span> Κέρδος</div></div>`;
+                </div>
+            `;
 
-            let occChart = `<div class="live-chart-card"><h4>🏠 Διανυκτερεύσεις & Πληρότητα</h4><div class="chart-bar-container">`;
-            data.forEach(d => {
-                const label = d.period.replace('2026-', '');
-                occChart += `
-                    <div class="chart-bar-row">
-                        <span class="bar-label">${label}</span>
-                        <div class="bar-track">
-                            <div class="bar-fill" style="width:${(d.occupancy/maxOccupancy)*100}%;background:#8b5cf6; margin-bottom: 2px;"></div>
-                            <div class="bar-fill" style="width:${(d.nights/maxNights)*100}%;background:#f59e0b; height: 12px;"></div>
-                        </div>
-                        <span class="bar-value small">${d.nights}ν</span>
+            // Chart 3: Monthly Revenue by Type (Stacked Bar Breakdown)
+            const maxMonthVal = Math.max(...data.map(d => d.transfer + d.meal + d.commission + d.noCommission), 1);
+            chartsHtml += `
+                <div class="live-chart-card" style="grid-column: 1 / -1;">
+                    <h4>📈 Monthly Revenue by Type</h4>
+                    <div class="chart-bar-container">
+                        ${data.map(d => {
+                            const total = d.transfer + d.meal + d.commission + d.noCommission;
+                            const widthTransfer = (d.transfer / maxMonthVal) * 100;
+                            const widthMeal = (d.meal / maxMonthVal) * 100;
+                            const widthComm = (d.commission / maxMonthVal) * 100;
+                            const widthNoComm = (d.noCommission / maxMonthVal) * 100;
+                            return `
+                                <div class="chart-bar-row">
+                                    <span class="bar-label">${d.period}</span>
+                                    <div class="bar-track" style="height: 24px;">
+                                        <div class="bar-fill" style="width:${widthTransfer}%;background:#3b82f6; height: 100%;"></div>
+                                        <div class="bar-fill" style="width:${widthMeal}%;background:#f59e0b; height: 100%;"></div>
+                                        <div class="bar-fill" style="width:${widthComm}%;background:#8b5cf6; height: 100%;"></div>
+                                        <div class="bar-fill" style="width:${widthNoComm}%;background:#06b6d4; height: 100%;"></div>
+                                    </div>
+                                    <span class="bar-value small">${total.toFixed(0)}€</span>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
-                `;
-            });
-            occChart += `</div><div style="font-size:11px;color:#64748b;padding-top:4px;"><span style="display:inline-block;width:12px;height:12px;background:#8b5cf6;border-radius:2px;"></span> Πληρότητα <span style="display:inline-block;width:12px;height:12px;background:#f59e0b;border-radius:2px;margin-left:12px;"></span> Διανυκτερεύσεις</div></div>`;
+                    <div style="font-size:11px;color:#64748b;padding-top:4px;">
+                        <span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:2px;"></span> Transfer 
+                        <span style="display:inline-block;width:12px;height:12px;background:#f59e0b;border-radius:2px;margin-left:12px;"></span> Meal 
+                        <span style="display:inline-block;width:12px;height:12px;background:#8b5cf6;border-radius:2px;margin-left:12px;"></span> Commission 
+                        <span style="display:inline-block;width:12px;height:12px;background:#06b6d4;border-radius:2px;margin-left:12px;"></span> No Comm.
+                    </div>
+                </div>
+            `;
 
-            chartGrid.innerHTML = incomeChart + occChart;
+            chartGrid.innerHTML = chartsHtml;
         }
 
         // ================================================================
@@ -3474,7 +3665,7 @@
                     updateStats();
                 } else if (tab === 'live') {
                     document.getElementById('liveTab').style.display = 'flex';
-                    loadLiveStatsFromFirestore(); // Load from Firebase when tab opens
+                    loadLiveStatsFromFirestore();
                 }
             });
         });
@@ -3587,7 +3778,7 @@
                         // Save to Firestore instead of localStorage
                         saveLiveStatsToFirestore(parsed).then(() => {
                             alert('✅ Τα δεδομένα φορτώθηκαν και αποθηκεύτηκαν στη βάση επιτυχώς!');
-                            loadLiveStatsFromFirestore(); // Reload to show
+                            loadLiveStatsFromFirestore();
                         });
                     } else {
                         alert('❌ Το αρχείο δεν είναι έγκυρο ή είναι κενό.');
@@ -3630,9 +3821,7 @@
 
             // --- Month selects (only used when date filter is none) ---
             document.getElementById('monthFrom').addEventListener('change', function() {
-                // If date filter is active, ignore
                 if (dateFilterSelect.value !== '') {
-                    // Reset filter to none
                     dateFilterSelect.value = '';
                     dateRangeStart = null;
                     dateRangeEnd = null;
@@ -3659,7 +3848,6 @@
                 viewMode = 'monthly';
                 this.classList.add('active');
                 document.getElementById('viewDailyBtn').classList.remove('active');
-                // Reset date filter if active
                 if (dateFilterSelect.value !== '') {
                     dateFilterSelect.value = '';
                     dateRangeStart = null;
@@ -3721,7 +3909,7 @@
             // --- Close detail ---
             document.getElementById('closeDetailBtn').addEventListener('click', function() {
                 document.getElementById('detailPanel').classList.remove('open');
-                toggleGridSize(); // resize grid when detail closes
+                toggleGridSize();
             });
 
             // --- Color settings ---
@@ -3746,7 +3934,6 @@
             initColorSettings();
             populateMonthDropdowns();
             loadAllReservations();
-            // Initial check for grid size (detail panel is closed by default)
             const gridContainer = document.querySelector('.grid-container');
             gridContainer.classList.remove('shrunk');
             gridContainer.classList.add('expanded');
