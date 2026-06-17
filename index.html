@@ -1549,8 +1549,9 @@
             </div>
         </div>
 
-        <!-- LIVE STATISTICS TAB (NEW) -->
+        <!-- LIVE STATISTICS TAB (UPDATED: now shows analytics data from the other Firebase project) -->
         <div id="liveTab">
+            <!-- Upload area kept but hidden when live data is available -->
             <div class="live-upload-area" id="liveUploadArea">
                 <div class="icon">📊</div>
                 <h3>Ανεβάστε το CSV αρχείο Live Analytics</h3>
@@ -1674,9 +1675,10 @@
 
     <script>
         // ================================================================
-        //  1. FIREBASE INIT
+        //  1. FIREBASE INIT – TWO SEPARATE PROJECTS
         // ================================================================
-        const firebaseConfig = {
+        // Original project for reservations
+        const firebaseConfigRes = {
             apiKey: "AIzaSyAE0lQWd2F9CBn28_gLezuFRLEdEh6URYE",
             authDomain: "easyreservationsformom.firebaseapp.com",
             projectId: "easyreservationsformom",
@@ -1685,13 +1687,24 @@
             appId: "1:375446268063:web:e621d39f741ce8a83f1aaa"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        // New project for live analytics (from index 85)
+        const firebaseConfigLive = {
+            apiKey: "AIzaSyD0YaoF4Ux9Bm_ZmnrZGFxQcDv2ayicx5c",
+            authDomain: "easyreservtionsmom.firebaseapp.com",
+            projectId: "easyreservtionsmom",
+            storageBucket: "easyreservtionsmom.firebasestorage.app",
+            messagingSenderId: "550628889531",
+            appId: "1:550628889531:web:9c957a45d8a6552fc66a9e"
+        };
 
-        db.enablePersistence({ synchronizeTabs: true })
-            .catch((err) => {
-                console.warn('Firestore persistence error:', err);
-            });
+        const appRes = firebase.initializeApp(firebaseConfigRes, 'reservationsApp');
+        const appLive = firebase.initializeApp(firebaseConfigLive, 'liveApp');
+        const db = firebase.firestore(appRes);      // for reservations
+        const dbLive = firebase.firestore(appLive); // for live analytics
+
+        // Enable persistence for both
+        db.enablePersistence({ synchronizeTabs: true }).catch(err => console.warn('Reservations persistence error:', err));
+        dbLive.enablePersistence({ synchronizeTabs: true }).catch(err => console.warn('Live persistence error:', err));
 
         // ================================================================
         //  2. STATE
@@ -1761,10 +1774,9 @@
         }
 
         // ================================================================
-        //  5. FIRESTORE CRUD
+        //  5. FIRESTORE CRUD (reservations – using original db)
         // ================================================================
         const COLLECTION = 'reservations';
-        const LIVE_COLLECTION = 'liveStats';
 
         function resToDoc(r) {
             return {
@@ -2017,7 +2029,7 @@
         }
 
         // ================================================================
-        //  7. DATA PARSING (fixed contact)
+        //  7. DATA PARSING (unchanged)
         // ================================================================
         function parseReservationData(text) {
             const lines = text.split(/\r?\n/);
@@ -2249,7 +2261,7 @@
         }
 
         // ================================================================
-        //  9. DATE FILTER LOGIC (NEW)
+        //  9. DATE FILTER LOGIC (unchanged)
         // ================================================================
         function applyDateFilter(filterValue) {
             const today = new Date();
@@ -2337,7 +2349,7 @@
         }
 
         // ================================================================
-        //  10. GRID RENDER (with date filter & search)
+        //  10. GRID RENDER (unchanged)
         // ================================================================
         function renderGrid() {
             const container = document.getElementById('gridContainer');
@@ -2715,7 +2727,7 @@
         }
 
         // ================================================================
-        //  13. ADD / EDIT FORM
+        //  13. ADD / EDIT FORM (unchanged)
         // ================================================================
         let addFormTargetDate = null;
         let addFormTargetProperty = null;
@@ -2865,7 +2877,7 @@
         });
 
         // ================================================================
-        //  14. STATS DASHBOARD (Reservations)
+        //  14. STATS DASHBOARD (Reservations) - unchanged
         // ================================================================
         function updateStats() {
             if (reservations.length === 0) {
@@ -3089,48 +3101,136 @@
         }
 
         // ================================================================
-        //  15. LIVE STATISTICS FUNCTIONS (UPDATED UI RENDER)
+        //  15. LIVE STATISTICS FUNCTIONS (UPDATED TO USE dbLive)
         // ================================================================
         
-        async function saveLiveStatsToFirestore(data) {
-            if (!data || data.length === 0) return;
-            showLoading('Αποθήκευση Live Statistics στη βάση...');
-            try {
-                const batch = db.batch();
-                data.forEach(item => {
-                    const docRef = db.collection(LIVE_COLLECTION).doc(item.period);
-                    batch.set(docRef, item);
-                });
-                await batch.commit();
-                hideLoading();
-                liveStatsData = data;
-            } catch (err) {
-                console.error('Error saving live stats', err);
-                hideLoading();
-                alert('Σφάλμα κατά την αποθήκευση των Live Statistics: ' + err.message);
-            }
-        }
-
+        // This will be called when the Live Stats tab is opened.
+        // It fetches data from the new project's collections using dbLive.
         async function loadLiveStatsFromFirestore() {
-            showLoading('Φόρτωση Live Statistics...');
+            showLoading('Φόρτωση Live Analytics...');
             try {
-                const snapshot = await db.collection(LIVE_COLLECTION).orderBy('period', 'asc').get();
-                const data = [];
-                snapshot.forEach(doc => data.push(doc.data()));
+                // Fetch all necessary collections from the new project
+                const [resSnap, expenseSnap, categorySnap, commSnap, noCommSnap] = await Promise.all([
+                    dbLive.collection('reservations').get(),
+                    dbLive.collection('expenses').get(),
+                    dbLive.collection('expenseCategories').get(),
+                    dbLive.collection('commissionStats').get(),
+                    dbLive.collection('noCommissionStats').get()
+                ]);
+
+                // Map to arrays
+                const reservationsData = resSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const expensesData = expenseSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const categoriesData = categorySnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const commissionData = commSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const noCommissionData = noCommSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
                 hideLoading();
-                liveStatsData = data;
-                if (data.length > 0) {
-                    renderLiveDashboard(data);
-                } else {
+
+                // Find the PERSONAL category id
+                const personalCat = categoriesData.find(c => c.name && c.name.toUpperCase() === 'PERSONAL');
+                const personalCatId = personalCat ? personalCat.id : null;
+
+                // Aggregate monthly data
+                const monthly = {};
+
+                // 1. Reservations -> transfer and meal
+                reservationsData.forEach(r => {
+                    if (!r.checkin) return;
+                    const d = new Date(r.checkin);
+                    const monthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                    if (!monthly[monthKey]) {
+                        monthly[monthKey] = { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0, nights: 0 };
+                    }
+                    monthly[monthKey].transfer += r.transferAmount || 0;
+                    monthly[monthKey].meal += r.mealPrice || 0;
+                });
+
+                // 2. Expenses
+                expensesData.forEach(e => {
+                    if (!e.date) return;
+                    const d = new Date(e.date);
+                    const monthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                    if (!monthly[monthKey]) {
+                        monthly[monthKey] = { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0, nights: 0 };
+                    }
+                    const amount = parseFloat(e.amount) || 0;
+                    monthly[monthKey].expenses += amount;
+                    if (personalCatId && e.categoryId === personalCatId) {
+                        monthly[monthKey].personalExpenses += amount;
+                    }
+                });
+
+                // 3. Commission stats
+                commissionData.forEach(c => {
+                    if (!c.month) return;
+                    const [y, m] = c.month.split('-').map(Number);
+                    const monthKey = c.month;
+                    if (!monthly[monthKey]) {
+                        monthly[monthKey] = { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0, nights: 0 };
+                    }
+                    monthly[monthKey].commission += c.income || 0;
+                    monthly[monthKey].nights += c.stays || 0;
+                });
+
+                // 4. No commission stats
+                noCommissionData.forEach(nc => {
+                    if (!nc.month) return;
+                    const [y, m] = nc.month.split('-').map(Number);
+                    const monthKey = nc.month;
+                    if (!monthly[monthKey]) {
+                        monthly[monthKey] = { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0, nights: 0 };
+                    }
+                    monthly[monthKey].nocommission += nc.income || 0;
+                    monthly[monthKey].nights += nc.stays || 0;
+                });
+
+                // Convert monthly object to array and compute derived fields
+                const months = Object.keys(monthly).sort();
+                const result = months.map(m => {
+                    const data = monthly[m];
+                    const totalIncome = data.transfer + data.meal + data.commission + data.nocommission;
+                    const regularExpenses = data.expenses - data.personalExpenses;
+                    const profit = totalIncome - regularExpenses;
+                    const netAfterPersonal = profit - data.personalExpenses;
+                    // Compute occupancy: assume 4 rooms, each with days in month
+                    const [year, month] = m.split('-').map(Number);
+                    const daysInMonth = new Date(year, month, 0).getDate();
+                    const maxNights = daysInMonth * 4; // 4 rooms
+                    const occupancy = maxNights > 0 ? (data.nights / maxNights) * 100 : 0;
+                    return {
+                        period: m,
+                        transfer: data.transfer,
+                        meal: data.meal,
+                        commission: data.commission,
+                        noCommission: data.nocommission,
+                        totalIncome: totalIncome,
+                        expenses: regularExpenses,   // show only non-personal expenses in main KPI
+                        profit: profit,
+                        personalExpenses: data.personalExpenses,
+                        netAfterPersonal: netAfterPersonal,
+                        nights: data.nights,
+                        occupancy: occupancy
+                    };
+                });
+
+                // Store and render
+                liveStatsData = result;
+                if (result.length === 0) {
                     renderLiveDashboard([]);
+                } else {
+                    renderLiveDashboard(result);
                 }
+
             } catch (err) {
-                console.error("Error loading live stats", err);
+                console.error('Error loading live analytics:', err);
                 hideLoading();
                 renderLiveDashboard([]);
+                alert('Σφάλμα φόρτωσης Live Analytics: ' + err.message);
             }
         }
 
+        // Parse CSV (kept for legacy upload)
         function parseLiveStatsCSV(text) {
             const lines = text.split(/\r?\n/);
             const data = [];
@@ -3224,6 +3324,9 @@
             if (data.length === 0) {
                 dashboard.classList.remove('active');
                 uploadArea.style.display = 'block';
+                // Show a message in the dashboard
+                kpiGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="icon">📊</div><h3>Δεν υπάρχουν δεδομένα</h3><p>Προσθέστε δεδομένα στις συλλογές reservations, expenses, commissionStats, noCommissionStats για να δείτε τα Live Analytics.</p></div>`;
+                chartGrid.innerHTML = '';
                 return;
             }
 
@@ -3369,7 +3472,7 @@
         }
 
         // ================================================================
-        //  16. IMPORT / EXPORT (Reservations)
+        //  16. IMPORT / EXPORT (Reservations) - unchanged
         // ================================================================
         async function importData(text) {
             const records = parseReservationData(text);
@@ -3479,7 +3582,7 @@
         }
 
         // ================================================================
-        //  17. COLOR SETTINGS UI
+        //  17. COLOR SETTINGS UI - unchanged
         // ================================================================
         function initColorSettings() {
             const grid = document.getElementById('colorSettingsGrid');
@@ -3512,7 +3615,7 @@
         }
 
         // ================================================================
-        //  18. DROPDOWNS
+        //  18. DROPDOWNS - unchanged
         // ================================================================
         function populateYearDropdown() {
             const sel = document.getElementById('yearSelect');
@@ -3561,21 +3664,18 @@
         }
 
         // ================================================================
-        //  19. SEARCH POPUP (with input)
+        //  19. SEARCH POPUP - unchanged
         // ================================================================
         function openSearchModal() {
             const modal = document.getElementById('searchResultsModal');
             modal.classList.add('open');
-            // Focus the input inside modal
             const input = document.getElementById('searchModalInput');
             setTimeout(() => input.focus(), 100);
-            // Sync with header search value
             const headerVal = document.getElementById('searchInput').value;
             input.value = headerVal;
             if (headerVal) {
                 performSearch(headerVal);
             } else {
-                // Show empty results
                 document.getElementById('searchResultsList').innerHTML = `<div class="no-results">💡 Πληκτρολογήστε για αναζήτηση</div>`;
                 document.getElementById('searchResultCount').textContent = 'Πληκτρολογήστε…';
             }
@@ -3631,7 +3731,6 @@
             list.innerHTML = html;
         }
 
-        // View details from search result
         function viewResult(sn) {
             const r = reservations.find(res => res.sn === sn);
             if (r) {
@@ -3641,7 +3740,7 @@
         }
 
         // ================================================================
-        //  20. TAB SWITCHING
+        //  20. TAB SWITCHING (load live data on tab switch)
         // ================================================================
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -3665,6 +3764,7 @@
                     updateStats();
                 } else if (tab === 'live') {
                     document.getElementById('liveTab').style.display = 'flex';
+                    // Load live analytics data from the new project
                     loadLiveStatsFromFirestore();
                 }
             });
@@ -3686,12 +3786,10 @@
             const clearHeader = document.getElementById('clearSearchBtn');
             const clearModal = document.getElementById('clearSearchModalBtn');
 
-            // Header focus -> open modal
             headerSearch.addEventListener('focus', function() {
                 openSearchModal();
             });
 
-            // Header input -> update modal and search
             headerSearch.addEventListener('input', function() {
                 const val = this.value;
                 searchTerm = val;
@@ -3703,11 +3801,9 @@
                         `<div class="no-results">💡 Πληκτρολογήστε τουλάχιστον 2 χαρακτήρες</div>`;
                     document.getElementById('searchResultCount').textContent = 'Πληκτρολογήστε…';
                 }
-                // Update grid filter
                 renderGrid();
             });
 
-            // Modal input -> update header and search
             modalSearch.addEventListener('input', function() {
                 const val = this.value;
                 headerSearch.value = val;
@@ -3722,7 +3818,6 @@
                 renderGrid();
             });
 
-            // Clear buttons
             clearHeader.addEventListener('click', function() {
                 headerSearch.value = '';
                 modalSearch.value = '';
@@ -3745,7 +3840,6 @@
                 modalSearch.focus();
             });
 
-            // Close search modal buttons
             document.getElementById('closeSearchModalBtn').addEventListener('click', closeSearchModal);
             document.getElementById('closeSearchModalBottomBtn').addEventListener('click', closeSearchModal);
             document.getElementById('searchResultsModal').addEventListener('click', function(e) {
@@ -3766,7 +3860,7 @@
                 this.value = '';
             });
 
-            // --- File input (Live Statistics) ---
+            // --- File input (Live Statistics) - kept for legacy CSV upload
             document.getElementById('liveFileInput').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -3775,10 +3869,18 @@
                     const text = ev.target.result;
                     const parsed = parseLiveStatsCSV(text);
                     if (parsed.length > 0) {
-                        // Save to Firestore instead of localStorage
-                        saveLiveStatsToFirestore(parsed).then(() => {
-                            alert('✅ Τα δεδομένα φορτώθηκαν και αποθηκεύτηκαν στη βάση επιτυχώς!');
+                        // Save to Firestore (legacy liveStats collection in the new project)
+                        const batch = dbLive.batch();
+                        parsed.forEach(item => {
+                            const docRef = dbLive.collection('liveStats').doc(item.period);
+                            batch.set(docRef, item);
+                        });
+                        batch.commit().then(() => {
+                            alert('✅ Τα δεδομένα φορτώθηκαν και αποθηκεύτηκαν στη βάση (legacy liveStats)');
+                            // Re-load the live stats from the main collections (not from liveStats)
                             loadLiveStatsFromFirestore();
+                        }).catch(err => {
+                            alert('Σφάλμα αποθήκευσης: ' + err.message);
                         });
                     } else {
                         alert('❌ Το αρχείο δεν είναι έγκυρο ή είναι κενό.');
@@ -3788,27 +3890,28 @@
                 this.value = '';
             });
 
-            // --- Clear Live Stats ---
+            // --- Clear Live Stats (clears legacy liveStats collection) ---
             document.getElementById('clearLiveStatsBtn').addEventListener('click', async function() {
-                if (liveStatsData.length === 0) return;
-                if (confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε τα δεδομένα Live Statistics;')) {
-                    showLoading('Διαγραφή...');
-                    try {
-                        const batch = db.batch();
-                        liveStatsData.forEach(item => {
-                            const ref = db.collection(LIVE_COLLECTION).doc(item.period);
-                            batch.delete(ref);
-                        });
-                        await batch.commit();
-                        hideLoading();
-                        liveStatsData = [];
-                        renderLiveDashboard([]);
-                        document.getElementById('liveUploadArea').style.display = 'block';
-                    } catch (err) {
-                        console.error('Error clearing live stats', err);
-                        hideLoading();
-                        alert('Σφάλμα διαγραφής: ' + err.message);
-                    }
+                // This clears only the legacy liveStats collection (not the main data)
+                const snap = await dbLive.collection('liveStats').get();
+                if (snap.empty) {
+                    alert('Δεν υπάρχουν δεδομένα στη συλλογή liveStats.');
+                    return;
+                }
+                if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε τα δεδομένα της liveStats (legacy);')) return;
+                showLoading('Διαγραφή...');
+                try {
+                    const batch = dbLive.batch();
+                    snap.forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                    hideLoading();
+                    alert('✅ Διαγράφηκαν τα δεδομένα liveStats.');
+                    // Reload live stats from main collections
+                    loadLiveStatsFromFirestore();
+                } catch (err) {
+                    console.error(err);
+                    hideLoading();
+                    alert('Σφάλμα διαγραφής: ' + err.message);
                 }
             });
 
@@ -3819,7 +3922,7 @@
                 if (document.getElementById('statsTab').style.display !== 'none') updateStats();
             });
 
-            // --- Month selects (only used when date filter is none) ---
+            // --- Month selects ---
             document.getElementById('monthFrom').addEventListener('change', function() {
                 if (dateFilterSelect.value !== '') {
                     dateFilterSelect.value = '';
