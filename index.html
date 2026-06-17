@@ -11,6 +11,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js">
     </script>
 
+    <!-- Chart.js for Live Stats analytics charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js">
+    </script>
+
     <style>
         /* ----- BASE ----- */
         * {
@@ -1418,6 +1422,120 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Additional styles for Live Stats analytics */
+        .analytics-filters {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .analytics-filters .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .analytics-filters .filter-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+        }
+        .comparison-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        @media (max-width: 768px) {
+            .comparison-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+        .comparison-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+        .comparison-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .comparison-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .comparison-value {
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .profit {
+            color: #10b981;
+        }
+        .loss {
+            color: #ef4444;
+        }
+        .comparison-details {
+            margin-top: 16px;
+        }
+        .comparison-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+        .comparison-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+        .comparison-amount {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .income-amount {
+            color: #10b981;
+        }
+        .expense-amount {
+            color: #ef4444;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .chart-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .chart-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chart-header h3 i {
+            color: #3b82f6;
+        }
+        .chart-body {
+            padding: 20px;
+            height: 300px;
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -1549,7 +1667,7 @@
             </div>
         </div>
 
-        <!-- LIVE STATISTICS TAB (UPDATED: now shows analytics data from the other Firebase project) -->
+        <!-- LIVE STATISTICS TAB (FULL ANALYTICS FROM OTHER PROJECT) -->
         <div id="liveTab">
             <!-- Upload area kept but hidden when live data is available -->
             <div class="live-upload-area" id="liveUploadArea">
@@ -1565,9 +1683,141 @@
                 </div>
             </div>
 
+            <!-- Full Analytics Dashboard -->
             <div class="live-stats-dashboard" id="liveStatsDashboard">
+                <!-- Filters -->
+                <div class="analytics-filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Μήνας</label>
+                        <select class="form-control" id="live-analytics-month" style="width:120px;">
+                            <option value="">Όλοι</option>
+                            <option value="1">Ιανουάριος</option>
+                            <option value="2">Φεβρουάριος</option>
+                            <option value="3">Μάρτιος</option>
+                            <option value="4">Απρίλιος</option>
+                            <option value="5">Μάιος</option>
+                            <option value="6">Ιούνιος</option>
+                            <option value="7">Ιούλιος</option>
+                            <option value="8">Αύγουστος</option>
+                            <option value="9">Σεπτέμβριος</option>
+                            <option value="10">Οκτώβριος</option>
+                            <option value="11">Νοέμβριος</option>
+                            <option value="12">Δεκέμβριος</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Έτος</label>
+                        <select class="form-control" id="live-analytics-year" style="width:100px;">
+                            <option value="">Όλα</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">&nbsp;</label>
+                        <button class="btn btn-primary" id="live-apply-month-filter"><i class="fas fa-calendar-check"></i> Εφαρμογή</button>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">&nbsp;</label>
+                        <button class="btn btn-secondary" id="live-clear-month-filter"><i class="fas fa-times"></i> Καθαρισμός</button>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Περίοδος (μήνες)</label>
+                        <select class="form-control" id="live-analytics-period">
+                            <option value="1">Τελευταίος 1 μήνας</option>
+                            <option value="3">Τελευταίοι 3 μήνες</option>
+                            <option value="6">Τελευταίοι 6 μήνες</option>
+                            <option value="12" selected>Τελευταίοι 12 μήνες</option>
+                            <option value="all">Όλη η περίοδος</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">&nbsp;</label>
+                        <button class="btn btn-primary" id="live-apply-analytics-filters"><i class="fas fa-filter"></i> Εφαρμογή</button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
                 <div class="live-kpi-grid" id="liveKpiGrid"></div>
+
+                <!-- Comparison Cards -->
+                <div class="comparison-cards" id="liveComparisonCards"></div>
+
+                <!-- Charts -->
                 <div class="live-chart-grid" id="liveChartGrid"></div>
+
+                <!-- Detailed Table -->
+                <div class="chart-container" style="grid-column:1/-1;">
+                    <div class="chart-header"><h3><i class="fas fa-table"></i> Αναλυτικά Στοιχεία</h3></div>
+                    <div class="panel-body" style="padding:16px;">
+                        <div class="table-wrapper">
+                            <table class="stats-table" id="liveAnalyticsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Περίοδος</th>
+                                        <th>Transfer</th>
+                                        <th>Meal</th>
+                                        <th>Commission</th>
+                                        <th>No Comm</th>
+                                        <th>Σύνολο Εσόδων</th>
+                                        <th>Έξοδα*</th>
+                                        <th>Κέρδος</th>
+                                        <th>Προσωπικά Έξοδα</th>
+                                        <th>Σωρευτικό (μετά από προσωπικά)</th>
+                                        <th>Περιθώριο</th>
+                                        <th>Διανυκτερεύσεις</th>
+                                        <th>Πληρότητα %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liveAnalyticsBody"></tbody>
+                            </table>
+                            <p style="font-size:12px; color:#64748b; margin-top:8px;">* Η στήλη Εξόδων δείχνει μόνο τα μη‑προσωπικά έξοδα.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multi-Year Comparison -->
+                <div class="chart-container" style="grid-column:1/-1;">
+                    <div class="chart-header"><h3><i class="fas fa-chart-bar"></i> Σύγκριση Πολλών Ετών</h3></div>
+                    <div class="panel-body" style="padding:16px;">
+                        <div class="analytics-filters">
+                            <div class="filter-group">
+                                <label class="filter-label">Από Έτος</label>
+                                <select class="form-control" id="live-year-compare-start"></select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Έως Έτος</label>
+                                <select class="form-control" id="live-year-compare-end"></select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">&nbsp;</label>
+                                <button class="btn btn-primary" id="live-apply-year-compare"><i class="fas fa-sync-alt"></i> Ενημέρωση</button>
+                            </div>
+                        </div>
+                        <div class="live-kpi-grid" id="liveYearCompareStats" style="margin-bottom:16px;"></div>
+                        <div class="live-chart-grid" id="liveYearCompareCharts"></div>
+                        <div class="table-wrapper" style="margin-top:16px;">
+                            <table class="stats-table" id="liveYearlyComparisonTable">
+                                <thead>
+                                    <tr>
+                                        <th>Έτος</th>
+                                        <th>Transfer</th>
+                                        <th>Meal</th>
+                                        <th>Commission</th>
+                                        <th>No Commission</th>
+                                        <th>Σύνολο Εσόδων</th>
+                                        <th>Έξοδα*</th>
+                                        <th>Κέρδος</th>
+                                        <th>Προσωπικά Έξοδα</th>
+                                        <th>Καθαρό μετά από Προσωπικά</th>
+                                        <th>Διανυκτερεύσεις</th>
+                                        <th>Πληρότητα %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liveYearlyComparisonBody"></tbody>
+                            </table>
+                            <p style="font-size:12px; color:#64748b; margin-top:8px;">* Η στήλη Εξόδων δείχνει μόνο τα μη‑προσωπικά έξοδα.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1720,7 +1970,19 @@
         let searchTerm = '';
         let dateRangeStart = null;
         let dateRangeEnd = null;
-        let liveStatsData = [];
+
+        // Live analytics state (separate from reservations)
+        let liveState = {
+            reservations: [],
+            expenses: [],
+            expenseCategories: [],
+            commissionStats: [],
+            noCommissionStats: [],
+            selectedAnalyticsMonth: null,
+            selectedAnalyticsYear: null,
+            charts: {},
+            yearCompare: { start: null, end: null }
+        };
 
         const PROPERTIES = ['Studio', 'Apartment 1', 'Apartment 2', 'Villa'];
         const MONTHS = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιουν', 'Ιουλ', 'Αυγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
@@ -3101,11 +3363,10 @@
         }
 
         // ================================================================
-        //  15. LIVE STATISTICS FUNCTIONS (UPDATED TO USE dbLive)
+        //  15. LIVE STATISTICS FUNCTIONS – FULL ANALYTICS FROM OTHER PROJECT
         // ================================================================
         
-        // This will be called when the Live Stats tab is opened.
-        // It fetches data from the new project's collections using dbLive.
+        // Load live analytics data from the new project
         async function loadLiveStatsFromFirestore() {
             showLoading('Φόρτωση Live Analytics...');
             try {
@@ -3118,257 +3379,195 @@
                     dbLive.collection('noCommissionStats').get()
                 ]);
 
-                // Map to arrays
-                const reservationsData = resSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                const expensesData = expenseSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                const categoriesData = categorySnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                const commissionData = commSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                const noCommissionData = noCommSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                liveState.reservations = resSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                liveState.expenses = expenseSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                liveState.expenseCategories = categorySnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                liveState.commissionStats = commSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                liveState.noCommissionStats = noCommSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
                 hideLoading();
 
-                // Find the PERSONAL category id
-                const personalCat = categoriesData.find(c => c.name && c.name.toUpperCase() === 'PERSONAL');
-                const personalCatId = personalCat ? personalCat.id : null;
+                // Populate year dropdowns
+                populateLiveAnalyticsYearSelect();
+                populateLiveYearSelects();
 
-                // Aggregate monthly data
-                const monthly = {};
+                // Render the analytics
+                renderLiveAnalytics();
+                renderLiveYearlyComparison();
 
-                // 1. Reservations -> transfer and meal
-                reservationsData.forEach(r => {
-                    if (!r.checkin) return;
-                    const d = new Date(r.checkin);
-                    const monthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                    if (!monthly[monthKey]) {
-                        monthly[monthKey] = { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0, nights: 0 };
-                    }
-                    monthly[monthKey].transfer += r.transferAmount || 0;
-                    monthly[monthKey].meal += r.mealPrice || 0;
-                });
-
-                // 2. Expenses
-                expensesData.forEach(e => {
-                    if (!e.date) return;
-                    const d = new Date(e.date);
-                    const monthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                    if (!monthly[monthKey]) {
-                        monthly[monthKey] = { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0, nights: 0 };
-                    }
-                    const amount = parseFloat(e.amount) || 0;
-                    monthly[monthKey].expenses += amount;
-                    if (personalCatId && e.categoryId === personalCatId) {
-                        monthly[monthKey].personalExpenses += amount;
-                    }
-                });
-
-                // 3. Commission stats
-                commissionData.forEach(c => {
-                    if (!c.month) return;
-                    const [y, m] = c.month.split('-').map(Number);
-                    const monthKey = c.month;
-                    if (!monthly[monthKey]) {
-                        monthly[monthKey] = { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0, nights: 0 };
-                    }
-                    monthly[monthKey].commission += c.income || 0;
-                    monthly[monthKey].nights += c.stays || 0;
-                });
-
-                // 4. No commission stats
-                noCommissionData.forEach(nc => {
-                    if (!nc.month) return;
-                    const [y, m] = nc.month.split('-').map(Number);
-                    const monthKey = nc.month;
-                    if (!monthly[monthKey]) {
-                        monthly[monthKey] = { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0, nights: 0 };
-                    }
-                    monthly[monthKey].nocommission += nc.income || 0;
-                    monthly[monthKey].nights += nc.stays || 0;
-                });
-
-                // Convert monthly object to array and compute derived fields
-                const months = Object.keys(monthly).sort();
-                const result = months.map(m => {
-                    const data = monthly[m];
-                    const totalIncome = data.transfer + data.meal + data.commission + data.nocommission;
-                    const regularExpenses = data.expenses - data.personalExpenses;
-                    const profit = totalIncome - regularExpenses;
-                    const netAfterPersonal = profit - data.personalExpenses;
-                    // Compute occupancy: assume 4 rooms, each with days in month
-                    const [year, month] = m.split('-').map(Number);
-                    const daysInMonth = new Date(year, month, 0).getDate();
-                    const maxNights = daysInMonth * 4; // 4 rooms
-                    const occupancy = maxNights > 0 ? (data.nights / maxNights) * 100 : 0;
-                    return {
-                        period: m,
-                        transfer: data.transfer,
-                        meal: data.meal,
-                        commission: data.commission,
-                        noCommission: data.nocommission,
-                        totalIncome: totalIncome,
-                        expenses: regularExpenses,   // show only non-personal expenses in main KPI
-                        profit: profit,
-                        personalExpenses: data.personalExpenses,
-                        netAfterPersonal: netAfterPersonal,
-                        nights: data.nights,
-                        occupancy: occupancy
-                    };
-                });
-
-                // Store and render
-                liveStatsData = result;
-                if (result.length === 0) {
-                    renderLiveDashboard([]);
-                } else {
-                    renderLiveDashboard(result);
-                }
+                // Show dashboard, hide upload area
+                document.getElementById('liveStatsDashboard').classList.add('active');
+                document.getElementById('liveUploadArea').style.display = 'none';
 
             } catch (err) {
                 console.error('Error loading live analytics:', err);
                 hideLoading();
-                renderLiveDashboard([]);
+                document.getElementById('liveStatsDashboard').classList.remove('active');
+                document.getElementById('liveUploadArea').style.display = 'block';
                 alert('Σφάλμα φόρτωσης Live Analytics: ' + err.message);
             }
         }
 
-        // Parse CSV (kept for legacy upload)
-        function parseLiveStatsCSV(text) {
-            const lines = text.split(/\r?\n/);
-            const data = [];
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                const fields = [];
-                let current = '';
-                let inQuote = false;
-                for (let char of line) {
-                    if (char === '"') {
-                        inQuote = !inQuote;
-                    } else if (char === ',' && !inQuote) {
-                        fields.push(current);
-                        current = '';
-                    } else {
-                        current += char;
+        // Populate year dropdowns for analytics
+        function populateLiveAnalyticsYearSelect() {
+            const years = new Set();
+            liveState.reservations.forEach(r => r.checkin && years.add(new Date(r.checkin).getFullYear()));
+            liveState.commissionStats.forEach(c => c.month && years.add(parseInt(c.month.split('-')[0])));
+            liveState.noCommissionStats.forEach(nc => nc.month && years.add(parseInt(nc.month.split('-')[0])));
+            liveState.expenses.forEach(e => e.date && years.add(new Date(e.date).getFullYear()));
+            const sorted = Array.from(years).sort((a,b) => a - b);
+            const select = document.getElementById('live-analytics-year');
+            select.innerHTML = '<option value="">Όλα</option>';
+            sorted.forEach(y => select.innerHTML += `<option value="${y}">${y}</option>`);
+        }
+
+        function populateLiveYearSelects() {
+            const years = new Set();
+            liveState.reservations.forEach(r => r.checkin && years.add(new Date(r.checkin).getFullYear()));
+            liveState.commissionStats.forEach(c => c.month && years.add(parseInt(c.month.split('-')[0])));
+            liveState.noCommissionStats.forEach(nc => nc.month && years.add(parseInt(nc.month.split('-')[0])));
+            liveState.expenses.forEach(e => e.date && years.add(new Date(e.date).getFullYear()));
+            const sorted = Array.from(years).sort((a,b) => a - b);
+            const startSelect = document.getElementById('live-year-compare-start');
+            const endSelect = document.getElementById('live-year-compare-end');
+            startSelect.innerHTML = '';
+            endSelect.innerHTML = '';
+            sorted.forEach(y => {
+                startSelect.innerHTML += `<option value="${y}">${y}</option>`;
+                endSelect.innerHTML += `<option value="${y}">${y}</option>`;
+            });
+            if (sorted.length) {
+                startSelect.value = sorted[0];
+                endSelect.value = sorted[sorted.length-1];
+                liveState.yearCompare.start = sorted[0];
+                liveState.yearCompare.end = sorted[sorted.length-1];
+            }
+        }
+
+        // Get filtered monthly data for analytics
+        function getLiveAnalyticsFilteredData() {
+            const monthFilterActive = liveState.selectedAnalyticsMonth && liveState.selectedAnalyticsYear;
+            let startDate, endDate;
+            if (monthFilterActive) {
+                const year = liveState.selectedAnalyticsYear;
+                const month = liveState.selectedAnalyticsMonth - 1;
+                startDate = new Date(year, month, 1);
+                endDate = new Date(year, month + 1, 0, 23, 59, 59);
+            } else {
+                const period = document.getElementById('live-analytics-period').value;
+                if (period === 'all') {
+                    startDate = new Date(0);
+                } else {
+                    startDate = new Date();
+                    startDate.setMonth(startDate.getMonth() - parseInt(period));
+                }
+                endDate = new Date();
+            }
+            const personalCat = liveState.expenseCategories.find(c => c.name && c.name.toUpperCase() === 'PERSONAL');
+            const personalCatId = personalCat ? personalCat.id : null;
+            const monthly = {};
+            liveState.reservations.forEach(r => {
+                if (!r.checkin) return;
+                const d = new Date(r.checkin);
+                if (d >= startDate && (!monthFilterActive || d <= endDate)) {
+                    const monthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                    if (!monthly[monthKey]) monthly[monthKey] = { transfer:0, meal:0, commission:0, nocommission:0, expenses:0, personalExpenses:0, nights:0 };
+                    monthly[monthKey].transfer += r.transferAmount || 0;
+                    monthly[monthKey].meal += r.mealPrice || 0;
+                }
+            });
+            liveState.expenses.forEach(e => {
+                if (!e.date) return;
+                const d = new Date(e.date);
+                if (d >= startDate && (!monthFilterActive || d <= endDate)) {
+                    const monthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                    if (!monthly[monthKey]) monthly[monthKey] = { transfer:0, meal:0, commission:0, nocommission:0, expenses:0, personalExpenses:0, nights:0 };
+                    const amount = parseFloat(e.amount) || 0;
+                    monthly[monthKey].expenses += amount;
+                    if (e.categoryId === personalCatId) {
+                        monthly[monthKey].personalExpenses += amount;
                     }
                 }
-                fields.push(current);
-
-                if (fields.length >= 12) {
-                    const p = fields.map(f => f.replace(/^"|"$/g, '').trim());
-                    const period = p[0];
-                    const nights = parseInt(p[10]) || 0;
-                    const occupancy = parseFloat(p[11].replace('%', '')) || 0;
-
-                    data.push({
-                        period: period,
-                        transfer: parseFloat(p[1]) || 0,
-                        meal: parseFloat(p[2]) || 0,
-                        commission: parseFloat(p[3]) || 0,
-                        noCommission: parseFloat(p[4]) || 0,
-                        totalIncome: parseFloat(p[5]) || 0,
-                        expenses: parseFloat(p[6]) || 0,
-                        profit: parseFloat(p[7]) || 0,
-                        personalExpenses: parseFloat(p[8]) || 0,
-                        netAfterPersonal: parseFloat(p[9]) || 0,
-                        nights: nights,
-                        occupancy: occupancy
-                    });
+            });
+            liveState.commissionStats.forEach(c => {
+                if (!c.month) return;
+                const [y, m] = c.month.split('-').map(Number);
+                const d = new Date(y, m-1, 1);
+                if (d >= startDate && (!monthFilterActive || d <= endDate)) {
+                    const monthKey = c.month;
+                    if (!monthly[monthKey]) monthly[monthKey] = { transfer:0, meal:0, commission:0, nocommission:0, expenses:0, personalExpenses:0, nights:0 };
+                    monthly[monthKey].commission += c.income || 0;
+                    monthly[monthKey].nights += c.stays || 0;
                 }
-            }
-            return data;
+            });
+            liveState.noCommissionStats.forEach(nc => {
+                if (!nc.month) return;
+                const [y, m] = nc.month.split('-').map(Number);
+                const d = new Date(y, m-1, 1);
+                if (d >= startDate && (!monthFilterActive || d <= endDate)) {
+                    const monthKey = nc.month;
+                    if (!monthly[monthKey]) monthly[monthKey] = { transfer:0, meal:0, commission:0, nocommission:0, expenses:0, personalExpenses:0, nights:0 };
+                    monthly[monthKey].nocommission += nc.income || 0;
+                    monthly[monthKey].nights += nc.stays || 0;
+                }
+            });
+            return monthly;
         }
 
-        // Helper to create SVG Pie Chart
-        function renderPieChart(data, colors) {
-            if (!data || data.length === 0) return '<div class="text-muted">No data</div>';
-            const total = data.reduce((sum, d) => sum + d.value, 0);
-            if (total === 0) return '<div class="text-muted">No income data</div>';
-
-            const size = 200;
-            const cx = size / 2;
-            const cy = size / 2;
-            const radius = 90;
-            let startAngle = -Math.PI / 2;
-            let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="max-width: 200px;">`;
-            
-            data.forEach((item, index) => {
-                const sliceAngle = (item.value / total) * 2 * Math.PI;
-                const endAngle = startAngle + sliceAngle;
-                
-                const x1 = cx + radius * Math.cos(startAngle);
-                const y1 = cy + radius * Math.sin(startAngle);
-                const x2 = cx + radius * Math.cos(endAngle);
-                const y2 = cy + radius * Math.sin(endAngle);
-
-                const largeArcFlag = sliceAngle > Math.PI ? 1 : 0;
-                const pathData = [
-                    `M ${cx} ${cy}`,
-                    `L ${x1} ${y1}`,
-                    `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-                    `Z`
-                ].join(' ');
-
-                const color = colors[index % colors.length];
-                svg += `<path d="${pathData}" fill="${color}" stroke="white" stroke-width="2"/>`;
-                startAngle = endAngle;
+        // Render the live analytics dashboard
+        function renderLiveAnalytics() {
+            const monthly = getLiveAnalyticsFilteredData();
+            const months = Object.keys(monthly).sort();
+            const labels = months.map(m => {
+                let [y, mo] = m.split('-');
+                return new Date(y, mo-1).toLocaleString('el', { month: 'short' }) + ' ' + y;
             });
-            svg += `</svg>`;
-            return svg;
-        }
 
-        function renderLiveDashboard(data) {
-            const kpiGrid = document.getElementById('liveKpiGrid');
-            const chartGrid = document.getElementById('liveChartGrid');
-            const dashboard = document.getElementById('liveStatsDashboard');
-            const uploadArea = document.getElementById('liveUploadArea');
+            const transferData = months.map(m => monthly[m].transfer);
+            const mealData = months.map(m => monthly[m].meal);
+            const commissionData = months.map(m => monthly[m].commission);
+            const nocommissionData = months.map(m => monthly[m].nocommission);
+            const expenseData = months.map(m => monthly[m].expenses);
+            const personalExpenseData = months.map(m => monthly[m].personalExpenses);
+            const totalIncomeData = months.map(m => monthly[m].transfer + monthly[m].meal + monthly[m].commission + monthly[m].nocommission);
+            const nightsData = months.map(m => monthly[m].nights || 0);
 
-            if (data.length === 0) {
-                dashboard.classList.remove('active');
-                uploadArea.style.display = 'block';
-                // Show a message in the dashboard
-                kpiGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="icon">📊</div><h3>Δεν υπάρχουν δεδομένα</h3><p>Προσθέστε δεδομένα στις συλλογές reservations, expenses, commissionStats, noCommissionStats για να δείτε τα Live Analytics.</p></div>`;
-                chartGrid.innerHTML = '';
-                return;
-            }
+            // Totals for KPIs
+            const totalTransfer = transferData.reduce((a, b) => a + b, 0);
+            const totalMeal = mealData.reduce((a, b) => a + b, 0);
+            const totalCommission = commissionData.reduce((a, b) => a + b, 0);
+            const totalNoCommission = nocommissionData.reduce((a, b) => a + b, 0);
+            const totalRevenue = totalTransfer + totalMeal + totalCommission + totalNoCommission;
+            const totalExpenses = expenseData.reduce((a, b) => a + b, 0);
+            const totalPersonal = personalExpenseData.reduce((a, b) => a + b, 0);
+            const totalProfit = totalRevenue - (totalExpenses - totalPersonal);
+            const totalNet = totalProfit - totalPersonal;
+            const totalNights = nightsData.reduce((a, b) => a + b, 0);
 
-            dashboard.classList.add('active');
-            uploadArea.style.display = 'none';
-
-            // 1. Calculate KPIs & Aggregations
-            let sumTransfer = 0, sumMeal = 0, sumCommission = 0, sumNoCommission = 0;
-            let sumTotalIncome = 0, sumExpenses = 0, sumProfit = 0;
-            let sumPersonalExpenses = 0, sumNetAfterPersonal = 0;
-            let sumNights = 0, sumOccupancy = 0;
-
-            data.forEach(d => {
-                sumTransfer += d.transfer;
-                sumMeal += d.meal;
-                sumCommission += d.commission;
-                sumNoCommission += d.noCommission;
-                sumTotalIncome += d.totalIncome;
-                sumExpenses += d.expenses;
-                sumProfit += d.profit;
-                sumPersonalExpenses += d.personalExpenses;
-                sumNetAfterPersonal += d.netAfterPersonal;
-                sumNights += d.nights;
-                sumOccupancy += d.occupancy;
+            // Occupancy: assume 4 rooms, each with days in month
+            let totalPossibleNights = 0;
+            months.forEach(m => {
+                const [y, mo] = m.split('-').map(Number);
+                const days = new Date(y, mo, 0).getDate();
+                totalPossibleNights += days * 4;
             });
-            const avgOccupancy = data.length > 0 ? sumOccupancy / data.length : 0;
+            const avgOccupancy = totalPossibleNights > 0 ? ((totalNights / totalPossibleNights) * 100) : 0;
 
-            // 2. Render KPI Cards
+            // KPI cards
             const kpiMap = [
-                { label: 'Total Revenue', value: sumTotalIncome.toFixed(2) + '€', sub: 'All income', icon: '$', iconClass: 'green' },
-                { label: 'Transfer Income', value: sumTransfer.toFixed(2) + '€', sub: 'From transfers', icon: '🚛', iconClass: 'blue' },
-                { label: 'Meal Income', value: sumMeal.toFixed(2) + '€', sub: 'From meals', icon: '🍴', iconClass: 'orange' },
-                { label: 'Commission Income', value: sumCommission.toFixed(2) + '€', sub: 'From commission', icon: '📊', iconClass: 'purple' },
-                { label: 'No Commission Income', value: sumNoCommission.toFixed(2) + '€', sub: 'From no commission', icon: '❌', iconClass: 'grey' },
-                { label: 'Expenses', value: sumExpenses.toFixed(2) + '€', sub: 'All expenses', icon: '💰', iconClass: 'red' },
-                { label: 'Profit', value: sumProfit.toFixed(2) + '€', sub: 'Total Income - Expenses', icon: '📈', iconClass: 'teal' },
-                { label: 'Net After Personal', value: sumNetAfterPersonal.toFixed(2) + '€', sub: 'Profit - Personal', icon: '💼', iconClass: 'indigo' },
-                { label: 'Total Nights', value: sumNights, sub: 'Total nights', icon: '🌙', iconClass: 'lightblue' },
-                { label: 'Occupancy', value: avgOccupancy.toFixed(1) + '%', sub: 'Avg over selected period', icon: '🏠', iconClass: 'purple' }
+                { label: 'Συνολικά Έσοδα', value: totalRevenue.toFixed(2) + '€', sub: 'Όλα τα έσοδα', icon: '$', iconClass: 'green' },
+                { label: 'Transfer', value: totalTransfer.toFixed(2) + '€', sub: 'Από μεταφορές', icon: '🚛', iconClass: 'blue' },
+                { label: 'Meal', value: totalMeal.toFixed(2) + '€', sub: 'Από γεύματα', icon: '🍴', iconClass: 'orange' },
+                { label: 'Commission', value: totalCommission.toFixed(2) + '€', sub: 'Από προμήθειες', icon: '📊', iconClass: 'purple' },
+                { label: 'No Commission', value: totalNoCommission.toFixed(2) + '€', sub: 'Χωρίς προμήθεια', icon: '❌', iconClass: 'grey' },
+                { label: 'Έξοδα', value: totalExpenses.toFixed(2) + '€', sub: 'Σύνολο εξόδων', icon: '💰', iconClass: 'red' },
+                { label: 'Κέρδος', value: totalProfit.toFixed(2) + '€', sub: 'Έσοδα - Έξοδα', icon: '📈', iconClass: 'teal' },
+                { label: 'Καθαρό (μετά από προσωπικά)', value: totalNet.toFixed(2) + '€', sub: 'Κέρδος - Προσωπικά', icon: '💼', iconClass: 'indigo' },
+                { label: 'Διανυκτερεύσεις', value: totalNights, sub: 'Σύνολο διανυκτερεύσεων', icon: '🌙', iconClass: 'lightblue' },
+                { label: 'Πληρότητα', value: avgOccupancy.toFixed(1) + '%', sub: 'Μέση πληρότητα', icon: '🏠', iconClass: 'purple' }
             ];
 
-            kpiGrid.innerHTML = kpiMap.map(item => `
+            document.getElementById('liveKpiGrid').innerHTML = kpiMap.map(item => `
                 <div class="live-kpi-card">
                     <div class="kpi-label">${item.label}</div>
                     <div class="kpi-value">${item.value}</div>
@@ -3377,98 +3576,381 @@
                 </div>
             `).join('');
 
-            // 3. Render Charts
-            let chartsHtml = '';
+            // Comparison cards (this month vs last month)
+            const now = new Date();
+            const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const lastMonthKey = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
+            const thisMonthData = monthly[thisMonthKey] || { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0 };
+            const lastMonthData = monthly[lastMonthKey] || { transfer: 0, meal: 0, commission: 0, nocommission: 0, expenses: 0, personalExpenses: 0 };
+            const thisMonthIncome = thisMonthData.transfer + thisMonthData.meal + thisMonthData.commission + thisMonthData.nocommission;
+            const lastMonthIncome = lastMonthData.transfer + lastMonthData.meal + lastMonthData.commission + lastMonthData.nocommission;
+            const thisMonthExpenses = thisMonthData.expenses;
+            const lastMonthExpenses = lastMonthData.expenses;
+            const thisMonthProfit = thisMonthIncome - (thisMonthExpenses - thisMonthData.personalExpenses);
+            const lastMonthProfit = lastMonthIncome - (lastMonthExpenses - lastMonthData.personalExpenses);
 
-            // Chart 1: Income vs Expenses (Bar Chart - Monthly)
-            const maxIncome = Math.max(...data.map(d => d.totalIncome), 1);
-            const maxExpenses = Math.max(...data.map(d => d.expenses), 1);
-            const maxVal = Math.max(maxIncome, maxExpenses, 1);
-            
-            chartsHtml += `
+            document.getElementById('liveComparisonCards').innerHTML = `
+                <div class="comparison-card">
+                    <div class="comparison-header"><div class="comparison-title">Τρέχων μήνας</div><div class="comparison-value ${thisMonthProfit >= 0 ? 'profit' : 'loss'}">${thisMonthProfit.toFixed(2)}€</div></div>
+                    <div class="comparison-details">
+                        <div class="comparison-row"><div class="comparison-label">Έσοδα</div><div class="comparison-amount income-amount">${thisMonthIncome.toFixed(2)}€</div></div>
+                        <div class="comparison-row"><div class="comparison-label">Έξοδα</div><div class="comparison-amount expense-amount">${thisMonthExpenses.toFixed(2)}€</div></div>
+                        <div class="comparison-row"><div class="comparison-label">Καθαρό Κέρδος</div><div class="comparison-amount ${thisMonthProfit >= 0 ? 'income-amount' : 'expense-amount'}">${thisMonthProfit.toFixed(2)}€</div></div>
+                    </div>
+                </div>
+                <div class="comparison-card">
+                    <div class="comparison-header"><div class="comparison-title">Προηγούμενος μήνας</div><div class="comparison-value ${lastMonthProfit >= 0 ? 'profit' : 'loss'}">${lastMonthProfit.toFixed(2)}€</div></div>
+                    <div class="comparison-details">
+                        <div class="comparison-row"><div class="comparison-label">Έσοδα</div><div class="comparison-amount income-amount">${lastMonthIncome.toFixed(2)}€</div></div>
+                        <div class="comparison-row"><div class="comparison-label">Έξοδα</div><div class="comparison-amount expense-amount">${lastMonthExpenses.toFixed(2)}€</div></div>
+                        <div class="comparison-row"><div class="comparison-label">Καθαρό Κέρδος</div><div class="comparison-amount ${lastMonthProfit >= 0 ? 'income-amount' : 'expense-amount'}">${lastMonthProfit.toFixed(2)}€</div></div>
+                    </div>
+                </div>
+            `;
+
+            // Charts
+            // Destroy previous charts
+            if (liveState.charts.incomeExpense) liveState.charts.incomeExpense.destroy();
+            if (liveState.charts.expenseCategory) liveState.charts.expenseCategory.destroy();
+            if (liveState.charts.monthlyTrend) liveState.charts.monthlyTrend.destroy();
+            if (liveState.charts.profitMargin) liveState.charts.profitMargin.destroy();
+
+            const chartGrid = document.getElementById('liveChartGrid');
+            chartGrid.innerHTML = `
                 <div class="live-chart-card">
-                    <h4>💰 Income vs Expenses</h4>
-                    <div class="chart-bar-container">
-                        ${data.map(d => `
-                            <div class="chart-bar-row">
-                                <span class="bar-label">${d.period}</span>
-                                <div class="bar-track">
-                                    <div class="bar-fill" style="width:${(d.totalIncome/maxVal)*100}%;background:#10b981; margin-bottom: 2px;"></div>
-                                    <div class="bar-fill" style="width:${(d.expenses/maxVal)*100}%;background:#ef4444; height: 12px;"></div>
-                                </div>
-                                <span class="bar-value small">${d.totalIncome.toFixed(0)}€</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div style="font-size:11px;color:#64748b;padding-top:4px;">
-                        <span style="display:inline-block;width:12px;height:12px;background:#10b981;border-radius:2px;"></span> Income 
-                        <span style="display:inline-block;width:12px;height:12px;background:#ef4444;border-radius:2px;margin-left:12px;"></span> Expenses
-                    </div>
+                    <h4>💰 Έσοδα vs Έξοδα</h4>
+                    <div style="height:250px;"><canvas id="liveIncomeExpenseChart"></canvas></div>
                 </div>
-            `;
-
-            // Chart 2: Income Distribution (Pie Chart - SVG)
-            const pieData = [
-                { label: 'Transfer', value: sumTransfer, color: '#3b82f6' },
-                { label: 'Meal', value: sumMeal, color: '#f59e0b' },
-                { label: 'Commission', value: sumCommission, color: '#8b5cf6' },
-                { label: 'No Commission', value: sumNoCommission, color: '#06b6d4' }
-            ];
-            const pieSvg = renderPieChart(pieData, pieData.map(d => d.color));
-
-            chartsHtml += `
                 <div class="live-chart-card">
-                    <h4>📊 Income Distribution</h4>
-                    <div class="pie-wrapper">
-                        ${pieSvg}
-                        <div class="pie-legend">
-                            ${pieData.map(d => `
-                                <div class="pie-legend-item">
-                                    <span class="pie-legend-color" style="background:${d.color};"></span>
-                                    <span>${d.label} (${d.value.toFixed(0)}€)</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
+                    <h4>📊 Έξοδα ανά Κατηγορία</h4>
+                    <div style="height:250px;"><canvas id="liveExpenseCategoryChart"></canvas></div>
+                </div>
+                <div class="live-chart-card">
+                    <h4>📈 Μηνιαία Έσοδα ανά Τύπο</h4>
+                    <div style="height:250px;"><canvas id="liveMonthlyTrendChart"></canvas></div>
+                </div>
+                <div class="live-chart-card">
+                    <h4>📊 Περιθώριο Κέρδους</h4>
+                    <div style="height:250px;"><canvas id="liveProfitMarginChart"></canvas></div>
                 </div>
             `;
 
-            // Chart 3: Monthly Revenue by Type (Stacked Bar Breakdown)
-            const maxMonthVal = Math.max(...data.map(d => d.transfer + d.meal + d.commission + d.noCommission), 1);
-            chartsHtml += `
-                <div class="live-chart-card" style="grid-column: 1 / -1;">
-                    <h4>📈 Monthly Revenue by Type</h4>
-                    <div class="chart-bar-container">
-                        ${data.map(d => {
-                            const total = d.transfer + d.meal + d.commission + d.noCommission;
-                            const widthTransfer = (d.transfer / maxMonthVal) * 100;
-                            const widthMeal = (d.meal / maxMonthVal) * 100;
-                            const widthComm = (d.commission / maxMonthVal) * 100;
-                            const widthNoComm = (d.noCommission / maxMonthVal) * 100;
-                            return `
-                                <div class="chart-bar-row">
-                                    <span class="bar-label">${d.period}</span>
-                                    <div class="bar-track" style="height: 24px;">
-                                        <div class="bar-fill" style="width:${widthTransfer}%;background:#3b82f6; height: 100%;"></div>
-                                        <div class="bar-fill" style="width:${widthMeal}%;background:#f59e0b; height: 100%;"></div>
-                                        <div class="bar-fill" style="width:${widthComm}%;background:#8b5cf6; height: 100%;"></div>
-                                        <div class="bar-fill" style="width:${widthNoComm}%;background:#06b6d4; height: 100%;"></div>
-                                    </div>
-                                    <span class="bar-value small">${total.toFixed(0)}€</span>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                    <div style="font-size:11px;color:#64748b;padding-top:4px;">
-                        <span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:2px;"></span> Transfer 
-                        <span style="display:inline-block;width:12px;height:12px;background:#f59e0b;border-radius:2px;margin-left:12px;"></span> Meal 
-                        <span style="display:inline-block;width:12px;height:12px;background:#8b5cf6;border-radius:2px;margin-left:12px;"></span> Commission 
-                        <span style="display:inline-block;width:12px;height:12px;background:#06b6d4;border-radius:2px;margin-left:12px;"></span> No Comm.
-                    </div>
+            // Chart 1: Income vs Expenses
+            const ctx1 = document.getElementById('liveIncomeExpenseChart').getContext('2d');
+            liveState.charts.incomeExpense = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Σύνολο Εσόδων', data: totalIncomeData, backgroundColor: 'rgba(16,185,129,0.7)' },
+                        { label: 'Έξοδα', data: expenseData, backgroundColor: 'rgba(239,68,68,0.7)' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Chart 2: Expense by Category
+            const catTotals = {};
+            const personalCat = liveState.expenseCategories.find(c => c.name && c.name.toUpperCase() === 'PERSONAL');
+            const personalCatId = personalCat ? personalCat.id : null;
+            const monthFilterActive = liveState.selectedAnalyticsMonth && liveState.selectedAnalyticsYear;
+            const filteredExpenses = monthFilterActive
+                ? liveState.expenses.filter(e => {
+                    const d = new Date(e.date);
+                    return d.getFullYear() === liveState.selectedAnalyticsYear && d.getMonth() + 1 === liveState.selectedAnalyticsMonth;
+                })
+                : liveState.expenses;
+            filteredExpenses.forEach(e => {
+                if (e.categoryId === personalCatId) return;
+                const cat = liveState.expenseCategories.find(c => c.id === e.categoryId);
+                const name = cat ? cat.name : 'Χωρίς κατηγορία';
+                catTotals[name] = (catTotals[name] || 0) + parseFloat(e.amount);
+            });
+            const ctx2 = document.getElementById('liveExpenseCategoryChart').getContext('2d');
+            liveState.charts.expenseCategory = new Chart(ctx2, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(catTotals),
+                    datasets: [{ data: Object.values(catTotals), backgroundColor: ['#8b5cf6','#0ea5e9','#10b981','#f59e0b','#ef4444','#2563eb','#7c3aed','#475569'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Chart 3: Monthly Revenue by Type
+            const ctx3 = document.getElementById('liveMonthlyTrendChart').getContext('2d');
+            liveState.charts.monthlyTrend = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Transfer', data: transferData, borderColor: '#2563eb', fill: false },
+                        { label: 'Meal', data: mealData, borderColor: '#f59e0b', fill: false },
+                        { label: 'Commission', data: commissionData, borderColor: '#8b5cf6', fill: false },
+                        { label: 'No Commission', data: nocommissionData, borderColor: '#0ea5e9', fill: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Chart 4: Profit Margin
+            const marginData = months.map(m => {
+                const total = monthly[m].transfer + monthly[m].meal + monthly[m].commission + monthly[m].nocommission;
+                return total > 0 ? ((total - (monthly[m].expenses - monthly[m].personalExpenses)) / total * 100) : 0;
+            });
+            const ctx4 = document.getElementById('liveProfitMarginChart').getContext('2d');
+            liveState.charts.profitMargin = new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Περιθώριο Κέρδους %', data: marginData, backgroundColor: marginData.map(v => v >= 0 ? 'rgba(16,185,129,0.7)' : 'rgba(239,68,68,0.7)') }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Detailed Table
+            const tbody = document.getElementById('liveAnalyticsBody');
+            tbody.innerHTML = '';
+            let cumulativeNet = 0;
+            months.forEach(m => {
+                const [y, mo] = m.split('-').map(Number);
+                const days = new Date(y, mo, 0).getDate();
+                const maxNights = days * 4;
+                const transfer = monthly[m].transfer;
+                const meal = monthly[m].meal;
+                const commission = monthly[m].commission;
+                const nocommission = monthly[m].nocommission;
+                const totalIncome = transfer + meal + commission + nocommission;
+                const totalExp = monthly[m].expenses;
+                const personalExp = monthly[m].personalExpenses;
+                const regularExp = totalExp - personalExp;
+                const profit = totalIncome - regularExp;
+                const net = profit - personalExp;
+                cumulativeNet += net;
+                const margin = totalIncome > 0 ? (profit / totalIncome * 100).toFixed(1) : '0.0';
+                const nights = monthly[m].nights || 0;
+                const occupancy = maxNights > 0 ? ((nights / maxNights) * 100).toFixed(1) : '0.0';
+                const row = `<tr>
+                    <td>${m}</td>
+                    <td class="currency-cell">${transfer.toFixed(2)}€</td>
+                    <td class="currency-cell">${meal.toFixed(2)}€</td>
+                    <td class="currency-cell">${commission.toFixed(2)}€</td>
+                    <td class="currency-cell">${nocommission.toFixed(2)}€</td>
+                    <td class="currency-cell">${totalIncome.toFixed(2)}€</td>
+                    <td class="expense-cell">${regularExp.toFixed(2)}€</td>
+                    <td class="${profit >= 0 ? 'currency-cell' : 'expense-cell'}">${profit.toFixed(2)}€</td>
+                    <td class="personal-expense-cell">${personalExp.toFixed(2)}€</td>
+                    <td class="${cumulativeNet >= 0 ? 'currency-cell' : 'expense-cell'}">${cumulativeNet.toFixed(2)}€</td>
+                    <td>${margin}%</td>
+                    <td>${nights}</td>
+                    <td>${occupancy}%</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Multi-Year Comparison
+        function getLiveYearlyData(startYear, endYear) {
+            const yearly = {};
+            const personalCat = liveState.expenseCategories.find(c => c.name && c.name.toUpperCase() === 'PERSONAL');
+            const personalCatId = personalCat ? personalCat.id : null;
+            liveState.reservations.forEach(r => {
+                if (!r.checkin) return;
+                const d = new Date(r.checkin);
+                const year = d.getFullYear();
+                if (year >= startYear && year <= endYear) {
+                    if (!yearly[year]) yearly[year] = { transfer:0, meal:0, commission:0, nocommission:0, expenses:0, personalExpenses:0, nights:0 };
+                    yearly[year].transfer += r.transferAmount || 0;
+                    yearly[year].meal += r.mealPrice || 0;
+                }
+            });
+            liveState.expenses.forEach(e => {
+                if (!e.date) return;
+                const d = new Date(e.date);
+                const year = d.getFullYear();
+                if (year >= startYear && year <= endYear) {
+                    if (!yearly[year]) yearly[year] = { transfer:0, meal:0, commission:0, nocommission:0, expenses:0, personalExpenses:0, nights:0 };
+                    const amount = parseFloat(e.amount) || 0;
+                    yearly[year].expenses += amount;
+                    if (e.categoryId === personalCatId) {
+                        yearly[year].personalExpenses += amount;
+                    }
+                }
+            });
+            liveState.commissionStats.forEach(c => {
+                if (!c.month) return;
+                const [y, m] = c.month.split('-').map(Number);
+                if (y >= startYear && y <= endYear) {
+                    if (!yearly[y]) yearly[y] = { transfer:0, meal:0, commission:0, nocommission:0, expenses:0, personalExpenses:0, nights:0 };
+                    yearly[y].commission += c.income || 0;
+                    yearly[y].nights += c.stays || 0;
+                }
+            });
+            liveState.noCommissionStats.forEach(nc => {
+                if (!nc.month) return;
+                const [y, m] = nc.month.split('-').map(Number);
+                if (y >= startYear && y <= endYear) {
+                    if (!yearly[y]) yearly[y] = { transfer:0, meal:0, commission:0, nocommission:0, expenses:0, personalExpenses:0, nights:0 };
+                    yearly[y].nocommission += nc.income || 0;
+                    yearly[y].nights += nc.stays || 0;
+                }
+            });
+            return yearly;
+        }
+
+        function renderLiveYearlyComparison() {
+            const start = parseInt(document.getElementById('live-year-compare-start').value);
+            const end = parseInt(document.getElementById('live-year-compare-end').value);
+            if (isNaN(start) || isNaN(end)) return;
+            liveState.yearCompare.start = start;
+            liveState.yearCompare.end = end;
+            const yearly = getLiveYearlyData(start, end);
+            const years = Object.keys(yearly).sort().map(Number);
+
+            // Stats
+            let totalIncome = 0, totalExpenses = 0, totalPersonal = 0, totalNights = 0, totalPossibleNights = 0;
+            years.forEach(y => {
+                const data = yearly[y];
+                totalIncome += data.transfer + data.meal + data.commission + data.nocommission;
+                totalExpenses += data.expenses;
+                totalPersonal += data.personalExpenses;
+                totalNights += data.nights || 0;
+                let yearNights = 0;
+                for (let m = 1; m <= 12; m++) {
+                    const days = new Date(y, m, 0).getDate();
+                    yearNights += days * 4;
+                }
+                totalPossibleNights += yearNights;
+            });
+            const regularExpenses = totalExpenses - totalPersonal;
+            const totalProfit = totalIncome - regularExpenses;
+            const totalNet = totalProfit - totalPersonal;
+            const occupancy = totalPossibleNights > 0 ? ((totalNights / totalPossibleNights) * 100).toFixed(1) : '0.0';
+
+            const statsContainer = document.getElementById('liveYearCompareStats');
+            statsContainer.innerHTML = `
+                <div class="live-kpi-card"><div class="kpi-label">Συνολικά Έσοδα</div><div class="kpi-value">${totalIncome.toFixed(2)}€</div><div class="kpi-sub">${years.length} έτη</div></div>
+                <div class="live-kpi-card"><div class="kpi-label">Συνολικά Έξοδα</div><div class="kpi-value">${totalExpenses.toFixed(2)}€</div><div class="kpi-sub">(Κανονικά: ${regularExpenses.toFixed(2)}€)</div></div>
+                <div class="live-kpi-card"><div class="kpi-label">Συνολικά Προσωπικά</div><div class="kpi-value">${totalPersonal.toFixed(2)}€</div><div class="kpi-sub">Καθαρό: ${totalNet.toFixed(2)}€</div></div>
+                <div class="live-kpi-card"><div class="kpi-label">Διανυκτερεύσεις</div><div class="kpi-value">${totalNights}</div><div class="kpi-sub">Μ.Ο. ${(totalNights/years.length).toFixed(0)}/έτος</div></div>
+                <div class="live-kpi-card"><div class="kpi-label">Πληρότητα</div><div class="kpi-value">${occupancy}%</div><div class="kpi-sub">σε όλη την περίοδο</div></div>
+            `;
+
+            // Charts
+            if (liveState.charts.yearlyIncome) liveState.charts.yearlyIncome.destroy();
+            if (liveState.charts.yearlyExpense) liveState.charts.yearlyExpense.destroy();
+            if (liveState.charts.yearlyIncomePie) liveState.charts.yearlyIncomePie.destroy();
+            if (liveState.charts.yearlyExpensePie) liveState.charts.yearlyExpensePie.destroy();
+
+            const chartContainer = document.getElementById('liveYearCompareCharts');
+            chartContainer.innerHTML = `
+                <div class="live-chart-card">
+                    <h4>📊 Ετήσια Έσοδα ανά Κατηγορία</h4>
+                    <div style="height:250px;"><canvas id="liveYearlyIncomeChart"></canvas></div>
+                </div>
+                <div class="live-chart-card">
+                    <h4>📊 Ετήσια Έξοδα</h4>
+                    <div style="height:250px;"><canvas id="liveYearlyExpenseChart"></canvas></div>
+                </div>
+                <div class="live-chart-card">
+                    <h4>🧩 Κατανομή Εσόδων (Όλα τα Έτη)</h4>
+                    <div style="height:250px;"><canvas id="liveYearlyIncomePieChart"></canvas></div>
+                </div>
+                <div class="live-chart-card">
+                    <h4>🧩 Έξοδα ανά Κατηγορία (Όλα τα Έτη)</h4>
+                    <div style="height:250px;"><canvas id="liveYearlyExpensePieChart"></canvas></div>
                 </div>
             `;
 
-            chartGrid.innerHTML = chartsHtml;
+            const ctxIncome = document.getElementById('liveYearlyIncomeChart').getContext('2d');
+            liveState.charts.yearlyIncome = new Chart(ctxIncome, {
+                type: 'bar',
+                data: {
+                    labels: years,
+                    datasets: [
+                        { label: 'Transfer', data: years.map(y => yearly[y].transfer), backgroundColor: '#2563eb' },
+                        { label: 'Meal', data: years.map(y => yearly[y].meal), backgroundColor: '#f59e0b' },
+                        { label: 'Commission', data: years.map(y => yearly[y].commission), backgroundColor: '#8b5cf6' },
+                        { label: 'No Commission', data: years.map(y => yearly[y].nocommission), backgroundColor: '#0ea5e9' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+            });
+
+            const ctxExpense = document.getElementById('liveYearlyExpenseChart').getContext('2d');
+            liveState.charts.yearlyExpense = new Chart(ctxExpense, {
+                type: 'bar',
+                data: { labels: years, datasets: [{ label: 'Έξοδα', data: years.map(y => yearly[y].expenses), backgroundColor: '#ef4444' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const totalTransfer = years.reduce((s,y) => s + yearly[y].transfer, 0);
+            const totalMeal = years.reduce((s,y) => s + yearly[y].meal, 0);
+            const totalCommission = years.reduce((s,y) => s + yearly[y].commission, 0);
+            const totalNoCommission = years.reduce((s,y) => s + yearly[y].nocommission, 0);
+            const ctxPieIncome = document.getElementById('liveYearlyIncomePieChart').getContext('2d');
+            liveState.charts.yearlyIncomePie = new Chart(ctxPieIncome, {
+                type: 'pie',
+                data: {
+                    labels: ['Transfer', 'Meal', 'Commission', 'No Commission'],
+                    datasets: [{ data: [totalTransfer, totalMeal, totalCommission, totalNoCommission], backgroundColor: ['#2563eb','#f59e0b','#8b5cf6','#0ea5e9'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const catTotals = {};
+            const personalCat = liveState.expenseCategories.find(c => c.name && c.name.toUpperCase() === 'PERSONAL');
+            const personalCatId = personalCat ? personalCat.id : null;
+            liveState.expenses.forEach(e => {
+                const year = new Date(e.date).getFullYear();
+                if (year >= start && year <= end) {
+                    if (e.categoryId === personalCatId) return;
+                    const cat = liveState.expenseCategories.find(c => c.id === e.categoryId);
+                    const name = cat ? cat.name : 'Χωρίς κατηγορία';
+                    catTotals[name] = (catTotals[name] || 0) + parseFloat(e.amount);
+                }
+            });
+            const ctxPieExpense = document.getElementById('liveYearlyExpensePieChart').getContext('2d');
+            liveState.charts.yearlyExpensePie = new Chart(ctxPieExpense, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(catTotals),
+                    datasets: [{ data: Object.values(catTotals), backgroundColor: ['#8b5cf6','#0ea5e9','#10b981','#f59e0b','#ef4444','#2563eb','#7c3aed','#475569'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Table
+            const tbody = document.getElementById('liveYearlyComparisonBody');
+            tbody.innerHTML = '';
+            years.forEach(y => {
+                const data = yearly[y];
+                const totalIncome = data.transfer + data.meal + data.commission + data.nocommission;
+                const regularExp = data.expenses - data.personalExpenses;
+                const profit = totalIncome - regularExp;
+                const net = profit - data.personalExpenses;
+                let maxNights = 0;
+                for (let m = 1; m <= 12; m++) {
+                    const days = new Date(y, m, 0).getDate();
+                    maxNights += days * 4;
+                }
+                const occupancy = maxNights > 0 ? ((data.nights / maxNights) * 100).toFixed(1) : '0.0';
+                const row = `<tr>
+                    <td>${y}</td>
+                    <td class="currency-cell">${data.transfer.toFixed(2)}€</td>
+                    <td class="currency-cell">${data.meal.toFixed(2)}€</td>
+                    <td class="currency-cell">${data.commission.toFixed(2)}€</td>
+                    <td class="currency-cell">${data.nocommission.toFixed(2)}€</td>
+                    <td class="currency-cell">${totalIncome.toFixed(2)}€</td>
+                    <td class="expense-cell">${regularExp.toFixed(2)}€</td>
+                    <td class="${profit>=0?'currency-cell':'expense-cell'}">${profit.toFixed(2)}€</td>
+                    <td class="personal-expense-cell">${data.personalExpenses.toFixed(2)}€</td>
+                    <td class="${net>=0?'currency-cell':'expense-cell'}">${net.toFixed(2)}€</td>
+                    <td>${data.nights || 0}</td>
+                    <td>${occupancy}%</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
         }
 
         // ================================================================
@@ -3860,16 +4342,16 @@
                 this.value = '';
             });
 
-            // --- File input (Live Statistics) - kept for legacy CSV upload
+            // --- File input (Live Statistics) - kept for legacy CSV upload ---
             document.getElementById('liveFileInput').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
                 reader.onload = function(ev) {
                     const text = ev.target.result;
+                    // Parse CSV and store in liveStats collection (legacy)
                     const parsed = parseLiveStatsCSV(text);
                     if (parsed.length > 0) {
-                        // Save to Firestore (legacy liveStats collection in the new project)
                         const batch = dbLive.batch();
                         parsed.forEach(item => {
                             const docRef = dbLive.collection('liveStats').doc(item.period);
@@ -3877,7 +4359,6 @@
                         });
                         batch.commit().then(() => {
                             alert('✅ Τα δεδομένα φορτώθηκαν και αποθηκεύτηκαν στη βάση (legacy liveStats)');
-                            // Re-load the live stats from the main collections (not from liveStats)
                             loadLiveStatsFromFirestore();
                         }).catch(err => {
                             alert('Σφάλμα αποθήκευσης: ' + err.message);
@@ -3892,7 +4373,6 @@
 
             // --- Clear Live Stats (clears legacy liveStats collection) ---
             document.getElementById('clearLiveStatsBtn').addEventListener('click', async function() {
-                // This clears only the legacy liveStats collection (not the main data)
                 const snap = await dbLive.collection('liveStats').get();
                 if (snap.empty) {
                     alert('Δεν υπάρχουν δεδομένα στη συλλογή liveStats.');
@@ -3906,7 +4386,6 @@
                     await batch.commit();
                     hideLoading();
                     alert('✅ Διαγράφηκαν τα δεδομένα liveStats.');
-                    // Reload live stats from main collections
                     loadLiveStatsFromFirestore();
                 } catch (err) {
                     console.error(err);
@@ -4033,6 +4512,35 @@
                 }
             });
 
+            // --- Live Analytics filters ---
+            document.getElementById('live-apply-month-filter').addEventListener('click', function() {
+                const month = document.getElementById('live-analytics-month').value;
+                const year = document.getElementById('live-analytics-year').value;
+                if (!month || !year) {
+                    alert('Παρακαλώ επιλέξτε και μήνα και έτος.');
+                    return;
+                }
+                liveState.selectedAnalyticsMonth = parseInt(month);
+                liveState.selectedAnalyticsYear = parseInt(year);
+                renderLiveAnalytics();
+            });
+
+            document.getElementById('live-clear-month-filter').addEventListener('click', function() {
+                liveState.selectedAnalyticsMonth = null;
+                liveState.selectedAnalyticsYear = null;
+                document.getElementById('live-analytics-month').value = '';
+                document.getElementById('live-analytics-year').value = '';
+                renderLiveAnalytics();
+            });
+
+            document.getElementById('live-apply-analytics-filters').addEventListener('click', function() {
+                renderLiveAnalytics();
+            });
+
+            document.getElementById('live-apply-year-compare').addEventListener('click', function() {
+                renderLiveYearlyComparison();
+            });
+
             // --- Init ---
             initColorSettings();
             populateMonthDropdowns();
@@ -4041,6 +4549,53 @@
             gridContainer.classList.remove('shrunk');
             gridContainer.classList.add('expanded');
         });
+
+        // CSV parser for legacy upload
+        function parseLiveStatsCSV(text) {
+            const lines = text.split(/\r?\n/);
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                const fields = [];
+                let current = '';
+                let inQuote = false;
+                for (let char of line) {
+                    if (char === '"') {
+                        inQuote = !inQuote;
+                    } else if (char === ',' && !inQuote) {
+                        fields.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                fields.push(current);
+
+                if (fields.length >= 12) {
+                    const p = fields.map(f => f.replace(/^"|"$/g, '').trim());
+                    const period = p[0];
+                    const nights = parseInt(p[10]) || 0;
+                    const occupancy = parseFloat(p[11].replace('%', '')) || 0;
+
+                    data.push({
+                        period: period,
+                        transfer: parseFloat(p[1]) || 0,
+                        meal: parseFloat(p[2]) || 0,
+                        commission: parseFloat(p[3]) || 0,
+                        noCommission: parseFloat(p[4]) || 0,
+                        totalIncome: parseFloat(p[5]) || 0,
+                        expenses: parseFloat(p[6]) || 0,
+                        profit: parseFloat(p[7]) || 0,
+                        personalExpenses: parseFloat(p[8]) || 0,
+                        netAfterPersonal: parseFloat(p[9]) || 0,
+                        nights: nights,
+                        occupancy: occupancy
+                    });
+                }
+            }
+            return data;
+        }
 
         // Expose functions to global scope
         window.showDetailMonthly = showDetailMonthly;
