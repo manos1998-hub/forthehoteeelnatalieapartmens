@@ -391,7 +391,6 @@
             overflow: hidden;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
             border: 1px solid #eef2f6;
-            /* PREMIUM ANIMATION: Ομαλή μετάβαση με bounce εφέ */
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             width: 100%;
         }
@@ -402,10 +401,9 @@
 
         /* ---- DYNAMIC FONT SIZES (ENHANCED) ---- */
         .grid-container.expanded {
-            /* Όταν το detail panel είναι κλειστό - ΠΟΛΥ ΜΕΓΑΛΕΣ ΓΡΑΜΜΑΤΟΣΕΙΡΕΣ */
             font-size: 18px;
             letter-spacing: 0.5px;
-            padding-bottom: 20px; /* Extra breathing room */
+            padding-bottom: 20px;
         }
         .grid-container.expanded .grid th,
         .grid-container.expanded .grid td {
@@ -431,7 +429,6 @@
         }
 
         .grid-container.shrunk {
-            /* Όταν το detail panel είναι ανοιχτό - ΜΙΚΡΕΣ ΓΡΑΜΜΑΤΟΣΕΙΡΕΣ */
             font-size: 13px;
             letter-spacing: 0px;
             padding-bottom: 0px;
@@ -460,20 +457,18 @@
             border-radius: 14px;
             padding: 16px 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            display: none; /* Κλειστό από default */
+            display: none;
             position: relative;
             min-height: 150px;
             margin-top: 0px;
-            
-            /* Κρυφό και μεταμορφωμένο */
             transform: translateY(-30px) scale(0.98);
             opacity: 0;
             pointer-events: none;
             transform-origin: top center;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy animation */
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .detail-panel.open {
-            display: block; /* Εμφανίζεται */
+            display: block;
             transform: translateY(0) scale(1);
             opacity: 1;
             pointer-events: all;
@@ -512,13 +507,10 @@
             padding: 12px 14px;
             border-left: 4px solid #94a3b8;
             position: relative;
-            
-            /* ANIMATION FOR CARDS */
             animation: cardAppear 0.5s ease forwards;
             opacity: 0;
             transform: scale(0.95);
         }
-        /* Staggered animation for multiple cards */
         .detail-card:nth-child(1) { animation-delay: 0.1s; }
         .detail-card:nth-child(2) { animation-delay: 0.15s; }
         .detail-card:nth-child(3) { animation-delay: 0.2s; }
@@ -1087,8 +1079,6 @@
             .date-filter-select {
                 max-width: 100px;
             }
-            
-            /* Στο κινητό, το expanded state είναι πιο συμπαγές */
             .grid-container.expanded {
                 font-size: 14px;
             }
@@ -1333,12 +1323,12 @@
 
     </div>
 
-    <!-- MODAL: ΑΝΤΙΚΑΤΑΣΤΑΣΗ -->
+    <!-- MODAL: ΑΝΤΙΚΑΤΑΣΤΑΣΗ / ΑΚΥΡΩΣΗ (Ενιαίο Modal) -->
     <div class="modal-overlay" id="replacementModal">
         <div class="modal-box">
-            <div class="modal-icon">🔄</div>
-            <h2>Αντικατάσταση Κρατήσεων</h2>
-            <div class="sub">Οι παρακάτω κρατήσεις αντικαταστάθηκαν με νέα δεδομένα</div>
+            <div class="modal-icon" id="modalIcon">🔄</div>
+            <h2 id="modalTitle">Αντικατάσταση Κρατήσεων</h2>
+            <div class="sub" id="modalSub">Οι παρακάτω κρατήσεις αντικαταστάθηκαν με νέα δεδομένα</div>
             <div class="replaced-list" id="replacedList"></div>
             <button class="btn-close-modal" id="closeModalBtn">Εντάξει</button>
         </div>
@@ -1664,6 +1654,7 @@
         async function importReservationsToFirestore(newReservations) {
             const batch = db.batch();
             const replaced = [];
+            const cancelled = [];
             let added = 0;
 
             for (const r of newReservations) {
@@ -1671,6 +1662,22 @@
                 const docRef = db.collection(COLLECTION).doc(r.sn);
                 const existing = reservations.find(res => res.sn === r.sn);
 
+                // CHECK IF CANCELLED
+                if (r.status && r.status.toLowerCase().trim() === 'cancelled') {
+                    if (existing) {
+                        batch.delete(docRef);
+                        // remove from local array
+                        const idx = reservations.findIndex(res => res.sn === r.sn);
+                        if (idx !== -1) {
+                            reservations.splice(idx, 1);
+                            cancelled.push({ sn: r.sn, guestName: existing.guestName });
+                        }
+                    }
+                    // If it's cancelled but doesn't exist, we ignore it completely
+                    continue;
+                }
+
+                // Normal add/update logic for non-cancelled
                 if (existing) {
                     batch.set(docRef, resToDoc(r), { merge: true });
                     replaced.push({ sn: r.sn, oldName: existing.guestName, newName: r.guestName });
@@ -1687,7 +1694,7 @@
             populateYearDropdown();
             renderGrid();
             updateStats();
-            return { added, replaced };
+            return { added, replaced, cancelled };
         }
 
         async function clearAllReservations() {
@@ -1890,10 +1897,10 @@
                 if (!isNaN(num)) nights = num;
             }
 
-            return buildFinalRecord(property, sn, details, guestName, totalWithVAT, climateTax, nights, guestContact);
+            return buildFinalRecord(property, sn, details, guestName, totalWithVAT, climateTax, nights, guestContact, status);
         }
 
-        function buildFinalRecord(property, sn, details, guest, totalWithVAT, climateTax, nights, guestContactOverride = '') {
+        function buildFinalRecord(property, sn, details, guest, totalWithVAT, climateTax, nights, guestContactOverride = '', status = '') {
             let platform = '';
             const platformMatch = details.match(
                 /\b(Booking|Airbnb|Google Hotel Ads|Google Hotel Ads Organic|Direct|Travel Agencies|natalieapartments\.com|WebHotelier)\b/i
@@ -1980,6 +1987,7 @@
                 finalTotal,
                 stayValue: totalWithVAT,
                 vat: vatAmount,
+                status: status // The cancellation status is passed here
             };
         }
 
@@ -2852,7 +2860,7 @@
         }
 
         // ================================================================
-        //  15. IMPORT / EXPORT
+        //  15. IMPORT / EXPORT (UPDATED LOGIC)
         // ================================================================
         async function importData(text) {
             const records = parseReservationData(text);
@@ -2866,12 +2874,17 @@
             try {
                 const result = await importReservationsToFirestore(records);
                 hideLoading();
-                document.getElementById('importStatus').textContent =
-                    `✅ Εισήχθησαν ${result.added} νέες, αντικαταστάθηκαν ${result.replaced.length} (σύνολο ${reservations.length})`;
+                
+                let statusMsg = `✅ Εισήχθησαν ${result.added} νέες`;
+                if (result.replaced.length > 0) statusMsg += `, αντικαταστάθηκαν ${result.replaced.length}`;
+                if (result.cancelled.length > 0) statusMsg += `, ακυρώθηκαν ${result.cancelled.length}`;
+                statusMsg += ` (σύνολο ${reservations.length})`;
+                
+                document.getElementById('importStatus').textContent = statusMsg;
                 document.getElementById('importStatus').className = 'status ok';
 
-                if (result.replaced.length > 0) {
-                    showReplacementModal(result.replaced);
+                if (result.replaced.length > 0 || result.cancelled.length > 0) {
+                    showReplacementModal(result.replaced, result.cancelled);
                 }
                 populateYearDropdown();
                 renderGrid();
@@ -2887,17 +2900,30 @@
             }
         }
 
-        function showReplacementModal(replacedList) {
+        function showReplacementModal(replacedList, cancelledList) {
             const modal = document.getElementById('replacementModal');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const sub = document.getElementById('modalSub');
             const listContainer = document.getElementById('replacedList');
-            listContainer.innerHTML = '';
-            replacedList.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'item';
-                div.innerHTML =
-                    `<span class="sn">${item.sn}</span><span class="name">${item.oldName} → ${item.newName}</span>`;
-                listContainer.appendChild(div);
-            });
+            
+            let html = '';
+            if (cancelledList && cancelledList.length > 0) {
+                icon.textContent = '🗑️';
+                title.textContent = 'Ακυρωμένες Κρατήσεις';
+                sub.textContent = 'Οι παρακάτω κρατήσεις επισημάνθηκαν ως "Cancelled" και αφαιρέθηκαν αυτόματα.';
+                cancelledList.forEach(item => {
+                    html += `<div class="item"><span class="sn">${item.sn}</span><span class="name">${item.guestName}</span></div>`;
+                });
+            } else if (replacedList && replacedList.length > 0) {
+                icon.textContent = '🔄';
+                title.textContent = 'Αντικατάσταση Κρατήσεων';
+                sub.textContent = 'Οι παρακάτω κρατήσεις αντικαταστάθηκαν με νέα δεδομένα';
+                replacedList.forEach(item => {
+                    html += `<div class="item"><span class="sn">${item.sn}</span><span class="name">${item.oldName} → ${item.newName}</span></div>`;
+                });
+            }
+            listContainer.innerHTML = html;
             modal.classList.add('open');
         }
 
